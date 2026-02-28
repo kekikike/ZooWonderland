@@ -14,5 +14,5 @@ return array(
     'Dompdf\\' => array($vendorDir . '/dompdf/dompdf/src'),
     'DASPRiD\\Enum\\' => array($vendorDir . '/dasprid/enum/src'),
     'BaconQrCode\\' => array($vendorDir . '/bacon/bacon-qr-code/src'),
-    'App\\' => array($baseDir . '/src'),
+    'App\\' => array($baseDir . '/'),
 );
