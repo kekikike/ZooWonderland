@@ -1,0 +1,21 @@
+{
+    "name": "antropomorfos/zoo-wonderland",
+    "description": "Sistema de Gestión de Zoologico - Tecnología Web II",
+    "type": "project",
+    "require": {
+        "php": "^8.1",
+        "endroid/qr-code": "^4.0",
+        "dompdf/dompdf": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "antropomorfos",
+            "email": "antropomorfos@gmail.com"
+        }
+    ]
+}
