@@ -37,6 +37,7 @@ SET time_zone = "+00:00";
 -- Database: `zoowonderland`
 --
 
+
 -- --------------------------------------------------------
 
 --
@@ -466,17 +467,17 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre1`, `nombre2`, `apellido1`, `apellido2`, `ci`, `correo`, `telefono`, `nombre_usuario`, `contrasena`, `rol`) VALUES
-(1, 'Favio', 'Estefano', 'Palomares', 'Lima', 84537272, 'favio@gmail.com', '78943431', 'faviopzoo', 'favio2026', 'cliente'),
-(2, 'Charlie', 'Fernando', 'Papas', 'Mamani', 8333302, 'charlie@gmail.com', '78900002', 'charliep', 'cha2026', 'administrador'),
-(3, 'María', 'Elena', 'Flores', 'Rojas', 8333303, 'maria@gmail.com', '78900003', 'mariaf', 'maria2026', 'administrador'),
-(4, 'José', 'Antonio', 'Paredes', 'Lopez', 8333304, 'jose@gmail.com', '78900004', 'josepa', 'jose2026', 'administrador'),
-(5, 'Ana', 'Lucía', 'Garcia', 'Choque', 8333305, 'ana@gmail.com', '78900005', 'anav', 'ana2026', 'administrador'),
-(6, 'Pedro', 'Luis', 'Gutiérrez', 'Soto', 8333306, 'pedro@gmail.com', '78900006', 'pedros', 'pedro2026', 'administrador'),
-(7, 'Juan', 'Carlos', 'Mendoza', 'Ruiz', 800007, 'juan@gmail.com', '78900007', 'juancm', '123', 'guia'),
-(8, 'Laura', 'Isabel', 'Pinto', 'Salas', 800008, 'laura@gmail.com', '78900008', 'lauraps', '123', 'guia'),
-(9, 'Miguel', 'Ángel', 'Torrez', 'Ramos', 800009, 'miguel@gmail.com', '78900009', 'migueltr', '123', 'guia'),
-(10, 'Sofía', 'Natalia', 'Cruz', 'Rivera', 800010, 'sofia@gmail.com', '78900010', 'soficr', '123', 'guia'),
-(11, 'Diego', 'Andrés', 'Herrera', 'Paz', 800011, 'diego@gmail.com', '78900011', 'diegohp', '123', 'guia');
+(1, 'Favio', 'Estefano', 'Palomares', 'Lima', 84537272, 'favio@gmail.com', '78943431', 'faviopzoo', 'favio2026', 'administrador'),
+(2, 'Charlie', 'Fernando', 'Papas', 'Mamani', 8333302, 'charlie@gmail.com', '78900002', 'charliep', 'cha2026', 'guia'),
+(3, 'María', 'Elena', 'Flores', 'Rojas', 8333303, 'maria@gmail.com', '78900003', 'mariaf', 'maria2026', 'guia'),
+(4, 'José', 'Antonio', 'Paredes', 'Lopez', 8333304, 'jose@gmail.com', '78900004', 'josepa', 'jose2026', 'guia'),
+(5, 'Ana', 'Lucía', 'Garcia', 'Choque', 8333305, 'ana@gmail.com', '78900005', 'anav', 'ana2026', 'guia'),
+(6, 'Pedro', 'Luis', 'Gutiérrez', 'Soto', 8333306, 'pedro@gmail.com', '78900006', 'pedros', 'pedro2026', 'guia'),
+(7, 'Juan', 'Carlos', 'Mendoza', 'Ruiz', 800007, 'juan@gmail.com', '78900007', 'juancm', '123', 'cliente'),
+(8, 'Laura', 'Isabel', 'Pinto', 'Salas', 800008, 'laura@gmail.com', '78900008', 'lauraps', '123', 'cliente'),
+(9, 'Miguel', 'Ángel', 'Torrez', 'Ramos', 800009, 'miguel@gmail.com', '78900009', 'migueltr', '123', 'cliente'),
+(10, 'Sofía', 'Natalia', 'Cruz', 'Rivera', 800010, 'sofia@gmail.com', '78900010', 'soficr', '123', 'cliente'),
+(11, 'Diego', 'Andrés', 'Herrera', 'Paz', 800011, 'diego@gmail.com', '78900011', 'diegohp', '123', 'cliente');
 
 --
 -- Indexes for dumped tables
