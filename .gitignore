@@ -1,32 +1,31 @@
-# Dependencias
-/config/Database.php
-
-# Configuración local
+# --- Configuración y Secretos ---
 .env
 .env.local
+# Ignora el archivo específico y la carpeta
+/config/Database.php
+/config/
 
-# IDE
+# --- IDEs y Editores ---
 .vscode/
 .idea/
 *.sublime-*
+*.swp
 
-# Sistema operativo
+# --- Sistema Operativo ---
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Logs
+# --- Logs y Temporales ---
 *.log
 /logs/
-
-# Archivos temporales
 *.tmp
 *.cache
 
-# Base de datos
+# --- Base de Datos ---
 *.sqlite
 
-# Uploads
+# --- Uploads ---
+# Ignora el contenido pero mantiene la carpeta gracias al .gitkeep
 /public/uploads/*
 !/public/uploads/.gitkeep
-config/Database.php
-/config
