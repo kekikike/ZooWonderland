@@ -1,5 +1,5 @@
 <?php
-namespace Models;
+namespace App\Models;
 class Administrador extends Usuario
 {
     public function gestionarUsuarios(): string
