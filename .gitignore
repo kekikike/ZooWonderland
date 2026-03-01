@@ -23,7 +23,6 @@ Thumbs.db
 *.cache
 
 # Base de datos
-*.sql
 *.sqlite
 
 # Uploads
