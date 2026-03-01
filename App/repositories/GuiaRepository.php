@@ -16,7 +16,8 @@ class GuiaRepository
     }
 
     /**
-     * Obtiene todos los recorridos asignados al guía autenticado
+     * Obtiene todos los recorridos asignados al guía autenticado.
+     * Cuenta personas por TICKETS comprados (no reservas).
      */
     public function getRecorridosAsignados(int $id_usuario): array
     {
@@ -26,17 +27,15 @@ class GuiaRepository
                 r.id_recorrido,
                 r.nombre,
                 r.tipo,
+                r.precio,
                 r.duracion,
                 r.capacidad,
-                COUNT(res.id_reserva) AS personas_asignadas,
-                CONCAT(r.nombre, ' - ', DATE_FORMAT(gr.fecha_asignacion, '%d/%m/%Y')) AS titulo
-            FROM Guia_Recorrido gr
-            INNER JOIN guias g ON g.id_guia = gr.id_guia
-            INNER JOIN usuarios u ON u.id_usuario = g.id_usuario
-            INNER JOIN recorridos r ON r.id_recorrido = gr.id_recorrido
-            LEFT JOIN reservas res ON res.id_recorrido = r.id_recorrido 
-                                  AND res.fecha = gr.fecha_asignacion
-            WHERE u.id_usuario = :id_usuario
+                COUNT(DISTINCT t.id_ticket) AS personas_asignadas
+            FROM guia_recorrido gr
+            INNER JOIN guias g       ON g.id_guia       = gr.id_guia
+            INNER JOIN recorridos r  ON r.id_recorrido  = gr.id_recorrido
+            LEFT  JOIN tickets   t   ON t.id_recorrido  = r.id_recorrido
+            WHERE g.id_usuario = :id_usuario
             GROUP BY gr.id_guia_recorrido, r.id_recorrido, gr.fecha_asignacion
             ORDER BY gr.fecha_asignacion ASC, r.nombre ASC
         ";
@@ -44,28 +43,81 @@ class GuiaRepository
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id_usuario' => $id_usuario]);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-   /**
- * Obtiene los datos de horarios y días de trabajo del guía autenticado
- * @param int $id_usuario ID del usuario guía
- * @return array|null Datos del guía o null si no existe
- */
-public function getHorariosGuia(int $id_usuario): ?array
-{
-    $stmt = $this->db->prepare("
-        SELECT 
-            horarios,
-            dias_trabajo
-        FROM guias
-        WHERE id_usuario = :id_usuario
-        LIMIT 1
-    ");
+    /**
+     * Obtiene los datos de horarios y días de trabajo del guía autenticado.
+     */
+    public function getHorariosGuia(int $id_usuario): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT 
+                horarios,
+                dias_trabajo
+            FROM guias
+            WHERE id_usuario = :id_usuario
+            LIMIT 1
+        ");
 
-    $stmt->execute([':id_usuario' => $id_usuario]);
-    $row = $stmt->fetch();
+        $stmt->execute([':id_usuario' => $id_usuario]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-    return $row ?: null;
-}
+        return $row ?: null;
+    }
+
+    /**
+     * Obtiene las áreas que cubre un recorrido específico.
+     */
+    public function getAreasPorRecorrido(int $id_recorrido): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT 
+                a.id_area,
+                a.nombre,
+                a.descripcion,
+                a.restringida
+            FROM recorrido_area ra
+            INNER JOIN areas a ON a.id_area = ra.id_area
+            WHERE ra.id_recorrido = :id_recorrido
+            ORDER BY a.nombre ASC
+        ");
+
+        $stmt->execute([':id_recorrido' => $id_recorrido]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Obtiene un recorrido específico + sus áreas, validando que pertenezca al guía.
+     */
+    public function getDetalleRecorrido(int $id_recorrido, int $id_usuario): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT 
+                r.id_recorrido,
+                r.nombre,
+                r.tipo,
+                r.precio,
+                r.duracion,
+                r.capacidad,
+                gr.fecha_asignacion,
+                COUNT(DISTINCT t.id_ticket) AS personas_asignadas
+            FROM guia_recorrido gr
+            INNER JOIN guias g       ON g.id_guia      = gr.id_guia
+            INNER JOIN recorridos r  ON r.id_recorrido = gr.id_recorrido
+            LEFT  JOIN tickets   t   ON t.id_recorrido = r.id_recorrido
+            WHERE r.id_recorrido = :id_recorrido
+              AND g.id_usuario   = :id_usuario
+            GROUP BY r.id_recorrido, gr.fecha_asignacion
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            ':id_recorrido' => $id_recorrido,
+            ':id_usuario'   => $id_usuario,
+        ]);
+
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
 }

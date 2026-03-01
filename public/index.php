@@ -58,37 +58,74 @@ switch ($r) {
         $authCtrl = new \App\Controllers\AuthController();
         $authCtrl->logout();
         break;
+
     case 'compras/historial':
         $compraCtrl = new \App\Controllers\CompraController();
         $compraCtrl->historial();
-    break;
-    //guia
+        break;
+
+    // ── GUÍA: lista de recorridos asignados ──────────────────────
     case 'guias/dashboard':
-    if (!AuthService::check() || !($user = AuthService::user()) || !$user->esGuia()) {
-        header('Location: index.php?r=login');
-        exit;
-    }
+        $isLoggedIn = \App\Services\AuthService::check();
+        $user       = \App\Services\AuthService::user();
 
-    $guiaRepo = new \App\Repositories\GuiaRepository();
-    $recorridosAsignados = $guiaRepo->getRecorridosAsignados($user->id_usuario);
+        if (!$isLoggedIn || !$user || !$user->esGuia()) {
+            header('Location: index.php?r=login');
+            exit;
+        }
 
-    require_once APP_PATH . '/Views/guias/dashboard.php';
-    break;
+        $guiaRepo            = new \App\Repositories\GuiaRepository();
+        $recorridosAsignados = $guiaRepo->getRecorridosAsignados($user->id_usuario);
+
+        require_once APP_PATH . '/Views/guias/dashboard.php';
+        break;
+
+    // ── GUÍA: horarios semanales ──────────────────────────────────
     case 'guias/horarios':
-    // Cargar siempre el estado de sesión
-    $isLoggedIn = \App\Services\AuthService::check();
-    $user = \App\Services\AuthService::user();
+        $isLoggedIn = \App\Services\AuthService::check();
+        $user       = \App\Services\AuthService::user();
 
-    if (!$isLoggedIn || !$user || !$user->esGuia()) {
-        header('Location: index.php?r=login');
-        exit;
-    }
+        if (!$isLoggedIn || !$user || !$user->esGuia()) {
+            header('Location: index.php?r=login');
+            exit;
+        }
 
-    $guiaRepo = new \App\Repositories\GuiaRepository();
-    $datosGuia = $guiaRepo->getHorariosGuia($user->id_usuario);
+        $guiaRepo  = new \App\Repositories\GuiaRepository();
+        $datosGuia = $guiaRepo->getHorariosGuia($user->id_usuario);
 
-    require_once APP_PATH . '/Views/guias/horarios.php';
-    break;
+        require_once APP_PATH . '/Views/guias/horarios.php';
+        break;
+
+    // ── GUÍA: detalle de un recorrido + áreas ────────────────────
+    case 'guias/detalle-recorrido':
+        $isLoggedIn = \App\Services\AuthService::check();
+        $user       = \App\Services\AuthService::user();
+
+        if (!$isLoggedIn || !$user || !$user->esGuia()) {
+            header('Location: index.php?r=login');
+            exit;
+        }
+
+        $id_recorrido = (int)($_GET['id'] ?? 0);
+        if ($id_recorrido === 0) {
+            header('Location: index.php?r=guias/dashboard');
+            exit;
+        }
+
+        $guiaRepo  = new \App\Repositories\GuiaRepository();
+        $recorrido = $guiaRepo->getDetalleRecorrido($id_recorrido, $user->id_usuario);
+
+        // Si el recorrido no pertenece a este guía → redirigir
+        if (!$recorrido) {
+            header('Location: index.php?r=guias/dashboard');
+            exit;
+        }
+
+        $areas = $guiaRepo->getAreasPorRecorrido($id_recorrido);
+
+        require_once APP_PATH . '/Views/guias/detalle_recorrido.php';
+        break;
+
     default:
         http_response_code(404);
         echo "<h1>404 - Ruta no encontrada: $r</h1>";
