@@ -18,7 +18,7 @@ $recorridos = $recorridos ?? [];
         }
         /* Copia aquí los estilos que tenías antes: nav, banner, cards, etc. */
         nav { background: linear-gradient(135deg, var(--primary), #977c66); color: white; }
-        .banner { background: url('https://images.unsplash.com/photo-1564760054-906debeff642') center/cover; height: 60vh; }
+        .banner { background: url('../../public/img/fondo1.jpg') center/cover; height: 60vh; }
         .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .btn-reservar { background: var(--accent); color: #333; }
         .btn-comprar  { background: #7eaeb0; color: white; }
@@ -30,7 +30,7 @@ $recorridos = $recorridos ?? [];
     <nav style="padding:1rem; display:flex; justify-content:space-between; align-items:center;">
         <div class="logo" style="font-size:1.8rem; font-weight:bold;">ZooWonderland</div>
         <div style="display:flex; gap:2rem;">
-            <a href="/" style="color:white;">Inicio</a>
+            <a href="index.php" style="color:white;">Inicio</a>
             <a href="#nosotros" style="color:white;">Nosotros</a>
             <a href="#visitanos" style="color:white;">Visítanos</a>
         </div>
@@ -65,34 +65,50 @@ $recorridos = $recorridos ?? [];
         <p>ZooWonderland fue fundado en 1998 con la misión de conservar, educar y conectar...</p>
     </section>
 
-    <section id="visitanos">
-        <h2 style="color:var(--primary); text-align:center;">Visítanos - Nuestros Recorridos</h2>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:2rem; margin-top:2rem;">
+ <section id="visitanos">
+    <h2 style="color:var(--primary); text-align:center;">Visítanos - Nuestros Recorridos</h2>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:2rem; margin-top:2rem;">
+        <?php if (empty($recorridos)): ?>
+            <p>No hay recorridos disponibles.</p>
+        <?php else: ?>
             <?php foreach ($recorridos as $r): ?>
                 <div class="card" style="background:white; border-radius:12px; overflow:hidden;">
                     <div style="background:var(--primary); color:white; padding:1.2rem; text-align:center; font-weight:bold;">
-                        <?= htmlspecialchars($r['nombre']) ?>
+                        <?= htmlspecialchars($r['nombre'] ?? 'Sin nombre') ?>
                     </div>
                     <div style="padding:1.5rem;">
-                        <p><strong>Tipo:</strong> <?= htmlspecialchars($r['tipo']) ?></p>
-                        <p><strong>Precio:</strong> Bs. <?= number_format($r['precio'], 2) ?></p>
-                        <p><strong>Duración:</strong> <?= $r['duracion'] ?> min</p>
+                        <p><strong>Tipo:</strong> <?= htmlspecialchars($r['tipo'] ?? '-') ?></p>
+                        <p><strong>Precio:</strong> Bs. <?= number_format($r['precio'] ?? 0, 2) ?></p>
+                        <p><strong>Duración:</strong> <?= $r['duracion'] ?? '?' ?> min</p>
 
                         <div style="text-align:center; margin-top:1.5rem;">
                             <?php if ($esCliente): ?>
-                                <a href="/reservas/crear?recorrido=<?= $r['id_recorrido'] ?>" class="btn btn-reservar" style="padding:10px 20px; border-radius:6px; text-decoration:none; margin:0 0.5rem;">Reservar</a>
-                                <a href="/compras/crear?recorrido=<?= $r['id_recorrido'] ?>" class="btn btn-comprar" style="padding:10px 20px; border-radius:6px; text-decoration:none; margin:0 0.5rem;">Comprar Ticket</a>
+                                <a href="index.php?r=reservas/crear&recorrido=<?= htmlspecialchars($r['id_recorrido'] ?? 0) ?>" 
+                                   class="btn btn-reservar" 
+                                   style="padding:10px 20px; border-radius:6px; text-decoration:none; margin:0 0.5rem; background:var(--accent); color:#333;">
+                                    Reservar
+                                </a>
+                                <a href="index.php?r=compras/crear&recorrido=<?= htmlspecialchars($r['id_recorrido'] ?? 0) ?>" 
+                                   class="btn btn-comprar" 
+                                   style="padding:10px 20px; border-radius:6px; text-decoration:none; margin:0 0.5rem; background:#7eaeb0; color:white;">
+                                    Comprar Ticket
+                                </a>
                             <?php elseif ($isLoggedIn): ?>
                                 <p style="color:#d32f2f; font-weight:500;">Solo clientes pueden reservar o comprar</p>
                             <?php else: ?>
-                                <a href="index.php?r=login" class="btn" style="background:#68672e; color:white; padding:10px 20px; border-radius:6px; text-decoration:none;">Inicia sesión para reservar o comprar</a>
+                                <a href="index.php?r=login" 
+                                   class="btn" 
+                                   style="background:#68672e; color:white; padding:10px 20px; border-radius:6px; text-decoration:none;">
+                                    Inicia sesión para reservar o comprar
+                                </a>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
             <?php endforeach; ?>
-        </div>
-    </section>
+        <?php endif; ?>
+    </div>
+</section>
 </main>
 
 <footer style="background:#977c66; color:white; text-align:center; padding:2rem; margin-top:4rem;">

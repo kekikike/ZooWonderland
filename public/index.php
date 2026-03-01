@@ -48,6 +48,14 @@ switch ($r) {
         $authCtrl = new \App\Controllers\AuthController();
         $authCtrl->logout();
         break;
+    case 'registro':
+    $authCtrl = new \App\Controllers\AuthController();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $authCtrl->register();
+    } else {
+        $authCtrl->showRegister();
+    }
+    break;
 
     default:
         http_response_code(404);

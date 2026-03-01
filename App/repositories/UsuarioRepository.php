@@ -22,29 +22,32 @@ class UsuarioRepository
      */
     public function authenticate(string $login, string $password): ?Usuario
     {
-        $stmt = $this->db->prepare("
-            SELECT 
-                u.id_usuario, u.nombre1, u.nombre2, u.apellido1, u.apellido2,
-                u.ci, u.correo, u.telefono, u.nombre_usuario, u.rol,
-                u.contrasena
-            FROM usuarios u
-            WHERE u.nombre_usuario = :login OR u.correo = :login
-            LIMIT 1
-        ");
+       $stmt = $this->db->prepare("
+    SELECT 
+        u.id_usuario, u.nombre1, u.nombre2, u.apellido1, u.apellido2,
+        u.ci, u.correo, u.telefono, u.nombre_usuario, u.rol,
+        u.contrasena AS password
+    FROM usuarios u
+    WHERE u.nombre_usuario = :usuario OR u.correo = :correo
+    LIMIT 1
+");
 
-        $stmt->execute([':login' => $login]);
+$stmt->execute([
+    ':usuario' => $login,
+    ':correo'  => $login
+]);
         $row = $stmt->fetch();
 
         if (!$row) {
             return null;
         }
 
-        if (!password_verify($password, $row['contrasena'])) {
+        if (!password_verify($password, $row['password'])) {
             return null;
         }
 
         // No exponemos el password
-        unset($row['contrasena']);
+        unset($row['password']);
 
         return new Usuario($row);
     }
@@ -79,4 +82,42 @@ class UsuarioRepository
         $stmt->execute([':id' => $id_usuario]);
         return (bool) $stmt->fetchColumn();
     }
+
+    /**
+ * Crea un nuevo usuario y retorna su ID
+ * @throws Exception si falla la inserción
+ */
+public function create(array $data): int
+{
+    $stmt = $this->db->prepare("
+        INSERT INTO usuarios (
+            nombre1, nombre2, apellido1, apellido2,
+            ci, correo, telefono, nombre_usuario,
+            contrasena, rol
+        ) VALUES (
+            :nombre1, :nombre2, :apellido1, :apellido2,
+            :ci, :correo, :telefono, :nombre_usuario,
+            :contrasena, :rol
+        )
+    ");
+
+    $success = $stmt->execute([
+        ':nombre1'        => $data['nombre1'],
+        ':nombre2'        => $data['nombre2'] ?? null,
+        ':apellido1'      => $data['apellido1'],
+        ':apellido2'      => $data['apellido2'] ?? null,
+        ':ci'             => $data['ci'] ?? null,
+        ':correo'         => $data['correo'],
+        ':telefono'       => $data['telefono'] ?? null,
+        ':nombre_usuario' => $data['nombre_usuario'],
+        ':contrasena'     => password_hash($data['password'], PASSWORD_DEFAULT),
+        ':rol'            => 'cliente'
+    ]);
+
+   if (!$success) {
+    throw new \Exception("No se pudo crear el usuario");
+}
+
+    return (int) $this->db->lastInsertId();
+}
 }
