@@ -28,3 +28,4 @@ Thumbs.db
 # Uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+config/Database.php
