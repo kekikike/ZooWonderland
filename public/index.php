@@ -20,7 +20,6 @@ require_once CORE_PATH . '/Database.php';
 \Core\Session::iniciarSesionSegura();
 \Core\Database::getInstance();
 
-
 // Variables globales para las vistas
 $isLoggedIn = false;
 $user = null;
@@ -90,8 +89,29 @@ switch ($r) {
             exit;
         }
 
-        $guiaRepo  = new \App\Repositories\GuiaRepository();
-        $datosGuia = $guiaRepo->getHorariosGuia($user->id_usuario);
+        // Semana seleccionada: 0 = esta semana, 1 = siguiente
+        $semanaOffset = (int)($_GET['semana'] ?? 0);
+        $semanaOffset = max(0, min(1, $semanaOffset));
+
+        // Calcular lunes de la semana seleccionada
+        $hoyTemp   = new \DateTime();
+        $lunesTemp = clone $hoyTemp;
+        $lunesTemp->modify('Monday this week');
+        if ($semanaOffset === 1) {
+            $lunesTemp->modify('+7 days');
+        }
+
+        // Mar → Dom de esa semana
+        $inicioSemana = (clone $lunesTemp)->modify('+1 day')->format('Y-m-d');
+        $finSemana    = (clone $lunesTemp)->modify('+6 days')->format('Y-m-d');
+
+        $guiaRepo            = new \App\Repositories\GuiaRepository();
+        $datosGuia           = $guiaRepo->getHorariosGuia($user->id_usuario);
+        $recorridosPorSemana = $guiaRepo->getRecorridosPorSemana(
+            $user->id_usuario,
+            $inicioSemana,
+            $finSemana
+        );
 
         require_once APP_PATH . '/Views/guias/horarios.php';
         break;
@@ -115,7 +135,6 @@ switch ($r) {
         $guiaRepo  = new \App\Repositories\GuiaRepository();
         $recorrido = $guiaRepo->getDetalleRecorrido($id_recorrido, $user->id_usuario);
 
-        // Si el recorrido no pertenece a este guía → redirigir
         if (!$recorrido) {
             header('Location: index.php?r=guias/dashboard');
             exit;
