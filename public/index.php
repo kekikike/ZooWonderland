@@ -2,50 +2,56 @@
 // public/index.php
 declare(strict_types=1);
 
-define('ROOT_PATH', dirname(__DIR__));
+// Constantes
+define('ROOT_PATH',   dirname(__DIR__));
 define('APP_PATH',    ROOT_PATH . '/app');
 define('CORE_PATH',   ROOT_PATH . '/core');
 define('CONFIG_PATH', ROOT_PATH . '/config');
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 
+// Cargar Composer
 require_once ROOT_PATH . '/vendor/autoload.php';
 
-session_start();
+// Sesión segura (solo una vez)
+require_once CORE_PATH . '/Session.php';
+require_once CORE_PATH . '/Database.php';
+\Core\Session::iniciarSesionSegura();
 
-// Cargar rutas
-$routes = require ROOT_PATH . '/routes/web.php';
+// Conexión BD
+\Core\Database::getInstance();
 
-// Obtener URI y método
-$uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
+// ... (código anterior: constantes, autoload, sesión segura, Database)
 
-// Encontrar ruta
-$handler = null;
-foreach ($routes as $route => $action) {
-    if ($route === $uri || $route === $uri . '/') {
-        $handler = $action;
+// Obtener la ruta solicitada
+$r = $_GET['r'] ?? '/';
+$r = trim($r, '/');
+$r = $r === '' ? '/' : $r;
+
+// Rutas
+switch ($r) {
+    case '/':
+    case '':
+        $controller = new \App\Controllers\HomeController();
+        $controller->index();
         break;
-    }
-}
 
-if (!$handler) {
-    http_response_code(404);
-    echo "404 - Página no encontrada";
-    exit;
-}
+    case 'login':
+        $authCtrl = new \App\Controllers\AuthController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $authCtrl->login();           // procesa el formulario
+        } else {
+            $authCtrl->showLogin();       // muestra el formulario
+        }
+        break;
 
-// Resolver controlador@metodo
-[$controllerClass, $method] = explode('@', $handler);
-$controller = new $controllerClass();
+    case 'logout':
+        $authCtrl = new \App\Controllers\AuthController();
+        $authCtrl->logout();
+        break;
 
-if ($method === 'index' && $uri === '/') {
-    // Vista principal (puedes renderizar directamente o usar un View renderer simple)
-    $isLoggedIn = (new \App\Services\AuthService())->check();
-    $user = $isLoggedIn ? (new \App\Services\AuthService())->user() : null;
-
-    // Aquí cargas tu vista index antigua, pero adaptada
-    // Por simplicidad, asumimos que tienes una vista en Views/home.php o similar
-    require_once APP_PATH . '/Views/home.php';  // crea esta vista con el HTML + banner + recorridos
-} else {
-    $controller->$method();
+    default:
+        http_response_code(404);
+        echo "<h1>404 - Ruta no encontrada: $r</h1>";
+        echo "<p>Usa index.php?r=login para el login, por ejemplo.</p>";
+        exit;
 }

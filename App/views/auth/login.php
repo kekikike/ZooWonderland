@@ -10,20 +10,19 @@ declare(strict_types=1);
     <title>Iniciar Sesión - ZooWonderland</title>
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(to bottom, #ffe2a0, #fffaf0);
             margin: 0;
-            padding: 0;
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
         }
-        .container {
+        .login-container {
             background: white;
             padding: 2.5rem 2rem;
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             width: 100%;
             max-width: 420px;
         }
@@ -31,6 +30,14 @@ declare(strict_types=1);
             color: #a3712a;
             text-align: center;
             margin-bottom: 1.8rem;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
         .form-group {
             margin-bottom: 1.4rem;
@@ -41,8 +48,7 @@ declare(strict_types=1);
             color: #555;
             font-weight: 500;
         }
-        input[type="text"],
-        input[type="password"] {
+        input {
             width: 100%;
             padding: 12px;
             border: 1px solid #ccc;
@@ -54,7 +60,7 @@ declare(strict_types=1);
             border-color: #bfb641;
             box-shadow: 0 0 0 3px rgba(191,182,65,0.2);
         }
-        .btn {
+        button {
             width: 100%;
             padding: 14px;
             background: #a3712a;
@@ -65,44 +71,37 @@ declare(strict_types=1);
             cursor: pointer;
             transition: background 0.3s;
         }
-        .btn:hover {
+        button:hover {
             background: #8c5e22;
         }
-        .error {
-            color: #d32f2f;
-            font-size: 0.95rem;
-            margin-top: -0.8rem;
-            margin-bottom: 1.2rem;
+        .register-link {
             text-align: center;
+            margin-top: 1.5rem;
         }
-        .link {
-            text-align: center;
-            margin-top: 1.2rem;
-        }
-        .link a {
+        .register-link a {
             color: #7eaeb0;
             text-decoration: none;
             font-weight: 500;
         }
-        .link a:hover {
+        .register-link a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="login-container">
     <h1>Iniciar Sesión</h1>
 
-    <?php if (isset($error)): ?>
+    <?php if (isset($error) && $error): ?>
         <div class="error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="/login">
+<form method="POST" action="index.php?r=login">
         <div class="form-group">
-            <label for="login">Usuario o Email</label>
+            <label for="login">Usuario o Correo</label>
             <input type="text" id="login" name="login" required 
-                   placeholder="Ej: juanperez o juan@ejemplo.com" 
+                   placeholder="Ej: juanperez o juan@ejemplo.com"
                    value="<?= htmlspecialchars($_POST['login'] ?? '') ?>">
         </div>
 
@@ -111,11 +110,11 @@ declare(strict_types=1);
             <input type="password" id="password" name="password" required>
         </div>
 
-        <button type="submit" class="btn">Ingresar</button>
+        <button type="submit">Ingresar</button>
     </form>
 
-    <div class="link">
-        ¿No tienes cuenta? <a href="/register">Regístrate aquí</a>
+    <div class="register-link">
+        ¿No tienes cuenta? <a href="index.php?r=registro">Regístrate aquí</a>
     </div>
 </div>
 

@@ -1,0 +1,31 @@
+<?php
+// app/Controllers/HomeController.php
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Services\AuthService;
+use App\Repositories\RecorridoRepository;
+
+class HomeController
+{
+    private AuthService $auth;
+    private RecorridoRepository $recorridoRepo;
+
+    public function __construct()
+    {
+        $this->auth = new AuthService();
+        $this->recorridoRepo = new RecorridoRepository();
+    }
+
+    public function index(): void
+    {
+        $isLoggedIn = $this->auth->check();
+        $user = $isLoggedIn ? $this->auth->user() : null;
+        $esCliente = $isLoggedIn && $user && $user->rol === 'cliente';
+
+        $recorridos = $this->recorridoRepo->findAll();  // o findAllActivos(), etc.
+
+        require_once APP_PATH . '/Views/home.php';
+    }
+}

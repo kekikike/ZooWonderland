@@ -2,8 +2,10 @@
 // config/database.php
 return [
     'host'     => 'localhost',
-    'database' => 'zoo',   // cámbialo a tu BD real
+    'port'     => 3306,
+    'database' => 'zoowonderland',  
     'username' => 'root',
-    'password' => 'cc++4kglt',
+    'password' => 'mipmopmap26PanQ',
     'charset'  => 'utf8mb4',
 ];
+
