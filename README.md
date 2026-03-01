@@ -18,19 +18,16 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 
 ## Estructura del Proyecto
 /
-├── config/
-|   └── constants.php
-├── public/
-|   ├── img/
-│   ├── index.php
-|   ├── comprar.php
-|   ├── historial.php
-|   ├── reservar.php
-|   ├── registrar.php 
-|   ├── logout.php
-│   └── login.php
-├── src/
-│   ├── enums/
+├── App/
+│   ├── constrollers/
+|   |   ├── AnimalController.php
+|   |   ├── AreaController.php
+|   |   ├── AuthController.php
+|   |   ├── CompraController.php
+|   |   ├── HomeController.php
+|   |   ├── ReservaController.php
+|   |   ├── TicketController.php
+|   |   └── UsuarioController.php
 │   ├── models/
 |   |   ├── Administrador.php
 │   │   ├── animal.php
@@ -42,7 +39,12 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 |   |   ├── reserva.php
 |   |   ├── ticket.php
 │   │   └── usuario.php
-│   ├── Repositories/
+│   ├── repositories/
+│   │   ├── interfaces/
+│   │   |   ├── AnimalRepositoryInterface.php
+│   │   |   ├── AreaRepositoryInterface.php
+│   │   |   ├── ReservaRepositoryInterface.php
+│   │   |   └── UsuarioRepositoryInterface.php
 │   │   ├── AnimalRepository.php
 |   |   ├── AreaRepository.php
 |   |   ├── CompraRepository.php
@@ -50,11 +52,36 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 |   |   ├── ReservaRepository.php
 │   │   ├── TicketRepository.php
 │   │   └── UsuarioRepository.php
-│   ├── Services/
-│   │   |── Auth.php
-|   |   ├── autoload_session.php
-│   │   └── Register.php
-│   └── Utils/
+│   ├── services/
+│   │   |── AuthService.php
+|   |   ├── CompraService.php
+|   |   ├── RegisterService.php
+│   │   └── ReservasService.php
+│   ├── views/
+|   |   ├── animales/
+|   |   ├── areas/
+|   |   ├── auth/
+|   |   ├── compras/
+|   |   ├── guias/
+|   |   ├── compras/
+|   |   ├── guias/
+|   |   ├── reservas/
+|   |   ├── tickets/
+|   |   └── home.php
+├── config/
+│   ├── constants.php
+│   └── Database.php
+├── core/
+│   ├── config.php
+│   ├── Logger.php
+│   ├── session.php
+│   └── Database.php
+├── public/
+│   ├── img/
+│   ├── index.php
+│   └── logout.php
+├── rutas/
+│   └── web.php
 ├── vendor/
 ├── .gitignore
 ├── composer.json
