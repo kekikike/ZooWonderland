@@ -48,4 +48,12 @@ class Usuario
     {
         return $this->rol === 'cliente';
     }
+
+    public function esGuia(): bool
+{
+    return $this->rol === 'guia';
+}
+
+
+   
 }

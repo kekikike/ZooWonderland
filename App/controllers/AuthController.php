@@ -23,36 +23,42 @@ class AuthController
         require_once APP_PATH . '/Views/auth/login.php';
     }
 
-    public function login(): void
-    {
-        // Si no es POST → redirigir a formulario (ruta correcta)
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?r=login');
-            exit;
-        }
-
-        $login    = trim($_POST['login'] ?? '');
-        $password = $_POST['password'] ?? '';  // ← nota: aquí usabas 'contrasena', debe coincidir con el name del input
-
-        if (empty($login) || empty($password)) {
-            $_SESSION['login_error'] = 'Debes completar ambos campos.';
-            header('Location: index.php?r=login');
-            exit;
-        }
-
-        $result = $this->auth->attempt($login, $password);
-
-        if ($result['success']) {
-            \Core\Session::regenerate();  // regenerar ID tras login exitoso
-            header('Location: index.php');  // ← redirige a principal (ruta raíz)
-            exit;
-        }
-
-        // Error
-        $_SESSION['login_error'] = $result['message'];
+public function login(): void
+{
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header('Location: index.php?r=login');
         exit;
     }
+
+    $login    = trim($_POST['login'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if (empty($login) || empty($password)) {
+        $_SESSION['login_error'] = 'Debes completar ambos campos.';
+        header('Location: index.php?r=login');
+        exit;
+    }
+
+    $result = AuthService::attempt($login, $password);
+
+    if ($result['success']) {
+        \Core\Session::regenerate();
+
+        $user = AuthService::user();
+
+        if ($user && $user->esGuia()) {
+            header('Location: index.php?r=guias/dashboard');
+            exit;
+        }
+
+        header('Location: index.php');
+        exit;
+    }
+
+    $_SESSION['login_error'] = $result['message'] ?? 'Error desconocido';
+    header('Location: index.php?r=login');
+    exit;
+}
 
     public function logout(): void
     {

@@ -9,66 +9,51 @@ use App\Models\Usuario;
 
 class AuthService
 {
-    private UsuarioRepository $repo;
+    private static ?UsuarioRepository $repo = null;
 
-    public function __construct()
+    // Inicializamos el repo una sola vez (lazy loading)
+    private static function getRepo(): UsuarioRepository
     {
-        $this->repo = new UsuarioRepository();
+        if (self::$repo === null) {
+            self::$repo = new UsuarioRepository();
+        }
+        return self::$repo;
     }
 
-    /**
-     * Intenta autenticar y guarda solo el ID en sesión
-     * @return array ['success' => bool, 'message' => string]
-     */
-    public function attempt(string $login, string $password): array
+    public static function attempt(string $login, string $password): array
     {
-        $usuario = $this->repo->authenticate($login, $password);
+        $usuario = self::getRepo()->authenticate($login, $password);
 
         if (!$usuario) {
-            return [
-                'success' => false,
-                'message' => 'Credenciales incorrectas o usuario no encontrado.'
-            ];
-        }
-
-        // Opcional: verificar que sea cliente si el sistema lo requiere estrictamente
-        if (!$this->repo->esCliente($usuario->id_usuario)) {
-            return [
-                'success' => false,
-                'message' => 'Solo los clientes pueden iniciar sesión en esta interfaz.'
-            ];
+            return ['success' => false, 'message' => 'Credenciales incorrectas o usuario no encontrado.'];
         }
 
         $_SESSION['user_id'] = $usuario->id_usuario;
         session_regenerate_id(true);
 
-        return [
-            'success' => true,
-            'message' => 'Inicio de sesión exitoso.'
-        ];
+        return ['success' => true, 'message' => 'Inicio de sesión exitoso.'];
     }
 
-    public function check(): bool
+    public static function check(): bool
     {
         return isset($_SESSION['user_id']) && is_int($_SESSION['user_id']) && $_SESSION['user_id'] > 0;
     }
 
-    public function user(): ?Usuario
+    public static function user(): ?Usuario
     {
-        if (!$this->check()) {
+        if (!self::check()) {
             return null;
         }
 
-        // Cache estático simple para evitar múltiples consultas en la misma request
         static $cached = null;
         if ($cached === null) {
-            $cached = $this->repo->findById((int) $_SESSION['user_id']);
+            $cached = self::getRepo()->findById((int) $_SESSION['user_id']);
         }
 
         return $cached;
     }
 
-    public function logout(): void
+    public static function logout(): void
     {
         unset($_SESSION['user_id']);
         session_regenerate_id(true);

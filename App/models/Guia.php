@@ -15,4 +15,3 @@ class Guia extends Usuario
         return $this->horarios;
     }
 }
-?>

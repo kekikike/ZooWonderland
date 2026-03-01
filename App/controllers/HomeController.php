@@ -18,14 +18,16 @@ class HomeController
         $this->recorridoRepo = new RecorridoRepository();
     }
 
+
     public function index(): void
-    {
-        $isLoggedIn = $this->auth->check();
-        $user = $isLoggedIn ? $this->auth->user() : null;
-        $esCliente = $isLoggedIn && $user && $user->rol === 'cliente';
+{
+    $isLoggedIn = $this->auth->check();
+    $user       = $isLoggedIn ? $this->auth->user() : null;
+    $esCliente  = $isLoggedIn && $user && $user->esCliente();
+    $esGuia     = $isLoggedIn && $user && $user->esGuia();   // ← NUEVO
 
-        $recorridos = $this->recorridoRepo->findAll();  // o findAllActivos(), etc.
+    $recorridos = $this->recorridoRepo->findAll();
 
-        require_once APP_PATH . '/Views/home.php';
-    }
+    require_once APP_PATH . '/Views/home.php';
+}
 }

@@ -39,4 +39,3 @@ class Cliente extends Usuario
         return "Entrada comprada";
     }
 }
-?>

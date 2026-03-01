@@ -82,7 +82,12 @@ $stmt->execute([
         $stmt->execute([':id' => $id_usuario]);
         return (bool) $stmt->fetchColumn();
     }
-
+public function esGuia(int $id_usuario): bool
+{
+    $stmt = $this->db->prepare("SELECT 1 FROM guias WHERE id_usuario = :id LIMIT 1");
+    $stmt->execute([':id' => $id_usuario]);
+    return (bool) $stmt->fetchColumn();
+}
     /**
  * Crea un nuevo usuario y retorna su ID
  * @throws Exception si falla la inserción
