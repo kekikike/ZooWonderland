@@ -1,5 +1,5 @@
 <?php
-// Lógica para simular variables si no vienen del controlador
+// App/views/compras/historial.php
 $isLoggedIn = $isLoggedIn ?? true; 
 $esCliente  = $esCliente  ?? true;
 $user       = $user       ?? null;
