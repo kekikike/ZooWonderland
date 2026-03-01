@@ -4,12 +4,12 @@ declare(strict_types=1);
 $currentTab = 'horarios';
 
 /* ══════════════════════════════════════════════════════════════
-   LÓGICA PHP: semana en curso + siguiente, recorridos por día
+   LÓGICA PHP ORIGINAL (SIN CAMBIOS)
    ══════════════════════════════════════════════════════════════ */
 
 // Semana seleccionada (0 = esta semana, 1 = siguiente)
 $semanaOffset = (int)($_GET['semana'] ?? 0);
-$semanaOffset = max(0, min(1, $semanaOffset)); // solo 0 o 1
+$semanaOffset = max(0, min(1, $semanaOffset)); 
 
 // Calcular lunes de la semana seleccionada
 $hoy   = new \DateTime();
@@ -30,7 +30,7 @@ for ($i = 1; $i <= 6; $i++) {
 $fechaInicio = $diasSemana[0]->format('Y-m-d');
 $fechaFin    = $diasSemana[5]->format('Y-m-d');
 
-// Parsear horario laboral: "09:00 - 15:00"
+// Parsear horario laboral
 $horaInicioLaboral = '09:00';
 $horaFinLaboral    = '15:00';
 if ($datosGuia && !empty($datosGuia['horarios'])) {
@@ -41,23 +41,18 @@ if ($datosGuia && !empty($datosGuia['horarios'])) {
     }
 }
 
-// Obtener recorridos de la semana desde el repositorio
-// $recorridosPorSemana ya viene del controller (index.php lo inyecta)
-// Si no existe, inicializar vacío
 if (!isset($recorridosPorSemana)) {
     $recorridosPorSemana = [];
 }
 
 /**
- * Calcula hora inicio y fin de cada recorrido del día,
- * encadenándolos con 15 min de pausa entre ellos.
- * Retorna array de recorridos con 'hora_inicio' y 'hora_fin' añadidas.
+ * Calcula hora inicio y fin de cada recorrido del día
  */
 function calcularHorariosDelDia(array $recorridos, string $horaInicioBase): array
 {
     $cursor = strtotime("1970-01-01 {$horaInicioBase}:00");
     foreach ($recorridos as &$rec) {
-        $durSeg          = (int)$rec['duracion'] * 60;
+        $durSeg             = (int)$rec['duracion'] * 60;
         $rec['hora_inicio'] = date('H:i', $cursor);
         $rec['hora_fin']    = date('H:i', $cursor + $durSeg);
         $cursor += $durSeg + 15 * 60; // +15 min pausa
@@ -66,18 +61,11 @@ function calcularHorariosDelDia(array $recorridos, string $horaInicioBase): arra
     return $recorridos;
 }
 
-// Mapa nombres días ES
 $nombreDiaEs = [
-    'Monday'    => 'Lunes',
-    'Tuesday'   => 'Martes',
-    'Wednesday' => 'Miércoles',
-    'Thursday'  => 'Jueves',
-    'Friday'    => 'Viernes',
-    'Saturday'  => 'Sábado',
-    'Sunday'    => 'Domingo',
+    'Monday'    => 'Lunes', 'Tuesday'   => 'Martes', 'Wednesday' => 'Miércoles',
+    'Thursday'  => 'Jueves', 'Friday'    => 'Viernes', 'Saturday'  => 'Sábado', 'Sunday'    => 'Domingo',
 ];
 
-// Meses ES
 $meses = [
     1=>'ene',2=>'feb',3=>'mar',4=>'abr',5=>'may',6=>'jun',
     7=>'jul',8=>'ago',9=>'sep',10=>'oct',11=>'nov',12=>'dic'
@@ -87,15 +75,14 @@ $semanaLabel = $diasSemana[0]->format('j ') . $meses[(int)$diasSemana[0]->format
     . ' – ' . $diasSemana[5]->format('j ') . $meses[(int)$diasSemana[5]->format('n')]
     . ' ' . $diasSemana[0]->format('Y');
 
-// Colores para los tipos de recorrido
 function colorRecorrido(string $nombre): array {
     $colores = [
-        'Felinos VIP'          => ['#fff3e0', '#e65100', '#ffcc80'],
-        'Osos Andinos'         => ['#e8f5e9', '#2e7d32', '#a5d6a7'],
-        'Cóndores'             => ['#e3f2fd', '#1565c0', '#90caf9'],
-        'Acuario'              => ['#e0f7fa', '#006064', '#80deea'],
-        'Recorrido General'    => ['#f3e5f5', '#6a1b9a', '#ce93d8'],
-        'Recorrido Interactivo'=> ['#fce4ec', '#880e4f', '#f48fb1'],
+        'Felinos VIP'           => ['#fff3e0', '#e65100', '#ffcc80'],
+        'Osos Andinos'          => ['#e8f5e9', '#2e7d32', '#a5d6a7'],
+        'Cóndores'              => ['#e3f2fd', '#1565c0', '#90caf9'],
+        'Acuario'               => ['#e0f7fa', '#006064', '#80deea'],
+        'Recorrido General'     => ['#f3e5f5', '#6a1b9a', '#ce93d8'],
+        'Recorrido Interactivo' => ['#fce4ec', '#880e4f', '#f48fb1'],
     ];
     foreach ($colores as $key => $val) {
         if (stripos($nombre, explode(' ', $key)[0]) !== false) return $val;
@@ -109,464 +96,461 @@ function colorRecorrido(string $nombre): array {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Horarios – ZooWonderland</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --brown:    #a3712a;
-            --brown-dk: #7a521c;
-            --olive-lt: #bfb641;
-            --teal:     #4a8c8e;
-            --teal-lt:  #7eaeb0;
-            --cream:    #faf7f2;
-            --card:     #ffffff;
-            --text:     #2d2d2d;
-            --muted:    #777;
-            --border:   #e8e0d4;
+            --verde-selva:   #2e7d32;
+            --amarillo-sol:  #ffca28;
+            --gris-claro:    #f8faf8;
+            --blanco:        #ffffff;
+            --oscuro:        #0d3a1f;
+            --texto:         #333333;
+            --border:        #e0eadd;
+            --sombra:        0 10px 30px rgba(0,0,0,0.06);
+            --transicion:    all 0.3s ease;
         }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--cream);
-            color: var(--text);
-            min-height: 100vh;
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body { 
+            font-family: 'Open Sans', sans-serif; 
+            background-color: var(--gris-claro); 
+            color: var(--texto); 
+        }
+        h1, h2, h3, .logo { font-family: 'Montserrat', sans-serif; }
+
+        header { 
+            background: var(--blanco); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+        }
+        .header-main { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 1rem 5%; 
+        }
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: var(--verde-selva); 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .user-badge { 
+            background: #f0f4f0; 
+            padding: 0.5rem 1rem;
+            border-radius: 12px; 
+            font-weight: 700;
+            color: var(--verde-selva); 
+            font-size: 0.85rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
         }
 
-        /* ── HEADER ── */
-        header {
-            background: linear-gradient(135deg, var(--brown-dk) 0%, var(--brown) 60%, #c4882f 100%);
-            color: white;
-            padding: 1.6rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0,0,0,.25);
+        .nav-container { 
+            background: var(--oscuro); 
+            padding: 0 5%; }
+        .nav-tabs { 
+            display: flex; 
+            list-style: none; 
+            overflow-x: auto; 
         }
-        header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; }
-        header .user-badge {
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.35);
-            padding: .45rem 1.1rem;
-            border-radius: 999px;
-            font-size: .9rem;
-            font-weight: 600;
-        }
-
-        /* ── NAV TABS ── */
-        .nav-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1.4rem 1rem;
-            background: var(--brown-dk);
-        }
-        .nav-tabs a {
-            color: rgba(255,255,255,.85);
-            text-decoration: none;
-            padding: .65rem 1.8rem;
-            border-radius: 8px;
-            background: rgba(255,255,255,.12);
-            font-weight: 500;
-            font-size: .95rem;
-            transition: all .25s;
-        }
-        .nav-tabs a:hover  { background: rgba(255,255,255,.22); }
-        .nav-tabs a.active { background: var(--olive-lt); color: #222; font-weight: 700; }
-
-        /* ── MAIN ── */
-        main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
-
-        /* ── TOP BAR ── */
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
-        }
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: var(--brown);
-        }
-        .semana-nav {
-            display: flex;
-            align-items: center;
-            gap: .8rem;
-        }
-        .semana-label {
-            font-size: .9rem;
-            color: var(--muted);
-            background: var(--card);
-            padding: .4rem 1rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            font-weight: 600;
-        }
-        .btn-semana {
-            padding: .45rem 1.1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--brown);
-            font-weight: 600;
-            font-size: .88rem;
-            text-decoration: none;
-            transition: all .2s;
-        }
-        .btn-semana:hover { background: var(--brown); color: white; }
-        .btn-semana.disabled { opacity: .4; pointer-events: none; }
-
-        /* ── CHIPS INFO ── */
-        .horario-general {
-            display: flex;
-            gap: .8rem;
-            flex-wrap: wrap;
-            margin-bottom: 1.8rem;
-        }
-        .info-chip {
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: .6rem 1.1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,.05);
-        }
-        .chip-icon { font-size: 1.2rem; }
-        .chip-label { font-size: .72rem; color: var(--muted); display: block; }
-        .chip-val   { font-size: .95rem; font-weight: 700; color: var(--text); }
-
-        /* ── AVISO ── */
-        .aviso-readonly {
-            display: flex;
-            align-items: center;
-            gap: .6rem;
-            background: #fff8e6;
-            border: 1px solid #f0d060;
-            border-radius: 10px;
-            padding: .7rem 1.1rem;
-            margin-bottom: 1.5rem;
-            font-size: .85rem;
-            color: #7a5c00;
+        .nav-tabs a { 
+            color: rgba(255,255,255,0.7); 
+            text-decoration: none; 
+            padding: 1rem 1.5rem; 
+            font-weight: 700; 
+            font-size: 0.8rem; 
+            text-transform: uppercase; 
+            border-bottom: 4px solid transparent; 
+            transition: var(--transicion); 
+            white-space: nowrap; }
+        .nav-tabs a.active { 
+            color: var(--amarillo-sol); 
+            border-bottom-color: var(--amarillo-sol); 
+            background: rgba(255,255,255,0.05); 
         }
 
-        /* ── GRID CALENDARIO ── */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: .9rem;
+        main { 
+            max-width: 1200px; 
+            margin: 2rem auto; 
+            padding: 0 1.5rem; 
         }
-        @media (max-width: 960px)  { .calendar-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 560px)  { .calendar-grid { grid-template-columns: repeat(2, 1fr); } }
 
-        /* ── DAY CARD ── */
-        .day-card {
-            background: var(--card);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 3px 12px rgba(0,0,0,.07);
-            border: 2px solid var(--border);
-            transition: transform .2s, box-shadow .2s, border-color .2s;
-            display: flex;
-            flex-direction: column;
+        .top-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 2rem; 
+            flex-wrap: wrap; 
+            gap: 1rem; 
         }
-        .day-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+        .semana-nav { 
+            display: flex; 
+            align-items: center; 
+            background: var(--blanco); 
+            padding: 0.4rem; 
+            border-radius: 50px; 
+            box-shadow: var(--sombra); 
+            border: 1px solid var(--border); 
         }
-        .day-card.today { border-color: var(--olive-lt); }
-        .day-card.no-trabajo { opacity: .55; }
+        .btn-semana { 
+            padding: 0.6rem 1.2rem; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-weight: 700; 
+            font-size: 0.75rem; 
+            color: var(--verde-selva); 
+            transition: var(--transicion); 
+        }
+        .btn-semana:hover:not(.disabled) { 
+            background: var(--verde-selva); 
+            color: var(--blanco); 
+        }
+        .btn-semana.disabled { 
+            color: #ccc; 
+            cursor: not-allowed; 
+        }
+        .semana-label { 
+            font-weight: 800; 
+            color: var(--oscuro); 
+            padding: 0 1.5rem; 
+            font-size: 0.9rem; 
+        }
 
-        .day-header {
-            padding: .75rem 1rem .5rem;
-            border-bottom: 1px solid var(--border);
+        .horario-general { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 2rem; 
+        }
+        .info-chip { 
+            background: var(--blanco); 
+            padding: 1.2rem; 
+            border-radius: 16px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+        }
+        .info-chip i { 
+            font-size: 1.2rem; 
+            color: var(--verde-selva); 
+            background: #f0f7f0; 
+            width: 42px; 
+            height: 42px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 10px; 
+        }
+        .chip-label { 
+            font-size: 0.65rem; 
+            text-transform: uppercase; 
+            color: #757575; 
+            font-weight: 800; 
+            letter-spacing: 0.5px; 
+        }
+        .chip-val { 
+            font-size: 1rem; 
+            font-weight: 700; 
+            color: var(--oscuro); 
+        }
+
+        .calendar-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 12px; 
+        }
+        .day-card { 
+            background: var(--blanco); 
+            border-radius: 18px; 
+            border: 1px solid var(--border); 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            transition: var(--transicion); 
+        }
+        .day-card.today { 
+            border: 2px solid var(--amarillo-sol); 
             position: relative;
         }
-        .day-name {
-            font-weight: 700;
-            font-size: .9rem;
-            color: var(--brown);
-            text-transform: uppercase;
-            letter-spacing: .5px;
+        .day-card.no-trabajo { 
+            background: #fdfdfd; 
+            opacity: 0.65; 
         }
-        .day-date {
-            font-size: .8rem;
-            color: var(--muted);
+        
+        .day-header { 
+            padding: 1rem; 
+            background: #fbfcfb; 
+            border-bottom: 1px solid var(--border); 
+            text-align: center; 
         }
-        .today-badge {
-            position: absolute;
-            top: .5rem; right: .6rem;
-            background: var(--olive-lt);
-            color: #333;
-            font-size: .62rem;
-            font-weight: 800;
-            padding: .15rem .5rem;
-            border-radius: 999px;
-            letter-spacing: .5px;
+        .day-name { 
+            font-weight: 800; 
+            font-size: 0.75rem; 
+            color: var(--verde-selva); 
+            text-transform: uppercase; 
         }
-
-        /* Franja horario laboral */
-        .turno-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: .3rem;
-            font-size: .72rem;
-            color: white;
-            background: var(--teal);
-            padding: .3rem .5rem;
-            font-weight: 600;
+        .day-date { 
+            font-size: 0.75rem; 
+            color: #757575; 
+            font-weight: 600; 
         }
-
-        /* Recorridos del día */
-        .day-body { padding: .6rem .7rem; flex: 1; display: flex; flex-direction: column; gap: .5rem; }
-
-        .recorrido-slot {
-            border-radius: 8px;
-            padding: .55rem .7rem;
-            border-left: 3px solid;
-        }
-        .slot-nombre {
-            font-size: .82rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: .2rem;
-        }
-        .slot-hora {
-            font-size: .78rem;
-            font-weight: 700;
-            opacity: .85;
-        }
-        .slot-personas {
-            font-size: .72rem;
-            opacity: .75;
-            margin-top: .15rem;
-        }
-        .slot-tipo {
-            display: inline-block;
-            font-size: .62rem;
-            font-weight: 700;
-            padding: .1rem .4rem;
-            border-radius: 999px;
-            margin-top: .2rem;
-            text-transform: uppercase;
-            letter-spacing: .3px;
-            opacity: .9;
+        
+        .today-badge { 
+            position: absolute; 
+            top: -10px; left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--amarillo-sol); 
+            color: var(--oscuro); 
+            font-size: 0.6rem; 
+            font-weight: 800; 
+            padding: 2px 10px; 
+            border-radius: 10px; 
+            z-index: 5; 
         }
 
-        .dia-libre {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .8rem;
-            color: var(--muted);
-            font-style: italic;
-            padding: 1rem .5rem;
+        .turno-bar { 
+            background: var(--oscuro); 
+            color: var(--blanco); 
+            font-size: 0.65rem; 
+            padding: 4px; 
+            text-align: center; 
+            font-weight: 700; 
         }
-        .sin-recorridos {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .78rem;
-            color: #bbb;
-            font-style: italic;
-            padding: 1rem .5rem;
-            text-align: center;
+        .day-body { 
+            padding: 10px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
         }
 
-        /* ── LEYENDA ── */
-        .leyenda {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-            font-size: .82rem;
-            color: var(--muted);
+        .recorrido-slot { 
+            padding: 0.7rem; 
+            border-radius: 12px; 
+            border-left: 4px solid; 
+            font-size: 0.8rem; 
         }
-        .leyenda-item { display: flex; align-items: center; gap: .5rem; }
-        .leyenda-dot  { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+        .slot-nombre { 
+            font-size: 0.75rem; 
+            font-weight: 800; 
+            margin-bottom: 4px; 
+            line-height: 1.2; 
+        }
+        .slot-hora { 
+            font-size: 0.68rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            margin-bottom: 2px; 
+        }
+        .slot-personas { 
+            font-size: 0.65rem; 
+            opacity: 0.8; 
+            font-weight: 600; 
+        }
 
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--muted);
-            font-size: .88rem;
+        .dia-libre { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.7rem; 
+            color: #bbb; 
+            font-weight: 600; 
+            padding: 2rem 0; 
+            text-align: center; 
         }
-        footer a { color: var(--brown); text-decoration: none; font-weight: 600; }
-        footer a:hover { text-decoration: underline; }
+        .dia-libre i { 
+            font-size: 1.5rem; 
+            margin-bottom: 8px;
+            opacity: 0.3; 
+        }
+
+        .leyenda { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 1.2rem; 
+            margin-top: 2rem; 
+            background: var(--blanco); 
+            padding: 1.2rem; 
+            border-radius: 15px; 
+            border: 1px solid var(--border); 
+        }
+        .leyenda-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 0.7rem; 
+            font-weight: 700; 
+            color: #757575; 
+        }
+        .leyenda-dot { 
+            width: 10px; 
+            height: 10px; 
+            border-radius: 50%; 
+        }
+        .btn-back {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-top: 3rem;
+                    color: var(--verde-selva);
+                    text-decoration: none;
+                    font-weight: 700;
+                    transition: var(--transicion);
+                }
+        .btn-back:hover { 
+            color: var(--oscuro);
+            transform: translateX(-5px); 
+        }
+
+        footer { 
+            text-align: center; 
+            padding: 3rem 1rem; 
+            background: var(--oscuro);
+            color: rgba(255,255,255,0.4); 
+            margin-top: 4rem; 
+            font-size: 0.8rem; 
+        }
+        footer a { 
+            color: var(--amarillo-sol); 
+            text-decoration: none; 
+            font-weight: 700; 
+        }
+
+        @media (max-width: 1100px) { .calendar-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) { .calendar-grid { grid-template-columns: repeat(2, 1fr); } .top-bar { flex-direction: column; } }
+        @media (max-width: 480px) { .calendar-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🦁 ZooWonderland</h1>
-    <span class="user-badge">👤 <?= htmlspecialchars($user->getNombreParaMostrar()) ?></span>
+    <div class="header-main">
+        <a href="index.php" class="logo"><i class="fa-solid fa-leaf"></i> <span>ZooWonderland</span></a>
+        <div class="user-badge"><i class="fa-solid fa-circle-user"></i> <?= htmlspecialchars($user->getNombreParaMostrar()) ?></div>
+    </div>
+    <nav class="nav-container">
+        <div class="nav-tabs">
+            <a href="index.php?r=guias/dashboard">Mis Recorridos</a>
+            <a href="index.php?r=guias/horarios" class="active">Mis Horarios</a>
+        </div>
+    </nav>
 </header>
-
-<?php require_once APP_PATH . '/Views/guias/partials/tabs.php'; ?>
 
 <main>
     <div class="top-bar">
-        <h2 class="section-title">Mis Horarios Semanales</h2>
-
+        <h2 class="section-title">Calendario Semanal</h2>
         <div class="semana-nav">
-            <!-- Botón "esta semana" solo si estamos en semana siguiente -->
-            <a href="index.php?r=guias/horarios&semana=0"
-               class="btn-semana <?= $semanaOffset === 0 ? 'disabled' : '' ?>">
-               ← Esta semana
-            </a>
-            <span class="semana-label">📅 <?= $semanaLabel ?></span>
-            <!-- Botón "siguiente" solo si estamos en semana actual -->
-            <a href="index.php?r=guias/horarios&semana=1"
-               class="btn-semana <?= $semanaOffset === 1 ? 'disabled' : '' ?>">
-               Siguiente →
-            </a>
+            <a href="index.php?r=guias/horarios&semana=0" class="btn-semana <?= $semanaOffset === 0 ? 'disabled' : '' ?>"><i class="fa-solid fa-chevron-left"></i> Esta semana</a>
+            <span class="semana-label"><?= $semanaLabel ?></span>
+            <a href="index.php?r=guias/horarios&semana=1" class="btn-semana <?= $semanaOffset === 1 ? 'disabled' : '' ?>">Siguiente <i class="fa-solid fa-chevron-right"></i></a>
         </div>
-    </div>
-
-    <!-- Aviso solo lectura -->
-    <div class="aviso-readonly">
-        🔒 Los horarios son de solo visualización. Para solicitar modificaciones, comunícate con el administrador.
     </div>
 
     <?php if (!$datosGuia): ?>
-        <div style="text-align:center; padding:3rem; color:var(--muted); background:white;
-                    border-radius:14px; border:2px dashed var(--border); font-size:1.05rem;">
-            🗓️ No tienes horarios asignados actualmente.
+        <div style="text-align:center; padding:5rem 2rem; background:white; border-radius:20px; border:2px dashed var(--border);">
+            <i class="fa-solid fa-calendar-xmark" style="font-size:3rem; color:#ccc; margin-bottom:1rem;"></i>
+            <p style="color:#757575; font-weight:600;">No tienes horarios asignados para este periodo.</p>
         </div>
     <?php else: ?>
 
-        <!-- Chips informativos -->
         <div class="horario-general">
-            <div class="info-chip">
-                <span class="chip-icon">🕘</span>
-                <div>
-                    <span class="chip-label">Turno entrada</span>
-                    <span class="chip-val"><?= htmlspecialchars($horaInicioLaboral) ?></span>
-                </div>
-            </div>
-            <div class="info-chip">
-                <span class="chip-icon">🕒</span>
-                <div>
-                    <span class="chip-label">Turno salida</span>
-                    <span class="chip-val"><?= htmlspecialchars($horaFinLaboral) ?></span>
-                </div>
-            </div>
-            <div class="info-chip">
-                <span class="chip-icon">📆</span>
-                <div>
-                    <span class="chip-label">Días laborales</span>
-                    <span class="chip-val"><?= htmlspecialchars($datosGuia['dias_trabajo']) ?></span>
-                </div>
-            </div>
+            <div class="info-chip"><i class="fa-solid fa-clock"></i><div><div class="chip-label">Entrada</div><div class="chip-val"><?= htmlspecialchars($horaInicioLaboral) ?></div></div></div>
+            <div class="info-chip"><i class="fa-solid fa-door-open"></i><div><div class="chip-label">Salida</div><div class="chip-val"><?= htmlspecialchars($horaFinLaboral) ?></div></div></div>
+            <div class="info-chip"><i class="fa-solid fa-calendar-check"></i><div><div class="chip-label">Jornada</div><div class="chip-val"><?= htmlspecialchars($datosGuia['dias_trabajo']) ?></div></div></div>
         </div>
 
-        <!-- Calendario -->
         <div class="calendar-grid">
             <?php foreach ($diasSemana as $dia):
-                $fechaKey  = $dia->format('Y-m-d');
-                $esHoy     = $fechaKey === $hoy->format('Y-m-d');
-                $enNombre  = $dia->format('l');
+                $fechaKey = $dia->format('Y-m-d');
+                $esHoy    = $fechaKey === $hoy->format('Y-m-d');
+                $enNombre = $dia->format('l');
 
-                // ¿Trabaja este día?
                 $diasTrabajoStr = strtolower($datosGuia['dias_trabajo'] ?? '');
                 $diaNombreEs    = strtolower($nombreDiaEs[$enNombre] ?? '');
                 $trabaja = false;
                 if (strpos($diasTrabajoStr, ' a ') !== false) {
                     preg_match('/(\w+)\s+a\s+(\w+)/', $diasTrabajoStr, $m);
                     if (count($m) === 3) {
-                        $orden  = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
-                        $desde  = array_search($m[1], $orden);
-                        $hasta  = array_search($m[2], $orden);
-                        $pos    = array_search($diaNombreEs, $orden);
+                        $orden   = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+                        $desde   = array_search($m[1], $orden);
+                        $hasta   = array_search($m[2], $orden);
+                        $pos     = array_search($diaNombreEs, $orden);
                         $trabaja = ($desde !== false && $hasta !== false && $pos !== false && $pos >= $desde && $pos <= $hasta);
                     }
                 } else {
                     $trabaja = strpos($diasTrabajoStr, $diaNombreEs) !== false;
                 }
 
-                // Recorridos del día con horarios calculados
-                $recorridosDia = [];
-                if (isset($recorridosPorSemana[$fechaKey])) {
-                    $recorridosDia = calcularHorariosDelDia($recorridosPorSemana[$fechaKey], $horaInicioLaboral);
-                }
-
-                $clases = 'day-card' . ($esHoy ? ' today' : '') . (!$trabaja ? ' no-trabajo' : '');
+                $recorridosDia = isset($recorridosPorSemana[$fechaKey]) ? calcularHorariosDelDia($recorridosPorSemana[$fechaKey], $horaInicioLaboral) : [];
             ?>
-            <div class="<?= $clases ?>">
-                <!-- Cabecera del día -->
-                <div class="day-header">
-                    <div class="day-name"><?= $nombreDiaEs[$enNombre] ?? $enNombre ?></div>
-                    <div class="day-date"><?= $dia->format('d') . '/' . $dia->format('m') ?></div>
-                    <?php if ($esHoy): ?>
-                        <span class="today-badge">HOY</span>
+                <div class="day-card <?= $esHoy ? 'today' : '' ?> <?= !$trabaja ? 'no-trabajo' : '' ?>">
+                    <?php if ($esHoy): ?><span class="today-badge">HOY</span><?php endif; ?>
+                    <div class="day-header">
+                        <div class="day-name"><?= $nombreDiaEs[$enNombre] ?? $enNombre ?></div>
+                        <div class="day-date"><?= $dia->format('d') ?> / <?= $meses[(int)$dia->format('n')] ?></div>
+                    </div>
+                    <?php if ($trabaja): ?>
+                        <div class="turno-bar"><?= $horaInicioLaboral ?> - <?= $horaFinLaboral ?></div>
+                        <div class="day-body">
+                            <?php if (empty($recorridosDia)): ?>
+                                <div class="dia-libre"><i class="fa-solid fa-circle-info"></i>Sin tareas</div>
+                            <?php else: ?>
+                                <?php foreach ($recorridosDia as $rec): 
+                                    [$bg, $text, $border] = colorRecorrido($rec['nombre']);
+                                ?>
+                                    <div class="recorrido-slot" style="background:<?= $bg ?>; border-color:<?= $border ?>; color:<?= $text ?>;">
+                                        <div class="slot-nombre"><?= htmlspecialchars($rec['nombre']) ?></div>
+                                        <div class="slot-hora"><i class="fa-regular fa-clock"></i> <?= $rec['hora_inicio'] ?> – <?= $rec['hora_fin'] ?></div>
+                                        <div class="slot-personas"><i class="fa-solid fa-users"></i> <?= (int)$rec['personas_asignadas'] ?>/<?= (int)$rec['capacidad'] ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="dia-libre"><i class="fa-solid fa-mug-hot"></i>Descanso</div>
                     <?php endif; ?>
                 </div>
-
-                <?php if ($trabaja): ?>
-                    <!-- Barra turno -->
-                    <div class="turno-bar">
-                        ⏱ <?= htmlspecialchars($horaInicioLaboral) ?> – <?= htmlspecialchars($horaFinLaboral) ?>
-                    </div>
-
-                    <div class="day-body">
-                        <?php if (empty($recorridosDia)): ?>
-                            <div class="sin-recorridos">Sin recorridos<br>asignados</div>
-                        <?php else: ?>
-                            <?php foreach ($recorridosDia as $rec):
-                                [$bg, $text, $border] = colorRecorrido($rec['nombre']);
-                                $personas  = (int)$rec['personas_asignadas'];
-                                $capacidad = (int)$rec['capacidad'];
-                            ?>
-                            <div class="recorrido-slot"
-                                 style="background:<?= $bg ?>; border-color:<?= $border ?>; color:<?= $text ?>;">
-                                <div class="slot-nombre"><?= htmlspecialchars($rec['nombre']) ?></div>
-                                <div class="slot-hora">
-                                    🕘 <?= $rec['hora_inicio'] ?> – <?= $rec['hora_fin'] ?>
-                                </div>
-                                <div class="slot-personas">
-                                    👥 <?= $personas ?>/<?= $capacidad ?> personas
-                                </div>
-                                <span class="slot-tipo"
-                                      style="background:<?= $border ?>; color:<?= $text ?>;">
-                                    <?= htmlspecialchars($rec['tipo']) ?>
-                                </span>
-                            </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-
-                <?php else: ?>
-                    <div class="dia-libre">🌿 Día libre</div>
-                <?php endif; ?>
-            </div>
             <?php endforeach; ?>
         </div>
 
-        <!-- Leyenda colores -->
         <div class="leyenda">
             <div class="leyenda-item"><div class="leyenda-dot" style="background:#e65100;"></div> Felinos VIP</div>
             <div class="leyenda-item"><div class="leyenda-dot" style="background:#2e7d32;"></div> Osos Andinos</div>
             <div class="leyenda-item"><div class="leyenda-dot" style="background:#1565c0;"></div> Cóndores</div>
             <div class="leyenda-item"><div class="leyenda-dot" style="background:#006064;"></div> Acuario</div>
-            <div class="leyenda-item"><div class="leyenda-dot" style="background:#6a1b9a;"></div> Rec. General</div>
-            <div class="leyenda-item"><div class="leyenda-dot" style="background:#880e4f;"></div> Rec. Interactivo</div>
+            <div class="leyenda-item"><div class="leyenda-dot" style="background:#6a1b9a;"></div> General</div>
+            <div class="leyenda-item"><div class="leyenda-dot" style="background:#880e4f;"></div> Interactivo</div>
         </div>
-
+        <a href="index.php?r=guias/dashboard" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> Volver a mis recorridos
+    </a>
     <?php endif; ?>
 </main>
 
 <footer>
-    <a href="index.php?r=guias/dashboard">← Volver a Mis Recorridos</a> &nbsp;·&nbsp;
-    <a href="index.php?r=logout">Cerrar sesión</a>
+    <p><strong>ZooWonderland</strong> &copy; <?= date('Y') ?> | Panel de Gestión de Guías</p>
+    <div style="margin-top:15px">
+        <a href="index.php">Inicio Publico</a> • <a href="index.php?r=logout">Cerrar Sesión</a>
+    </div>
 </footer>
 
 </body>

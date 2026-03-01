@@ -2,7 +2,6 @@
 // app/Views/guias/dashboard.php
 declare(strict_types=1);
 $currentTab = 'recorridos';
-require_once APP_PATH . '/Views/guias/partials/tabs.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -10,280 +9,335 @@ require_once APP_PATH . '/Views/guias/partials/tabs.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Recorridos – ZooWonderland</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --brown:     #a3712a;
-            --brown-dk:  #7a521c;
-            --olive:     #68672e;
-            --olive-lt:  #bfb641;
-            --teal:      #4a8c8e;
-            --teal-lt:   #7eaeb0;
-            --cream:     #faf7f2;
-            --card:      #ffffff;
-            --text:      #2d2d2d;
-            --muted:     #777;
-            --border:    #e8e0d4;
+            --verde-selva:   #2e7d32;
+            --verde-oscuro:  #1b5e20;
+            --amarillo-sol:  #ffca28;
+            --naranja-tigre: #f57c00;
+            --azul-cielo:    #0288d1;
+            --gris-claro:    #f8faf8;
+            --oscuro:        #0d3a1f;
+            --blanco:        #ffffff;
+            --sombra:        0 10px 30px rgba(0,0,0,0.08);
+            --transicion:    all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--cream);
-            color: var(--text);
-            min-height: 100vh;
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
         }
 
-        /* ── HEADER ── */
+        h1, h2, h3, .logo { font-family: 'Montserrat', sans-serif; }
+
+        /* ── HEADER  ── */
         header {
-            background: linear-gradient(135deg, var(--brown-dk) 0%, var(--brown) 60%, #c4882f 100%);
-            color: white;
-            padding: 1.6rem 2rem;
+            background: var(--blanco);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 3%; 
+        }
+
+        .logo { 
+            font-size: 1.6rem; 
+            font-weight: 800; 
+            color: var(--verde-selva); 
+            text-transform: uppercase; 
+            text-decoration: none;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0,0,0,.25);
-        }
-        header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            letter-spacing: .5px;
-        }
-        header .user-badge {
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.35);
-            padding: .45rem 1.1rem;
-            border-radius: 999px;
-            font-size: .9rem;
-            font-weight: 600;
+            gap: 10px;
         }
 
-        /* ── NAV TABS (styles referenced by tabs.php) ── */
+        .user-badge { 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f0f4f0; 
+            padding: 0.6rem 1.2rem; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            color: var(--verde-selva);
+            font-size: 0.9rem;
+        }
+
+        /* ── NAVEGACIÓN (TABS) INTEGRADA ── */
+        .nav-container {
+            background: var(--oscuro);
+            padding: 0 3%;
+        }
+
         .nav-tabs {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1.4rem 1rem;
-            background: var(--brown-dk);
-        }
-        .nav-tabs a {
-            color: rgba(255,255,255,.85);
-            text-decoration: none;
-            padding: .65rem 1.8rem;
-            border-radius: 8px;
-            background: rgba(255,255,255,.12);
-            font-weight: 500;
-            font-size: .95rem;
-            transition: all .25s;
-            border: 1px solid transparent;
-        }
-        .nav-tabs a:hover { background: rgba(255,255,255,.22); }
-        .nav-tabs a.active {
-            background: var(--olive-lt);
-            color: #222;
-            font-weight: 700;
-            border-color: rgba(0,0,0,.1);
+            gap: 5px;
+            list-style: none;
         }
 
-        /* ── MAIN ── */
+        .nav-tabs a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: var(--transicion);
+            border-bottom: 4px solid transparent;
+        }
+
+        .nav-tabs a:hover {
+            color: var(--blanco);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-tabs a.active {
+            color: var(--amarillo-sol);
+            border-bottom: 4px solid var(--amarillo-sol);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* ── CONTENIDO ── */
         main {
-            max-width: 900px;
-            margin: 2.5rem auto;
-            padding: 0 1.5rem;
+            max-width: 1200px; 
+            margin: 3rem auto;
+            padding: 0 2rem;
         }
 
         .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.55rem;
-            color: var(--brown);
-            margin-bottom: 1.6rem;
-            padding-bottom: .6rem;
-            border-bottom: 2px solid var(--border);
+            font-size: 2.2rem;
+            color: var(--oscuro);
+            margin-bottom: 2.5rem;
+            text-align: center;
         }
 
-        /* ── RECORRIDO CARD ── */
-        .recorrido-card {
-            background: var(--card);
-            border-radius: 14px;
-            padding: 1.6rem 1.8rem;
-            margin-bottom: 1.4rem;
-            box-shadow: 0 3px 14px rgba(0,0,0,.07);
-            border-left: 5px solid var(--teal);
-            transition: transform .2s, box-shadow .2s;
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 5px;
+            background: var(--amarillo-sol);
+            margin: 10px auto;
+            border-radius: 10px;
         }
+
+        /* ── CARDS RECORRIDO ── */
+        .recorrido-card {
+            background: var(--blanco);
+            border-radius: 25px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--sombra);
+            border-left: 8px solid var(--verde-selva);
+            transition: var(--transicion);
+        }
+        
         .recorrido-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 26px rgba(0,0,0,.12);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
         .card-top {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: .8rem;
-            margin-bottom: 1rem;
+            align-items: center;
+            margin-bottom: 1.5rem;
         }
 
         .card-fecha {
+            font-weight: 700;
+            color: var(--verde-selva);
             display: flex;
             align-items: center;
-            gap: .6rem;
-            font-size: .85rem;
-            color: var(--muted);
-            background: var(--cream);
-            padding: .35rem .9rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
+            gap: 8px;
         }
-        .card-fecha span { font-weight: 700; color: var(--brown); font-size: .95rem; }
 
         .badge-tipo {
-            font-size: .78rem;
-            font-weight: 700;
-            padding: .3rem .9rem;
-            border-radius: 999px;
-            letter-spacing: .5px;
+            font-weight: 800;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
             text-transform: uppercase;
         }
-        .badge-guiado   { background: #e8f4e8; color: #2e7d32; border: 1px solid #a5d6a7; }
-        .badge-noguiado { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+        .badge-guiado { background: #e8f5e9; color: #2e7d32; }
+        .badge-noguiado { background: #fff3e0; color: #e65100; }
 
         .card-nombre {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.35rem;
-            color: var(--text);
-            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--oscuro);
+            margin-bottom: 2rem;
         }
 
+        /* ── META ITEMS  ── */
         .card-meta {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: .8rem;
-            margin-bottom: 1.2rem;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 1rem;
+            margin-bottom: 2.5rem;
         }
+        
         .meta-item {
-            background: var(--cream);
-            border-radius: 8px;
-            padding: .7rem 1rem;
-            border: 1px solid var(--border);
-        }
-        .meta-label {
-            font-size: .75rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .6px;
-            margin-bottom: .25rem;
-        }
-        .meta-value {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text);
+            background: #f9fbf9;
+            padding: 1.2rem 0.5rem;
+            border-radius: 18px;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transicion);
         }
 
-        /* Barra de ocupación */
-        .ocupacion-bar {
-            margin-bottom: 1.3rem;
+        .meta-item:hover {
+            border-color: var(--amarillo-sol);
+            transform: translateY(-3px);
         }
+
+        .meta-item i {
+            font-size: 1.3rem;
+            color: var(--verde-selva);
+            margin-bottom: 10px;
+        }
+
+        .meta-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #666;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--oscuro);
+        }
+
+        /* ── OCUPACIÓN ── */
+        .ocupacion-bar { margin-bottom: 2.5rem; }
         .ocupacion-label {
             display: flex;
             justify-content: space-between;
-            font-size: .82rem;
-            color: var(--muted);
-            margin-bottom: .35rem;
+            margin-bottom: 10px;
+            font-weight: 700;
         }
         .bar-track {
-            background: #e8e0d4;
-            border-radius: 999px;
-            height: 8px;
+            background: #eee;
+            border-radius: 50px;
+            height: 14px;
             overflow: hidden;
         }
-        .bar-fill {
-            height: 100%;
-            border-radius: 999px;
-            transition: width .5s ease;
-        }
-        .bar-low    { background: var(--teal-lt); }
-        .bar-medium { background: var(--olive-lt); }
-        .bar-high   { background: #e57373; }
+        .bar-fill { height: 100%; border-radius: 50px; transition: width 1s ease; }
+        .bar-low { background: var(--verde-selva); }
+        .bar-medium { background: var(--amarillo-sol); }
+        .bar-high { background: var(--naranja-tigre); }
 
         .btn-detalle {
             display: inline-flex;
             align-items: center;
-            gap: .5rem;
-            padding: .6rem 1.4rem;
-            background: var(--teal);
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--verde-selva);
             color: white;
-            border-radius: 8px;
+            border-radius: 18px;
             text-decoration: none;
-            font-weight: 600;
-            font-size: .9rem;
-            transition: background .2s;
+            font-weight: 700;
+            transition: var(--transicion);
         }
-        .btn-detalle:hover { background: var(--teal-lt); color: #222; }
-
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            background: var(--card);
-            border-radius: 14px;
-            border: 2px dashed var(--border);
-            color: var(--muted);
-            font-size: 1.1rem;
+        
+        .btn-detalle:hover {
+            background: var(--oscuro);
+            transform: scale(1.01);
         }
 
         footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--muted);
-            font-size: .88rem;
+            padding: 4rem 2rem;
+            background: var(--oscuro);
+            color: rgba(255,255,255,0.5);
+            margin-top: 5rem;
         }
-        footer a { color: var(--brown); text-decoration: none; font-weight: 600; }
-        footer a:hover { text-decoration: underline; }
+        footer a { color: var(--amarillo-sol); text-decoration: none; }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .card-meta { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 600px) {
+            .card-meta { grid-template-columns: repeat(2, 1fr); }
+            .header-main { flex-direction: column; gap: 1rem; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🦁 ZooWonderland</h1>
-    <span class="user-badge">👤 <?= htmlspecialchars($user->getNombreParaMostrar()) ?></span>
+    <div class="header-main">
+        <a href="index.php" class="logo">
+            <i class="fa-solid fa-leaf"></i>
+            <span>ZooWonderland</span>
+        </a>
+
+        <div class="header-right" style="display: flex; gap: 15px; align-items: center;">
+            <div class="user-badge">
+                <i class="fa-solid fa-circle-user"></i> 
+                <?= htmlspecialchars($user->getNombreParaMostrar()) ?>
+            </div>
+            <a href="index.php?r=logout" style="color: #c62828; font-size: 1.3rem;" title="Cerrar Sesión">
+                <i class="fa-solid fa-door-open"></i>
+            </a>
+        </div>
+    </div>
+
+    <nav class="nav-container">
+        <?php require_once APP_PATH . '/Views/guias/partials/tabs.php'; ?>
+    </nav>
 </header>
 
-<?php require_once APP_PATH . '/Views/guias/partials/tabs.php'; ?>
-
 <main>
-    <h2 class="section-title">Mis Recorridos Asignados</h2>
+    <h2 class="section-title">Panel de Recorridos</h2>
 
     <?php if (empty($recorridosAsignados)): ?>
-        <div class="empty-state">
-            <p>🗓️ No tienes recorridos asignados en este momento.</p>
+        <div class="empty-state" style="text-align: center; padding: 5rem; background: white; border-radius: 25px;">
+            <i class="fa-solid fa-calendar-xmark fa-4x" style="color:#ddd; margin-bottom:1.5rem;"></i>
+            <p>No tienes recorridos asignados en este momento.</p>
         </div>
     <?php else: ?>
-        <?php foreach ($recorridosAsignados as $rec):
-            $personas   = (int)$rec['personas_asignadas'];
-            $capacidad  = (int)$rec['capacidad'];
-            $pct        = $capacidad > 0 ? round($personas / $capacidad * 100) : 0;
-            $barClass   = $pct < 50 ? 'bar-low' : ($pct < 80 ? 'bar-medium' : 'bar-high');
-            $esGuiado   = strtolower($rec['tipo']) === 'guiado';
-
-            // Calcular hora fin a partir de la duración (minutos)
-            $horaInicio = '09:00'; // horario base definido en la BD para todos los guías
-            $durMin     = (int)$rec['duracion'];
-            $horaFinTs  = strtotime("1970-01-01 {$horaInicio}:00") + $durMin * 60;
-            $horaFin    = date('H:i', $horaFinTs);
-
+        <?php foreach ($recorridosAsignados as $rec): 
+            $personas = (int)$rec['personas_asignadas'];
+            $capacidad = (int)$rec['capacidad'];
+            $pct = $capacidad > 0 ? round($personas / $capacidad * 100) : 0;
+            $barClass = $pct < 50 ? 'bar-low' : ($pct < 80 ? 'bar-medium' : 'bar-high');
+            $esGuiado = strtolower($rec['tipo']) === 'guiado';
             $fechaFmt = date('d/m/Y', strtotime($rec['fecha_asignacion']));
-            $diaSemana = ['Sunday'=>'Domingo','Monday'=>'Lunes','Tuesday'=>'Martes',
-                          'Wednesday'=>'Miércoles','Thursday'=>'Jueves',
-                          'Friday'=>'Viernes','Saturday'=>'Sábado'];
-            $diaNombre = $diaSemana[date('l', strtotime($rec['fecha_asignacion']))] ?? '';
+            
+            // Lógica de horas
+            $horaInicio = '09:00'; 
+            $durMin = (int)$rec['duracion'];
+            $horaFinTs = strtotime("1970-01-01 {$horaInicio}:00") + $durMin * 60;
+            $horaFin = date('H:i', $horaFinTs);
         ?>
         <div class="recorrido-card">
             <div class="card-top">
                 <div class="card-fecha">
-                    📅 <span><?= $diaNombre ?>, <?= $fechaFmt ?></span>
+                    <i class="fa-solid fa-calendar-check"></i> <?= $fechaFmt ?>
                 </div>
                 <span class="badge-tipo <?= $esGuiado ? 'badge-guiado' : 'badge-noguiado' ?>">
                     <?= htmlspecialchars($rec['tipo']) ?>
@@ -294,27 +348,36 @@ require_once APP_PATH . '/Views/guias/partials/tabs.php';
 
             <div class="card-meta">
                 <div class="meta-item">
-                    <div class="meta-label">⏱ Hora inicio</div>
-                    <div class="meta-value"><?= $horaInicio ?></div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">⏱ Hora fin (aprox.)</div>
-                    <div class="meta-value"><?= $horaFin ?></div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">⏳ Duración</div>
+                    <div class="meta-label">Duración</div>
+                    <i class="fa-solid fa-stopwatch"></i>
                     <div class="meta-value"><?= $durMin ?> min</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">💰 Precio</div>
+                    <div class="meta-label">Inicio</div>
+                    <i class="fa-regular fa-clock"></i>
+                    <div class="meta-value"><?= $horaInicio ?></div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Fin Aprox.</div>
+                    <i class="fa-solid fa-hourglass-end"></i>
+                    <div class="meta-value"><?= $horaFin ?></div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Precio</div>
+                    <i class="fa-solid fa-tags"></i>
                     <div class="meta-value">Bs <?= number_format((float)$rec['precio'], 2) ?></div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Cupos Máx.</div>
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                    <div class="meta-value"><?= $capacidad ?></div>
                 </div>
             </div>
 
             <div class="ocupacion-bar">
                 <div class="ocupacion-label">
-                    <span>Personas inscritas</span>
-                    <strong><?= $personas ?> / <?= $capacidad ?></strong>
+                    <span>Nivel de ocupación</span>
+                    <strong><?= $personas ?> / <?= $capacidad ?> visitantes</strong>
                 </div>
                 <div class="bar-track">
                     <div class="bar-fill <?= $barClass ?>" style="width:<?= $pct ?>%"></div>
@@ -322,7 +385,7 @@ require_once APP_PATH . '/Views/guias/partials/tabs.php';
             </div>
 
             <a href="index.php?r=guias/detalle-recorrido&id=<?= $rec['id_recorrido'] ?>" class="btn-detalle">
-                🔍 Ver áreas del recorrido
+                Explorar áreas y detalles <i class="fa-solid fa-arrow-right"></i>
             </a>
         </div>
         <?php endforeach; ?>
@@ -330,8 +393,10 @@ require_once APP_PATH . '/Views/guias/partials/tabs.php';
 </main>
 
 <footer>
-    <a href="index.php">← Inicio público</a> &nbsp;·&nbsp;
-    <a href="index.php?r=logout">Cerrar sesión</a>
+    <p><strong>ZooWonderland</strong> &copy; <?= date('Y') ?> | Panel de Gestión de Guías</p>
+    <div style="margin-top:15px">
+        <a href="index.php">Inicio Público</a> • <a href="index.php?r=logout">Cerrar Sesión</a>
+    </div>
 </footer>
 
 </body>

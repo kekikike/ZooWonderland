@@ -212,6 +212,36 @@ $recorridos = $recorridos ?? [];
         padding: 4rem 1rem;
         margin-top: 6rem;
     }
+    .footer-contact {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap; 
+    }
+
+    .footer-link {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: var(--transicion);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .footer-link:hover {
+        color: var(--amarillo-sol); 
+    }
+
+    .footer-sep {
+        color: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 480px) {
+        .footer-sep { display: none; } 
+        .footer-contact { flex-direction: column; gap: 10px; }
+    }
 
     @media (max-width: 768px) {
         nav { flex-direction: column; gap: 1.5rem; }
@@ -322,10 +352,21 @@ $recorridos = $recorridos ?? [];
         </div>
     </section>
 </main>
-
 <footer>
-    <p><strong>ZooWonderland</strong></p>
     <p style="font-size: 0.8rem; margin-top: 10px;">© <?= date('Y') ?> Compromiso con la Naturaleza. Todos los derechos reservados.</p>
+    
+    <div class="footer-contact">
+        <a href="mailto:soporte@zoowonderland.com" class="footer-link">
+            <i class="fa-solid fa-envelope"></i> soporte@zoowonderland.com
+        </a>
+        <span class="footer-sep">|</span>
+        <a href="https://wa.me/59173216929?text=Hola!%20Me%20gustaría%20recibir%20más%20información%20sobre%20las%20visitas%20guiadas"
+           target="_blank" 
+           class="footer-link">
+            <i class="fa-brands fa-whatsapp" style="color: #171817;"></i> 73216929
+        </a>
+    </div>
+
 </footer>
 
 </body>

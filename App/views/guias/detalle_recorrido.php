@@ -9,311 +9,364 @@ $currentTab = 'recorridos';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle Recorrido – ZooWonderland</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --brown:    #a3712a;
-            --brown-dk: #7a521c;
-            --olive:    #68672e;
-            --olive-lt: #bfb641;
-            --teal:     #4a8c8e;
-            --teal-lt:  #7eaeb0;
-            --cream:    #faf7f2;
-            --card:     #ffffff;
-            --text:     #2d2d2d;
-            --muted:    #777;
-            --border:   #e8e0d4;
+            --verde-selva:   #2e7d32;
+            --verde-oscuro:  #1b5e20;
+            --amarillo-sol:  #ffca28;
+            --naranja-tigre: #f57c00;
+            --azul-cielo:    #0288d1;
+            --gris-claro:    #f8faf8;
+            --oscuro:        #0d3a1f;
+            --blanco:        #ffffff;
+            --sombra:        0 10px 30px rgba(0,0,0,0.08);
+            --transicion:    all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--cream);
-            color: var(--text);
-            min-height: 100vh;
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--gris-claro);
+            color: #333;
+            line-height: 1.6;
         }
 
+        h1, h2, h3, .logo, .hero-nombre { font-family: 'Montserrat', sans-serif; }
+
+        /* ── HEADER (Igual al Dashboard) ── */
         header {
-            background: linear-gradient(135deg, var(--brown-dk) 0%, var(--brown) 60%, #c4882f 100%);
-            color: white;
-            padding: 1.6rem 2rem;
+            background: var(--blanco);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 3%; 
+        }
+
+        .logo { 
+            font-size: 1.6rem; 
+            font-weight: 800; 
+            color: var(--verde-selva); 
+            text-transform: uppercase; 
+            text-decoration: none;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0,0,0,.25);
+            gap: 10px;
         }
-        header h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
+
+        .user-badge { 
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f0f4f0; 
+            padding: 0.6rem 1.2rem; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            color: var(--verde-selva);
+            font-size: 0.9rem;
         }
-        header .user-badge {
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.35);
-            padding: .45rem 1.1rem;
-            border-radius: 999px;
-            font-size: .9rem;
-            font-weight: 600;
+
+        /* ── NAVEGACIÓN ── */
+        .nav-container {
+            background: var(--oscuro);
+            padding: 0 3%;
         }
 
         .nav-tabs {
             display: flex;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1.4rem 1rem;
-            background: var(--brown-dk);
+            gap: 5px;
+            list-style: none;
         }
+
         .nav-tabs a {
-            color: rgba(255,255,255,.85);
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
-            padding: .65rem 1.8rem;
-            border-radius: 8px;
-            background: rgba(255,255,255,.12);
-            font-weight: 500;
-            font-size: .95rem;
-            transition: all .25s;
-            border: 1px solid transparent;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            transition: var(--transicion);
+            border-bottom: 4px solid transparent;
         }
-        .nav-tabs a:hover  { background: rgba(255,255,255,.22); }
-        .nav-tabs a.active { background: var(--olive-lt); color: #222; font-weight: 700; }
 
-        main { max-width: 860px; margin: 2.5rem auto; padding: 0 1.5rem; }
+        .nav-tabs a.active {
+            color: var(--amarillo-sol);
+            border-bottom-color: var(--amarillo-sol);
+            background: rgba(255,255,255,0.05);
+        }
 
-        /* ── BREADCRUMB ── */
+        /* ── CONTENIDO ── */
+        main {
+            max-width: 1200px; 
+            margin: 2.5rem auto;
+            padding: 0 2rem;
+        }
+
         .breadcrumb {
-            font-size: .85rem;
-            color: var(--muted);
             margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
-        .breadcrumb a { color: var(--brown); text-decoration: none; font-weight: 600; }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb span { margin: 0 .4rem; }
+        .breadcrumb a { color: var(--verde-selva); text-decoration: none; }
+        .breadcrumb span { color: #999; margin: 0 8px; }
 
-        /* ── HERO CARD ── */
+        /* ── HERO CARD (ESTILO MEJORADO) ── */
         .hero-card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 1.8rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,.09);
-            border-left: 6px solid var(--teal);
+            background: var(--blanco);
+            border-radius: 25px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--sombra);
+            border-top: 8px solid var(--azul-cielo);
         }
+
         .hero-top {
             display: flex;
-            align-items: flex-start;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.2rem;
+            align-items: center;
+            margin-bottom: 2rem;
         }
-        .hero-nombre {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            color: var(--text);
-        }
-        .badge-tipo {
-            font-size: .78rem; font-weight: 700;
-            padding: .3rem .9rem; border-radius: 999px;
-            letter-spacing: .5px; text-transform: uppercase;
-        }
-        .badge-guiado   { background:#e8f4e8; color:#2e7d32; border:1px solid #a5d6a7; }
-        .badge-noguiado { background:#fff3e0; color:#e65100; border:1px solid #ffcc80; }
 
+        .hero-nombre {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--oscuro);
+        }
+
+        .badge-tipo {
+            font-weight: 800;
+            padding: 0.6rem 1.4rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .badge-guiado { background: #e8f5e9; color: #2e7d32; }
+        .badge-noguiado { background: #fff3e0; color: #e65100; }
+
+        /* ── META GRID (5 EN LÍNEA IGUAL QUE DASHBOARD) ── */
         .meta-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: .9rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
-        .meta-item {
-            background: var(--cream);
-            border-radius: 10px;
-            padding: .8rem 1rem;
-            border: 1px solid var(--border);
-        }
-        .meta-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: .2rem; }
-        .meta-value { font-size: 1.05rem; font-weight: 700; color: var(--text); }
 
-        /* Barra ocupación */
-        .ocupacion-wrap { margin-top: 1.2rem; }
-        .ocu-label { display:flex; justify-content:space-between; font-size:.82rem; color:var(--muted); margin-bottom:.35rem; }
-        .bar-track { background:#e8e0d4; border-radius:999px; height:10px; overflow:hidden; }
-        .bar-fill  { height:100%; border-radius:999px; transition:width .5s; }
-        .bar-low    { background: var(--teal-lt); }
-        .bar-medium { background: var(--olive-lt); }
-        .bar-high   { background: #e57373; }
+        .meta-item {
+            background: #f9fbf9;
+            padding: 1.2rem 0.5rem;
+            border-radius: 18px;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .meta-item i {
+            font-size: 1.3rem;
+            color: var(--verde-selva);
+            margin-bottom: 10px;
+        }
+
+        .meta-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #666;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--oscuro);
+        }
 
         /* ── ÁREAS ── */
         .areas-section h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
-            color: var(--brown);
-            margin-bottom: 1.2rem;
-            padding-bottom: .5rem;
-            border-bottom: 2px solid var(--border);
-        }
-        .areas-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1rem;
-        }
-        .area-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 1.1rem 1.3rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,.07);
-            border: 2px solid var(--border);
-            position: relative;
-            transition: transform .2s, border-color .2s;
-        }
-        .area-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--teal-lt);
-        }
-        .area-nombre {
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--text);
-            margin-bottom: .4rem;
-        }
-        .area-desc {
-            font-size: .83rem;
-            color: var(--muted);
-            line-height: 1.4;
-        }
-        .badge-rest {
-            display: inline-block;
-            font-size: .7rem;
-            font-weight: 700;
-            background: #fdecea;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-            padding: .15rem .6rem;
-            border-radius: 999px;
-            margin-top: .5rem;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
-        .badge-libre {
-            display: inline-block;
-            font-size: .7rem;
-            font-weight: 700;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
-            padding: .15rem .6rem;
-            border-radius: 999px;
-            margin-top: .5rem;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
-        .empty-areas {
-            color: var(--muted);
-            font-style: italic;
-            padding: 1rem 0;
+            font-size: 1.6rem;
+            color: var(--oscuro);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* ── BACK BTN ── */
+        .areas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .area-card {
+            background: var(--blanco);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+            border: 1px solid #eee;
+            transition: var(--transicion);
+        }
+
+        .area-card:hover {
+            border-color: var(--verde-selva);
+            transform: translateY(-5px);
+        }
+
+        .area-nombre {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--verde-selva);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .area-desc {
+            font-size: 0.88rem;
+            color: #555;
+            margin-bottom: 1.2rem;
+        }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+        .status-restringido { background: #ffebee; color: #c62828; }
+        .status-libre { background: #e8f5e9; color: #2e7d32; }
+
+        /* Barra Ocupación */
+        .ocupacion-wrap { margin-top: 1.5rem; }
+        .bar-track { background: #eee; height: 12px; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 10px; }
+        .bar-low { background: var(--verde-selva); }
+        .bar-medium { background: var(--amarillo-sol); }
+        .bar-high { background: var(--naranja-tigre); }
+
         .btn-back {
             display: inline-flex;
             align-items: center;
-            gap: .5rem;
-            padding: .65rem 1.4rem;
-            background: var(--teal);
-            color: white;
-            border-radius: 8px;
+            gap: 10px;
+            margin-top: 3rem;
+            color: var(--verde-selva);
             text-decoration: none;
-            font-weight: 600;
-            font-size: .9rem;
-            margin-top: 2rem;
-            transition: background .2s;
+            font-weight: 700;
+            transition: var(--transicion);
         }
-        .btn-back:hover { background: var(--teal-lt); color: #222; }
+        .btn-back:hover { color: var(--oscuro); transform: translateX(-5px); }
 
         footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--muted);
-            font-size: .88rem;
+            padding: 4rem 2rem;
+            background: var(--oscuro);
+            color: rgba(255,255,255,0.5);
+            margin-top: 5rem;
         }
-        footer a { color: var(--brown); text-decoration: none; font-weight: 600; }
-        footer a:hover { text-decoration: underline; }
+        footer a { color: var(--amarillo-sol); text-decoration: none; }
+
+        @media (max-width: 900px) {
+            .meta-grid { grid-template-columns: repeat(3, 1fr); }
+            .hero-nombre { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🦁 ZooWonderland</h1>
-    <span class="user-badge">👤 <?= htmlspecialchars($user->getNombreParaMostrar()) ?></span>
+    <div class="header-main">
+        <a href="index.php" class="logo">
+            <i class="fa-solid fa-leaf"></i>
+            <span>ZooWonderland</span>
+        </a>
+        <div class="user-badge">
+            <i class="fa-solid fa-circle-user"></i> 
+            <?= htmlspecialchars($user->getNombreParaMostrar()) ?>
+        </div>
+    </div>
+    <nav class="nav-container">
+        <div class="nav-tabs">
+            <a href="index.php?r=guias/dashboard" class="active">Mis Recorridos</a>
+            <a href="index.php?r=guias/horarios">Mis Horarios</a>
+        </div>
+    </nav>
 </header>
 
-<!-- Nav tabs manual (sin tabs.php para no marcar activo por path) -->
-<nav class="nav-tabs">
-    <a href="index.php?r=guias/dashboard" class="active">Mis Recorridos</a>
-    <a href="index.php?r=guias/horarios">Mis Horarios</a>
-</nav>
-
 <main>
-    <!-- Breadcrumb -->
     <div class="breadcrumb">
-        <a href="index.php?r=guias/dashboard">Mis Recorridos</a>
-        <span>›</span>
-        Detalle: <?= htmlspecialchars($recorrido['nombre']) ?>
+        <a href="index.php?r=guias/dashboard">Panel</a> 
+        <span><i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></span> 
+        Detalle del Recorrido
     </div>
 
-    <!-- Hero card con datos del recorrido -->
     <?php
         $personas  = (int)$recorrido['personas_asignadas'];
         $capacidad = (int)$recorrido['capacidad'];
         $pct       = $capacidad > 0 ? round($personas / $capacidad * 100) : 0;
         $barClass  = $pct < 50 ? 'bar-low' : ($pct < 80 ? 'bar-medium' : 'bar-high');
         $esGuiado  = strtolower($recorrido['tipo']) === 'guiado';
-
         $fechaFmt  = date('d/m/Y', strtotime($recorrido['fecha_asignacion']));
-        $diaSemana = ['Sunday'=>'Domingo','Monday'=>'Lunes','Tuesday'=>'Martes',
-                      'Wednesday'=>'Miércoles','Thursday'=>'Jueves',
-                      'Friday'=>'Viernes','Saturday'=>'Sábado'];
-        $diaNombre = $diaSemana[date('l', strtotime($recorrido['fecha_asignacion']))] ?? '';
-
+        $durMin    = (int)$recorrido['duracion'];
         $horaInicio = '09:00';
-        $durMin     = (int)$recorrido['duracion'];
         $horaFin    = date('H:i', strtotime("1970-01-01 {$horaInicio}:00") + $durMin * 60);
     ?>
+
     <div class="hero-card">
         <div class="hero-top">
-            <div class="hero-nombre"><?= htmlspecialchars($recorrido['nombre']) ?></div>
+            <h2 class="hero-nombre"><?= htmlspecialchars($recorrido['nombre']) ?></h2>
             <span class="badge-tipo <?= $esGuiado ? 'badge-guiado' : 'badge-noguiado' ?>">
+                <i class="fa-solid <?= $esGuiado ? 'fa-person-chalkboard' : 'fa-shoe-prints' ?>"></i>
                 <?= htmlspecialchars($recorrido['tipo']) ?>
             </span>
         </div>
 
         <div class="meta-grid">
             <div class="meta-item">
-                <div class="meta-label">📅 Fecha asignada</div>
-                <div class="meta-value"><?= $diaNombre ?>, <?= $fechaFmt ?></div>
+                <div class="meta-label">Fecha</div>
+                <i class="fa-solid fa-calendar-day"></i>
+                <div class="meta-value"><?= $fechaFmt ?></div>
             </div>
             <div class="meta-item">
-                <div class="meta-label">⏱ Inicio</div>
+                <div class="meta-label">Inicio</div>
+                <i class="fa-regular fa-clock"></i>
                 <div class="meta-value"><?= $horaInicio ?></div>
             </div>
             <div class="meta-item">
-                <div class="meta-label">⏱ Fin (aprox.)</div>
+                <div class="meta-label">Fin Estimado</div>
+                <i class="fa-solid fa-hourglass-end"></i>
                 <div class="meta-value"><?= $horaFin ?></div>
             </div>
             <div class="meta-item">
-                <div class="meta-label">⏳ Duración</div>
+                <div class="meta-label">Duración</div>
+                <i class="fa-solid fa-stopwatch"></i>
                 <div class="meta-value"><?= $durMin ?> min</div>
             </div>
             <div class="meta-item">
-                <div class="meta-label">💰 Precio</div>
+                <div class="meta-label">Precio</div>
+                <i class="fa-solid fa-tags"></i>
                 <div class="meta-value">Bs <?= number_format((float)$recorrido['precio'], 2) ?></div>
             </div>
         </div>
 
         <div class="ocupacion-wrap">
-            <div class="ocu-label">
-                <span>Personas inscritas</span>
-                <strong><?= $personas ?> / <?= $capacidad ?></strong>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-weight:700;">
+                <span>Ocupación actual</span>
+                <span><?= $personas ?> / <?= $capacidad ?> visitantes</span>
             </div>
             <div class="bar-track">
                 <div class="bar-fill <?= $barClass ?>" style="width:<?= $pct ?>%"></div>
@@ -321,24 +374,33 @@ $currentTab = 'recorridos';
         </div>
     </div>
 
-    <!-- Áreas del recorrido -->
     <div class="areas-section">
-        <h3>🗺️ Áreas que se visitarán</h3>
+        <h3><i class="fa-solid fa-map-location-dot" style="color: var(--amarillo-sol);"></i> Áreas del Recorrido</h3>
 
         <?php if (empty($areas)): ?>
-            <p class="empty-areas">Este recorrido no tiene áreas asignadas.</p>
+            <p style="color: #888; font-style: italic; background: white; padding: 2rem; border-radius: 15px; text-align: center;">
+                No hay áreas registradas para este recorrido.
+            </p>
         <?php else: ?>
             <div class="areas-grid">
                 <?php foreach ($areas as $area): ?>
                 <div class="area-card">
-                    <div class="area-nombre">📍 <?= htmlspecialchars($area['nombre']) ?></div>
+                    <div class="area-nombre">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <?= htmlspecialchars($area['nombre']) ?>
+                    </div>
                     <?php if (!empty($area['descripcion'])): ?>
                         <div class="area-desc"><?= htmlspecialchars($area['descripcion']) ?></div>
                     <?php endif; ?>
+                    
                     <?php if ((int)$area['restringida'] === 1): ?>
-                        <span class="badge-rest">🔒 Acceso restringido</span>
+                        <span class="badge-status status-restringido">
+                            <i class="fa-solid fa-lock"></i> Acceso restringido
+                        </span>
                     <?php else: ?>
-                        <span class="badge-libre">✅ Acceso libre</span>
+                        <span class="badge-status status-libre">
+                            <i class="fa-solid fa-door-open"></i> Acceso libre
+                        </span>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
@@ -346,12 +408,16 @@ $currentTab = 'recorridos';
         <?php endif; ?>
     </div>
 
-    <a href="index.php?r=guias/dashboard" class="btn-back">← Volver a mis recorridos</a>
+    <a href="index.php?r=guias/dashboard" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> Volver a mis recorridos
+    </a>
 </main>
 
 <footer>
-    <a href="index.php">← Inicio público</a> &nbsp;·&nbsp;
-    <a href="index.php?r=logout">Cerrar sesión</a>
+    <p><strong>ZooWonderland</strong> &copy; <?= date('Y') ?> | Panel de Gestión de Guías</p>
+    <div style="margin-top:15px">
+        <a href="index.php">Inicio Publico</a> • <a href="index.php?r=logout">Cerrar Sesión</a>
+    </div>
 </footer>
 
 </body>
