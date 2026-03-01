@@ -1,7 +1,6 @@
 <?php
 // app/Views/guias/horarios.php
 declare(strict_types=1);
-require_once APP_PATH . '/Views/guias/partials/tabs.php';
 $currentTab = 'horarios';  // ← activa esta pestaña
 ?>
 <!DOCTYPE html>
