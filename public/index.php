@@ -4,7 +4,7 @@ declare(strict_types=1);
 use App\Services\AuthService;
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 define('ROOT_PATH',   dirname(__DIR__));
 define('APP_PATH',    ROOT_PATH . '/app');
@@ -58,7 +58,11 @@ switch ($r) {
         $authCtrl = new \App\Controllers\AuthController();
         $authCtrl->logout();
         break;
-
+    case 'compras/historial':
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->historial();
+    break;
+    //guia
     case 'guias/dashboard':
     if (!AuthService::check() || !($user = AuthService::user()) || !$user->esGuia()) {
         header('Location: index.php?r=login');
@@ -70,7 +74,7 @@ switch ($r) {
 
     require_once APP_PATH . '/Views/guias/dashboard.php';
     break;
-case 'guias/horarios':
+    case 'guias/horarios':
     // Cargar siempre el estado de sesión
     $isLoggedIn = \App\Services\AuthService::check();
     $user = \App\Services\AuthService::user();

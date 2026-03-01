@@ -3,73 +3,78 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\Compra;
-use App\Models\Cliente;
-use App\Models\Recorrido;
+use Core\Database;
 
-/**
- * Repositorio de compras (simulado en memoria)
- */
 class CompraRepository
 {
-    private array $compras;
-    private int $nextId = 1;
+    private \PDO $db;
 
     public function __construct()
     {
-        if (!isset($_SESSION['compras'])) {
-            $_SESSION['compras'] = [];
-        }
-        $this->compras = &$_SESSION['compras'];
-        if (!isset($_SESSION['compra_next_id'])) {
-            $_SESSION['compra_next_id'] = 1;
-        }
-        $this->nextId = $_SESSION['compra_next_id'];
+        $this->db = Database::getInstance()->getConnection();
     }
 
-    /**
-     * Obtiene todas las compras
-     */
+    // Obtener todos los registros de compras
     public function findAll(): array
     {
-        return array_values($this->compras);
+        $sql = "SELECT * FROM compras ORDER BY fecha DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
-    /**
-     * Busca por ID
-     */
-    public function findById(int $id): ?Compra
+    // Obtener compra por su ID
+    public function findById(int $id): ?array
     {
-        return $this->compras[$id] ?? null;
+        $sql = "SELECT * FROM compras WHERE id_compra = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $result = $stmt->fetch();
+        return $result ?: null;
     }
 
-    /**
-     * Busca por cliente
-     */
-    public function findByCliente(int $clienteId): array
+    // Obtener todas las compras de un cliente
+    public function findByCliente(int $clienteId, ?string $fechaInicio = null, ?string $fechaFin = null): array
     {
-        return array_filter(
-            $this->compras,
-            fn($c) => $c->getCliente()->getId() === $clienteId
-        );
+        $sql = "SELECT * FROM compras WHERE id_cliente = :id";
+
+        // Filtrado por fechas si se pasan
+        $params = ['id' => $clienteId];
+        if ($fechaInicio) {
+            $sql .= " AND fecha >= :fechaInicio";
+            $params['fechaInicio'] = $fechaInicio;
+        }
+        if ($fechaFin) {
+            $sql .= " AND fecha <= :fechaFin";
+            $params['fechaFin'] = $fechaFin;
+        }
+
+        $sql .= " ORDER BY fecha DESC, hora DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
     }
 
-    /**
-     * Agrega compra
-     */
-    public function add(Compra $compra): void
+    // Crear una nueva compra
+    public function create(array $data): void
     {
-        $this->compras[$compra->getId()] = $compra;
+        $sql = "
+            INSERT INTO compras (id_cliente, fecha, hora, monto, estado_pago)
+            VALUES (:id_cliente, :fecha, :hora, :monto, :estado_pago)
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($data);
     }
 
-    /**
-     * Obtiene el siguiente ID
-     */
-    public function getNextId(): int
+    // Obtener cliente por id_usuario
+    public function findClienteByUsuario(int $usuarioId): ?array
     {
-        $id = $this->nextId;
-        $this->nextId++;
-        $_SESSION['compra_next_id'] = $this->nextId;
-        return $id;
+        $sql = "SELECT * FROM clientes WHERE id_usuario = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $usuarioId]);
+        $cliente = $stmt->fetch();
+        return $cliente ?: null;
     }
 }

@@ -5,5 +5,6 @@ return [
     '/login'         => 'App\Controllers\AuthController@showLogin',
     '/login'         => 'App\Controllers\AuthController@login',     // POST implícito por método
     '/logout'        => 'App\Controllers\AuthController@logout',
+    '/compras/historial' => 'App\Controllers\CompraController@historial',
     // más rutas...
 ];
