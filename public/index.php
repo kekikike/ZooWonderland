@@ -63,6 +63,31 @@ switch ($r) {
         $compraCtrl->historial();
         break;
 
+    // ── RESERVAS ────────────────────────────────────────────────
+    case 'reservar':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $reservaCtrl->processForm();
+        } else {
+            $reservaCtrl->showForm();
+        }
+        break;
+
+    case 'reservas/pagoqr':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->showPagoQR();
+        break;
+
+    case 'reservas/historial':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->showHistorial();
+        break;
+
+    case 'reservas/pdf':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->downloadPdf();
+        break;
+
     // ── GUÍA: lista de recorridos asignados ──────────────────────
     case 'guias/dashboard':
         $isLoggedIn = \App\Services\AuthService::check();

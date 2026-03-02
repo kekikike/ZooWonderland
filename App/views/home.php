@@ -260,20 +260,25 @@ $recorridos = $recorridos ?? [];
             <a href="index.php">Inicio</a>
             <a href="#nosotros">Nosotros</a>
             <a href="#visitanos">Recorridos</a>
+            <?php if ($esCliente): ?>
+                <a href="index.php?r=reservar">Tours Grupales</a>
+                <a href="index.php?r=reservas/historial">Historial Reservas</a>
+            <?php endif; ?>
         </div>
 
         <div class="auth-area">
             <?php if ($isLoggedIn && $user): ?>
                 <div class="user-welcome">
                     <span class="user-name">
-                        <?= htmlspecialchars($user->getNombreParaMostrar() ?? $user->nombre_usuario ?? 'Usuario') ?>
+                        <i class="fa-solid fa-user-check"></i> <?= htmlspecialchars($user->getNombreParaMostrar() ?? $user->nombre_usuario ?? 'Usuario') ?>
                     </span>
                     <div class="user-links">
                         <?php if ($esCliente): ?>
-                            <a href="index.php?r=/compras/historial" title="Historial"><i class="fa-solid fa-clock-rotate-left"></i> Ver Historial</a>
+                            <a href="index.php?r=compras/historial" title="Mis Compras"><i class="fa-solid fa-ticket"></i></a>
+                            <a href="index.php?r=reservas/historial" title="Mis Reservas"><i class="fa-solid fa-calendar-days"></i></a>
                         <?php endif; ?> 
-                        <a href="index.php?r=perfil" title="Mi Perfil"><i class="fa-solid fa-circle-user"></i> Ver Perfil</a>
-                        <a href="index.php?r=logout" class="logout"><i class="fa-solid fa-door-open" title="Cerrar Sesión"></i></a>
+                        <a href="index.php?r=perfil" title="Mi Perfil"><i class="fa-solid fa-circle-user"></i></a>
+                        <a href="index.php?r=logout" class="logout" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></a>
                     </div>
                 </div>
             <?php else: ?>
@@ -330,10 +335,10 @@ $recorridos = $recorridos ?? [];
 
                             <div style="margin-top:2rem;">
                                 <?php if ($esCliente): ?>
-                                    <a href="index.php?r=reservas/crear&recorrido=<?= htmlspecialchars($r['id_recorrido'] ?? 0) ?>"
-                                       class="btn btn-reservar"><i class="fa-solid fa-calendar-check"></i> Reservar cupo</a>
+                                    <a href="index.php?r=reservar&recorrido=<?= htmlspecialchars((string)($r['id_recorrido'] ?? $r['id'] ?? 0)) ?>"
+                                       class="btn btn-reservar"><i class="fa-solid fa-calendar-check"></i> Reserva Grupal</a>
 
-                                    <a href="index.php?r=compras/crear&recorrido=<?= htmlspecialchars($r['id_recorrido'] ?? 0) ?>"
+                                    <a href="index.php?r=compras/crear&recorrido=<?= htmlspecialchars((string)($r['id_recorrido'] ?? $r['id'] ?? 0)) ?>"
                                        class="btn btn-comprar"><i class="fa-solid fa-cart-shopping"></i> Comprar Ticket</a>
                                 <?php elseif ($isLoggedIn): ?>
                                     <p style="color:#d32f2f; font-size: 0.85rem; text-align: center; font-weight: 700; padding: 10px; background: #fee2e2; border-radius: 10px;">
