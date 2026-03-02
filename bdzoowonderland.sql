@@ -287,13 +287,26 @@ CREATE TABLE `guia_recorrido` (
   `fecha_asignacion` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reportes`
+--
+
+CREATE TABLE `reportes` (
+  `id_reporte` int(11) NOT NULL,
+  `id_guia_recorrido` int(11) NOT NULL,
+  `observaciones` text NOT NULL,
+  `fecha_reporte` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 --
 -- Dumping data for table `guia_recorrido`
 --
 
 INSERT INTO `guia_recorrido` (`id_guia_recorrido`, `id_guia`, `id_recorrido`, `fecha_asignacion`) VALUES
 (1, 1, 2, '2026-01-01'),
-(2, 1, 3, '2026-01-02'),
+(2, 1, 3, '2026-03-04'),
 (3, 2, 4, '2026-01-03'),
 (4, 2, 5, '2026-01-04'),
 (5, 3, 1, '2026-01-05'),
@@ -467,17 +480,17 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre1`, `nombre2`, `apellido1`, `apellido2`, `ci`, `correo`, `telefono`, `nombre_usuario`, `contrasena`, `rol`) VALUES
-(1, 'Favio', 'Estefano', 'Palomares', 'Lima', 84537272, 'favio@gmail.com', '78943431', 'faviopzoo', 'favio2026', 'administrador'),
-(2, 'Charlie', 'Fernando', 'Papas', 'Mamani', 8333302, 'charlie@gmail.com', '78900002', 'charliep', 'cha2026', 'guia'),
-(3, 'María', 'Elena', 'Flores', 'Rojas', 8333303, 'maria@gmail.com', '78900003', 'mariaf', 'maria2026', 'guia'),
-(4, 'José', 'Antonio', 'Paredes', 'Lopez', 8333304, 'jose@gmail.com', '78900004', 'josepa', 'jose2026', 'guia'),
-(5, 'Ana', 'Lucía', 'Garcia', 'Choque', 8333305, 'ana@gmail.com', '78900005', 'anav', 'ana2026', 'guia'),
-(6, 'Pedro', 'Luis', 'Gutiérrez', 'Soto', 8333306, 'pedro@gmail.com', '78900006', 'pedros', 'pedro2026', 'guia'),
-(7, 'Juan', 'Carlos', 'Mendoza', 'Ruiz', 800007, 'juan@gmail.com', '78900007', 'juancm', '123', 'cliente'),
-(8, 'Laura', 'Isabel', 'Pinto', 'Salas', 800008, 'laura@gmail.com', '78900008', 'lauraps', '123', 'cliente'),
-(9, 'Miguel', 'Ángel', 'Torrez', 'Ramos', 800009, 'miguel@gmail.com', '78900009', 'migueltr', '123', 'cliente'),
-(10, 'Sofía', 'Natalia', 'Cruz', 'Rivera', 800010, 'sofia@gmail.com', '78900010', 'soficr', '123', 'cliente'),
-(11, 'Diego', 'Andrés', 'Herrera', 'Paz', 800011, 'diego@gmail.com', '78900011', 'diegohp', '123', 'cliente');
+(1, 'Favio', 'Estefano', 'Palomares', 'Lima', 84537272, 'favio@gmail.com', '78943431', 'faviopzoo', '$2y$12$K62IvhlFPpdJB3dwQiu6bOBrFw1sIIOSQ2wjjlJat/UY0mhU6NEay', 'administrador'),
+(2, 'Charlie', 'Fernando', 'Papas', 'Mamani', 8333302, 'charlie@gmail.com', '78900002', 'charliep', '$2y$12$VNl.SOXerOKJIqLjF8NIkenKa3ij9MDGaIpLTNw/GP81EalWBAZjy', 'guia'),
+(3, 'María', 'Elena', 'Flores', 'Rojas', 8333303, 'maria@gmail.com', '78900003', 'mariaf', '$2y$12$NvrpW12dldxSGynk0A.o2.h5VH39opz/L9wusMcpDOJ8iXkXkqpkS', 'guia'),
+(4, 'José', 'Antonio', 'Paredes', 'Lopez', 8333304, 'jose@gmail.com', '78900004', 'josepa', '$2y$12$TIoAXorc3Panq6NSM5l7T.qqTiOaa6jAnZC45W380hDfgrovsdeM', 'guia'),
+(5, 'Ana', 'Lucía', 'Garcia', 'Choque', 8333305, 'ana@gmail.com', '78900005', 'anav', '$2y$12$WFBCZSzSvEtHqH4iwOMhE.XK/iMrIp7jhSDPJ3.ZtT24H9rJhXw7a', 'guia'),
+(6, 'Pedro', 'Luis', 'Gutiérrez', 'Soto', 8333306, 'pedro@gmail.com', '78900006', 'pedros', '$2y$12$au0mOqSXxhOdC/Z..RLxxecPrOfKCXBM9/dMj7eLRXwhdY1.8y5l.', 'guia'),
+(7, 'Juan', 'Carlos', 'Mendoza', 'Ruiz', 800007, 'juan@gmail.com', '78900007', 'juancm', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 'cliente'),
+(8, 'Laura', 'Isabel', 'Pinto', 'Salas', 800008, 'laura@gmail.com', '78900008', 'lauraps', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 'cliente'),
+(9, 'Miguel', 'Ángel', 'Torrez', 'Ramos', 800009, 'miguel@gmail.com', '78900009', 'migueltr', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 'cliente'),
+(10, 'Sofía', 'Natalia', 'Cruz', 'Rivera', 800010, 'sofia@gmail.com', '78900010', 'soficr', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 'cliente'),
+(11, 'Diego', 'Andrés', 'Herrera', 'Paz', 800011, 'diego@gmail.com', '78900011', 'diegohp', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 'cliente');
 
 --
 -- Indexes for dumped tables
@@ -594,7 +607,19 @@ ALTER TABLE `usuarios`
   ADD KEY `idx_username` (`nombre_usuario`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- Indexes for table `reportes`
+--
+ALTER TABLE `reportes`
+  ADD PRIMARY KEY (`id_reporte`),
+  ADD UNIQUE KEY `idx_gr_unico` (`id_guia_recorrido`),
+  ADD KEY `idx_reporte_gr` (`id_guia_recorrido`);
+
+--
+-- AUTO_INCREMENT for table `reportes`
+--
+ALTER TABLE `reportes`
+  MODIFY `id_reporte` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 
 --
@@ -743,6 +768,9 @@ ALTER TABLE `reservas`
 ALTER TABLE `tickets`
   ADD CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`id_compra`) REFERENCES `compras` (`id_compra`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `tickets_ibfk_2` FOREIGN KEY (`id_recorrido`) REFERENCES `recorridos` (`id_recorrido`) ON UPDATE CASCADE;
+ALTER TABLE `reportes`
+  ADD CONSTRAINT `fk_reporte_guia_recorrido` FOREIGN KEY (`id_guia_recorrido`) REFERENCES `guia_recorrido` (`id_guia_recorrido`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

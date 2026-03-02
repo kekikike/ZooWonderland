@@ -90,18 +90,23 @@ switch ($r) {
 
     // ── GUÍA: lista de recorridos asignados ──────────────────────
     case 'guias/dashboard':
-        $isLoggedIn = \App\Services\AuthService::check();
-        $user       = \App\Services\AuthService::user();
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->dashboard();
+        break;
 
-        if (!$isLoggedIn || !$user || !$user->esGuia()) {
-            header('Location: index.php?r=login');
-            exit;
-        }
+    case 'guias/reportes-crear':
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->showReportForm();
+        break;
 
-        $guiaRepo            = new \App\Repositories\GuiaRepository();
-        $recorridosAsignados = $guiaRepo->getRecorridosAsignados($user->id_usuario);
+    case 'guias/reportes-guardar':
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->processReport();
+        break;
 
-        require_once APP_PATH . '/Views/guias/dashboard.php';
+    case 'guias/reportes-historial':
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->showReportHistory();
         break;
 
     // ── GUÍA: horarios semanales ──────────────────────────────────
