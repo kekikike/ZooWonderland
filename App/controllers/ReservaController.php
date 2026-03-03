@@ -6,18 +6,26 @@ namespace App\Controllers;
 use App\Services\AuthService;
 use App\Services\ReservaService;
 use App\Repositories\ReservaRepository;
+use App\Repositories\RecorridoRepository;
+use App\Repositories\CompraRepository;
+use App\Models\Reserva;
+use App\Models\Recorrido;
 
 class ReservaController
 {
     private AuthService $auth;
     private ReservaService $service;
     private ReservaRepository $repo;
+    private RecorridoRepository $recorridoRepo;
+    private CompraRepository $compraRepo;
 
     public function __construct()
     {
         $this->auth    = new AuthService();
         $this->service = new ReservaService();
         $this->repo    = new ReservaRepository();
+        $this->recorridoRepo = new RecorridoRepository();
+        $this->compraRepo = new CompraRepository();
     }
 
     public function showForm(): void
@@ -47,6 +55,7 @@ class ReservaController
         ];
         $errores = [];
         $mensaje = '';
+        $disponibles = null;
 
         require APP_PATH . '/views/reservas/reservar.php';
     }
@@ -85,10 +94,14 @@ class ReservaController
             $fechaMin          = date('Y-m-d', strtotime('+3 days'));
             require APP_PATH . '/views/reservas/reservar.php';
         } else {
-            $resultado = $this->service->procesarReserva(
+            $cliente = $this->compraRepo->findClienteByUsuario($usuario->id_usuario);
+        $clienteId = $cliente['id_cliente'] ?? 0;
+
+        $resultado = $this->service->procesarReserva(
                 $form['recorrido_id'], $form['institucion'], $form['tipo_institucion'],
                 $form['contacto_nombre'], $form['contacto_telefono'], $form['contacto_email'],
-                $form['numero_personas'], $form['fecha'], $form['hora'], $form['observaciones']
+                $form['numero_personas'], $form['fecha'], $form['hora'], $form['observaciones'],
+                $clienteId
             );
             if ($resultado) {
                 header('Location: index.php?r=reservas/pagoqr');
@@ -124,7 +137,44 @@ class ReservaController
         }
 
         $usuario = $this->auth->user();
-        $todasLasReservas = $this->repo->findAllWithExtras();
+        $cliente = $this->compraRepo->findClienteByUsuario($usuario->id_usuario);
+        $clienteId = $cliente['id_cliente'] ?? null;
+        
+        $reservasRaw = $this->repo->findAllWithExtras($clienteId);
+        
+        // Construir objetos Reserva a partir de los arrays
+        $todasLasReservas = [];
+        foreach ($reservasRaw as $item) {
+            $r = $item['reserva'];
+            $e = $item['extras'];
+            
+            // Obtener el recorrido
+            $recorridoData = $this->recorridoRepo->findById($r['id_recorrido']);
+            if ($recorridoData) {
+                $recorrido = new Recorrido(
+                    (int)($recorridoData['id_recorrido'] ?? $recorridoData['id']),
+                    (string)$recorridoData['nombre'],
+                    (string)$recorridoData['tipo'],
+                    (float)$recorridoData['precio'],
+                    (int)$recorridoData['duracion'],
+                    (int)$recorridoData['capacidad']
+                );
+            } else {
+                $recorrido = new Recorrido(0, 'Desconocido', '', 0, 0, 0);
+            }
+            
+            // Construir objeto Reserva
+            $reservaObj = new Reserva(
+                (int)$r['id_reserva'],
+                (string)$r['hora'],
+                (string)$r['fecha'],
+                (int)$r['cupos'],
+                (string)$r['institucion'],
+                $recorrido
+            );
+            
+            $todasLasReservas[] = ['reserva' => $reservaObj, 'extras' => $e];
+        }
 
         require APP_PATH . '/views/reservas/historial.php';
     }
@@ -147,7 +197,32 @@ class ReservaController
             exit('Datos adicionales no encontrados');
         }
 
-        $pdfContent = $this->service->generarComprobanteReserva($reserva, $extras);
+        // Construir objeto Recorrido
+        $recorridoData = $this->recorridoRepo->findById($reserva['id_recorrido']);
+        if (!$recorridoData) {
+            exit('Recorrido no encontrado');
+        }
+
+        $recorrido = new Recorrido(
+            (int)$recorridoData['id_recorrido'] ?? $recorridoData['id'],
+            (string)$recorridoData['nombre'],
+            (string)$recorridoData['tipo'],
+            (float)$recorridoData['precio'],
+            (int)$recorridoData['duracion'],
+            (int)$recorridoData['capacidad']
+        );
+
+        // Construir objeto Reserva
+        $reservaObj = new Reserva(
+            (int)$reserva['id_reserva'],
+            (string)$reserva['hora'],
+            (string)$reserva['fecha'],
+            (int)$reserva['cupos'],
+            (string)$reserva['institucion'],
+            $recorrido
+        );
+
+        $pdfContent = $this->service->generarComprobanteReserva($reservaObj, $extras);
 
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="comprobante_reserva_'.$id.'.pdf"');

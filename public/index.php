@@ -58,6 +58,25 @@ switch ($r) {
         $authCtrl->logout();
         break;
 
+    case 'compras/crear':
+        $compraCtrl = new \App\Controllers\CompraController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $compraCtrl->procesar();
+        } else {
+            $compraCtrl->crear();
+        }
+        break;
+
+    case 'compras/pagoqr':
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->showPagoQR();
+        break;
+
+    case 'compras/pdf':
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->downloadPdf();
+        break;
+
     case 'compras/historial':
         $compraCtrl = new \App\Controllers\CompraController();
         $compraCtrl->historial();

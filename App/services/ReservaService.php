@@ -8,7 +8,6 @@ use App\Models\Recorrido;
 use App\Repositories\ReservaRepository;
 use App\Repositories\RecorridoRepository;
 use Dompdf\Dompdf;
-use Exception;
 
 /**
  * Servicio para la gestión de reservas grupales (HU-04)
@@ -107,6 +106,15 @@ class ReservaService
             $errores['numero_personas'] = "El recorrido seleccionado tiene capacidad máxima de {$recorridoData['capacidad']} personas.";
         }
 
+        // comprobar cupos ya reservados para la misma fecha/hora
+        if ($recorridoData && $fecha && $hora) {
+            $ocupados = $this->reservaRepo->countByRecorridoFechaHora($recorridoId, $fecha, $hora);
+            $disponibles = $recorridoData['capacidad'] - $ocupados;
+            if ($numerPersonas > $disponibles) {
+                $errores['numero_personas'] = "Solo quedan $disponibles cupos disponibles para ese horario.";
+            }
+        }
+
         // Validar fecha (al menos 3 días en el futuro)
         if (empty($fecha)) {
             $errores['fecha'] = 'La fecha es obligatoria.';
@@ -149,13 +157,18 @@ class ReservaService
         int    $numerPersonas,
         string $fecha,
         string $hora,
-        string $observaciones
+        string $observaciones,
+        int    $clienteId
     ): ?array {
         $validacion = $this->validarReserva(
             $recorridoId, $institucion, $tipoInstitucion,
             $contactoNombre, $contactoTelefono, $contactoEmail,
             $numerPersonas, $fecha, $hora, $observaciones
         );
+
+        if (!$clienteId) {
+            return null; // no hay cliente válido
+        }
 
         if (!$validacion['valido']) {
             return null;
@@ -176,19 +189,23 @@ class ReservaService
         // Calcular monto total
         $montoTotal = $recorrido->getPrecio() * $numerPersonas;
 
-        // Construir objeto Reserva
-        $reservaId = $this->reservaRepo->getNextId();
-        $reserva   = new Reserva(
-            $reservaId,
-            $hora,
-            $fecha,
-            $numerPersonas,
-            $institucion,
-            $recorrido
-        );
+        // clienteId ya viene como parámetro de la función
+        if (!$clienteId) {
+            return null; // no hay cliente válido
+        }
 
-        // Guardar reserva en repositorio (sesión)
-        $this->reservaRepo->add($reserva);
+        // Persistir reserva en la base de datos
+        $reservaId = $this->reservaRepo->create([
+            'fecha'       => $fecha,
+            'hora'        => $hora,
+            'cupos'       => $numerPersonas,
+            'institucion' => $institucion,
+            'comentario'  => $observaciones,
+            'estado_pago' => 0,
+            'estado'      => 1,
+            'id_cliente'  => $clienteId,
+            'id_recorrido'=> $recorridoId,
+        ]);
 
         // Código de confirmación único
         $codigoConfirmacion = strtoupper(substr(md5($reservaId . $institucion . $fecha), 0, 10));
@@ -196,7 +213,7 @@ class ReservaService
         // QR de pago (puede ser estático por ahora)
         $qrPago = 'img/qr.jpeg';
 
-        // Persistir datos extra indexados por ID para el historial
+        // Persistir datos extra en sesión para el historial
         $this->reservaRepo->saveExtras($reservaId, [
             'tipo_institucion'  => $tipoInstitucion,
             'contacto_nombre'   => $contactoNombre,
@@ -210,7 +227,7 @@ class ReservaService
         ]);
 
         $resultado = [
-            'reserva'             => $reserva,
+            'reserva_id'          => $reservaId,
             'recorrido'           => $recorrido,
             'monto_total'         => $montoTotal,
             'tipo_institucion'    => $tipoInstitucion,
