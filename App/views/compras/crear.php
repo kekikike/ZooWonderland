@@ -102,7 +102,7 @@
         <div class="card-info">
             <h3><i class="fa-solid fa-info-circle"></i> Datos importantes</h3>
             <ul>
-                <li><i class="fa-solid fa-users"></i> Capacidad: De 1 a 10 personas por compra.</li>
+                <li><i class="fa-solid fa-users"></i> Capacidad: Disponible solo de 1 a 10 personas por compra.</li>
                 <li><i class="fa-solid fa-clock"></i> Horarios: Ingreso libre de 09:00 a 16:00.</li>
                 <li><i class="fa-solid fa-bolt"></i> Disponibilidad: Compra inmediata (sin anticipación requerida).</li>
                 <li><i class="fa-solid fa-check-circle"></i> Confirmación: Instantánea al realizar el pago.</li>
