@@ -24,13 +24,15 @@ class GuiaRepository
         $sql = "
             SELECT 
                 gr.fecha_asignacion,
+                gr.id_guia_recorrido,
                 r.id_recorrido,
                 r.nombre,
                 r.tipo,
                 r.precio,
                 r.duracion,
                 r.capacidad,
-                COUNT(DISTINCT t.id_ticket) AS personas_asignadas
+                COUNT(DISTINCT t.id_ticket) AS personas_asignadas,
+                EXISTS(SELECT 1 FROM reportes WHERE id_guia_recorrido = gr.id_guia_recorrido) AS tiene_reporte
             FROM guia_recorrido gr
             INNER JOIN guias g       ON g.id_guia       = gr.id_guia
             INNER JOIN recorridos r  ON r.id_recorrido  = gr.id_recorrido

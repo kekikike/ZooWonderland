@@ -384,9 +384,21 @@ $currentTab = 'recorridos';
                 </div>
             </div>
 
-            <a href="index.php?r=guias/detalle-recorrido&id=<?= $rec['id_recorrido'] ?>" class="btn-detalle">
-                Explorar áreas y detalles <i class="fa-solid fa-arrow-right"></i>
-            </a>
+            <div class="actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <a href="index.php?r=guias/detalle-recorrido&id=<?= $rec['id_recorrido'] ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem;">
+                    Áreas y detalles <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+                <?php if ($rec['tiene_reporte']): ?>
+                    <a href="index.php?r=guias/reportes-historial" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--amarillo-sol); color: #000;">
+                        <i class="fa-solid fa-check-circle"></i> Ver Reporte
+                    </a>
+                <?php else: ?>
+                    <a href="index.php?r=guias/reportes-crear&id_gr=<?= $rec['id_guia_recorrido'] ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--naranja-tigre);">
+                        <i class="fa-solid fa-pen-to-square"></i> Reportar Final
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
         <?php endforeach; ?>
     <?php endif; ?>
