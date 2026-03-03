@@ -24,13 +24,15 @@ class GuiaRepository
         $sql = "
             SELECT 
                 gr.fecha_asignacion,
+                gr.id_guia_recorrido,
                 r.id_recorrido,
                 r.nombre,
                 r.tipo,
                 r.precio,
                 r.duracion,
                 r.capacidad,
-                COUNT(DISTINCT t.id_ticket) AS personas_asignadas
+                COUNT(DISTINCT t.id_ticket) AS personas_asignadas,
+                EXISTS(SELECT 1 FROM reportes WHERE id_guia_recorrido = gr.id_guia_recorrido) AS tiene_reporte
             FROM guia_recorrido gr
             INNER JOIN guias g       ON g.id_guia       = gr.id_guia
             INNER JOIN recorridos r  ON r.id_recorrido  = gr.id_recorrido
@@ -131,22 +133,33 @@ class GuiaRepository
     {
         $stmt = $this->db->prepare("
             SELECT 
-                r.id_recorrido,
-                r.nombre,
-                r.tipo,
-                r.precio,
-                r.duracion,
-                r.capacidad,
-                gr.fecha_asignacion,
-                COUNT(DISTINCT t.id_ticket) AS personas_asignadas
-            FROM guia_recorrido gr
-            INNER JOIN guias g       ON g.id_guia      = gr.id_guia
-            INNER JOIN recorridos r  ON r.id_recorrido = gr.id_recorrido
-            LEFT  JOIN tickets   t   ON t.id_recorrido = r.id_recorrido
-            WHERE r.id_recorrido = :id_recorrido
-              AND g.id_usuario   = :id_usuario
-            GROUP BY r.id_recorrido, gr.fecha_asignacion
-            LIMIT 1
+    r.id_recorrido,
+    r.nombre,
+    r.tipo,
+    r.precio,
+    r.duracion,
+    r.capacidad,
+    gr.fecha_asignacion,
+    COUNT(DISTINCT t.id_ticket) AS personas_asignadas,
+    
+    GROUP_CONCAT(
+        DISTINCT CONCAT_WS(' ', u.nombre1, u.apellido1)
+        SEPARATOR ', '
+    ) AS nombres_compradores
+
+FROM guia_recorrido gr
+INNER JOIN guias g          ON g.id_guia      = gr.id_guia
+INNER JOIN recorridos r     ON r.id_recorrido = gr.id_recorrido
+LEFT  JOIN tickets t        ON t.id_recorrido = r.id_recorrido
+LEFT  JOIN compras c         ON c.id_compra    = t.id_compra
+LEFT  JOIN clientes cl       ON cl.id_cliente  = c.id_cliente
+LEFT  JOIN usuarios u       ON u.id_usuario   = cl.id_usuario
+
+WHERE r.id_recorrido = :id_recorrido
+  AND g.id_usuario   = :id_usuario
+
+GROUP BY r.id_recorrido, gr.fecha_asignacion
+LIMIT 1
         ");
 
         $stmt->execute([

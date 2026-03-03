@@ -57,8 +57,8 @@ class CompraRepository
         return $stmt->fetchAll();
     }
 
-    // Crear una nueva compra
-    public function create(array $data): void
+    // Crear una nueva compra y devolver el ID generado
+    public function create(array $data): int
     {
         $sql = "
             INSERT INTO compras (id_cliente, fecha, hora, monto, estado_pago)
@@ -66,6 +66,7 @@ class CompraRepository
         ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute($data);
+        return (int) $this->db->lastInsertId();
     }
 
     // Obtener cliente por id_usuario
@@ -76,5 +77,35 @@ class CompraRepository
         $stmt->execute(['id' => $usuarioId]);
         $cliente = $stmt->fetch();
         return $cliente ?: null;
+    }
+
+    // Registrar detalle de compra para un ticket específico
+    public function addDetalle(int $compraId, int $ticketId, float $precioUnitario, int $cantidad = 1): void
+    {
+        $sql = "INSERT INTO detalle_compra
+                (id_compra, id_ticket, precio_unitario, cantidad)
+                VALUES (:compra, :ticket, :precio, :cantidad)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':compra'  => $compraId,
+            ':ticket'  => $ticketId,
+            ':precio'  => $precioUnitario,
+            ':cantidad'=> $cantidad,
+        ]);
+    }
+
+    /**
+     * Devuelve la cantidad de tickets vendidos para un recorrido en fecha/hora.
+     */
+    public function countTicketsSold(int $recorridoId, string $fecha, string $hora): int
+    {
+        $sql = "SELECT COUNT(*) FROM tickets WHERE id_recorrido = :recorrido AND fecha = :fecha AND hora = :hora";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':recorrido' => $recorridoId,
+            ':fecha'      => $fecha,
+            ':hora'       => $hora,
+        ]);
+        return (int) $stmt->fetchColumn();
     }
 }

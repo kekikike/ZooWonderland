@@ -1,7 +1,6 @@
 <?php
 // public/index.php
 declare(strict_types=1);
-use App\Services\AuthService;
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL & ~E_DEPRECATED);
@@ -58,25 +57,74 @@ switch ($r) {
         $authCtrl->logout();
         break;
 
+    case 'compras/crear':
+        $compraCtrl = new \App\Controllers\CompraController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $compraCtrl->procesar();
+        } else {
+            $compraCtrl->crear();
+        }
+        break;
+
+    case 'compras/pagoqr':
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->showPagoQR();
+        break;
+
+    case 'compras/pdf':
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->downloadPdf();
+        break;
+
     case 'compras/historial':
         $compraCtrl = new \App\Controllers\CompraController();
         $compraCtrl->historial();
         break;
 
+    // ── RESERVAS ────────────────────────────────────────────────
+    case 'reservar':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $reservaCtrl->processForm();
+        } else {
+            $reservaCtrl->showForm();
+        }
+        break;
+
+    case 'reservas/pagoqr':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->showPagoQR();
+        break;
+
+    case 'reservas/historial':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->showHistorial();
+        break;
+
+    case 'reservas/pdf':
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->downloadPdf();
+        break;
+
     // ── GUÍA: lista de recorridos asignados ──────────────────────
     case 'guias/dashboard':
-        $isLoggedIn = \App\Services\AuthService::check();
-        $user       = \App\Services\AuthService::user();
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->dashboard();
+        break;
 
-        if (!$isLoggedIn || !$user || !$user->esGuia()) {
-            header('Location: index.php?r=login');
-            exit;
-        }
+    case 'guias/reportes-crear':
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->showReportForm();
+        break;
 
-        $guiaRepo            = new \App\Repositories\GuiaRepository();
-        $recorridosAsignados = $guiaRepo->getRecorridosAsignados($user->id_usuario);
+    case 'guias/reportes-guardar':
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->processReport();
+        break;
 
-        require_once APP_PATH . '/Views/guias/dashboard.php';
+    case 'guias/reportes-historial':
+        $guiaCtrl = new \App\Controllers\GuiaController();
+        $guiaCtrl->showReportHistory();
         break;
 
     // ── GUÍA: horarios semanales ──────────────────────────────────
@@ -143,6 +191,72 @@ switch ($r) {
         $areas = $guiaRepo->getAreasPorRecorrido($id_recorrido);
 
         require_once APP_PATH . '/Views/guias/detalle_recorrido.php';
+        break;
+
+    // ── ADMIN: panel de administración de recorridos ──────────────
+    case 'admin/dashboard':
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->dashboard();
+        break;
+
+    case 'admin/recorridos':
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->recorridos();
+        break;
+
+    // ── ADMIN: animales (CRUD) ──────────────────────────────────
+    case 'admin/animales':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->index();
+        break;
+
+    case 'admin/animales/crear':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->crear();
+        break;
+
+    case 'admin/animales/guardar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->guardar();
+        break;
+
+    case 'admin/animales/editar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->editar();
+        break;
+
+    case 'admin/animales/actualizar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->actualizar();
+        break;
+
+    case 'admin/animales/eliminar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->eliminar();
+        break;
+
+    case 'admin/areas':
+        // TODO: Implementar gestión de áreas
+        header('Location: index.php?r=admin/dashboard');
+        exit;
+        break;
+
+    case 'admin/reservas':
+        // TODO: Implementar vista de reservas
+        header('Location: index.php?r=admin/dashboard');
+        exit;
+        break;
+
+    case 'admin/usuarios':
+        // TODO: Implementar gestión de usuarios
+        header('Location: index.php?r=admin/dashboard');
+        exit;
+        break;
+
+    case 'admin/reportes':
+        // TODO: Implementar reportes
+        header('Location: index.php?r=admin/dashboard');
+        exit;
         break;
 
     default:

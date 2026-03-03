@@ -212,6 +212,36 @@ $recorridos = $recorridos ?? [];
         padding: 4rem 1rem;
         margin-top: 6rem;
     }
+    .footer-contact {
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap; 
+    }
+
+    .footer-link {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: var(--transicion);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .footer-link:hover {
+        color: var(--amarillo-sol); 
+    }
+
+    .footer-sep {
+        color: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 480px) {
+        .footer-sep { display: none; } 
+        .footer-contact { flex-direction: column; gap: 10px; }
+    }
 
     @media (max-width: 768px) {
         nav { flex-direction: column; gap: 1.5rem; }
@@ -230,20 +260,28 @@ $recorridos = $recorridos ?? [];
             <a href="index.php">Inicio</a>
             <a href="#nosotros">Nosotros</a>
             <a href="#visitanos">Recorridos</a>
+            <?php if ($esCliente): ?>
+                <a href="index.php?r=reservar">Tours Grupales</a>
+                <a href="index.php?r=reservas/historial">Historial Reservas</a>
+            <?php endif; ?>
+            <?php if ($isLoggedIn && $user && $user->esAdministrador()): ?>
+                <a href="index.php?r=admin/dashboard">Panel Admin</a>
+            <?php endif; ?>
         </div>
 
         <div class="auth-area">
             <?php if ($isLoggedIn && $user): ?>
                 <div class="user-welcome">
                     <span class="user-name">
-                        <?= htmlspecialchars($user->getNombreParaMostrar() ?? $user->nombre_usuario ?? 'Usuario') ?>
+                        <i class="fa-solid fa-user-check"></i> <?= htmlspecialchars($user->getNombreParaMostrar() ?? $user->nombre_usuario ?? 'Usuario') ?>
                     </span>
                     <div class="user-links">
                         <?php if ($esCliente): ?>
-                            <a href="index.php?r=/compras/historial" title="Historial"><i class="fa-solid fa-clock-rotate-left"></i> Ver Historial</a>
+                            <a href="index.php?r=compras/historial" title="Mis Compras"><i class="fa-solid fa-ticket"></i></a>
+                            <a href="index.php?r=reservas/historial" title="Mis Reservas"><i class="fa-solid fa-calendar-days"></i></a>
                         <?php endif; ?> 
-                        <a href="index.php?r=perfil" title="Mi Perfil"><i class="fa-solid fa-circle-user"></i> Ver Perfil</a>
-                        <a href="index.php?r=logout" class="logout"><i class="fa-solid fa-door-open" title="Cerrar Sesión"></i></a>
+                        <a href="index.php?r=perfil" title="Mi Perfil"><i class="fa-solid fa-circle-user"></i></a>
+                        <a href="index.php?r=logout" class="logout" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></a>
                     </div>
                 </div>
             <?php else: ?>
@@ -300,10 +338,10 @@ $recorridos = $recorridos ?? [];
 
                             <div style="margin-top:2rem;">
                                 <?php if ($esCliente): ?>
-                                    <a href="index.php?r=reservas/crear&recorrido=<?= htmlspecialchars($r['id_recorrido'] ?? 0) ?>"
-                                       class="btn btn-reservar"><i class="fa-solid fa-calendar-check"></i> Reservar cupo</a>
+                                    <a href="index.php?r=reservar&recorrido=<?= htmlspecialchars((string)($r['id_recorrido'] ?? $r['id'] ?? 0)) ?>"
+                                       class="btn btn-reservar"><i class="fa-solid fa-calendar-check"></i> Reserva Grupal</a>
 
-                                    <a href="index.php?r=compras/crear&recorrido=<?= htmlspecialchars($r['id_recorrido'] ?? 0) ?>"
+                                    <a href="index.php?r=compras/crear&recorrido=<?= htmlspecialchars((string)($r['id_recorrido'] ?? $r['id'] ?? 0)) ?>"
                                        class="btn btn-comprar"><i class="fa-solid fa-cart-shopping"></i> Comprar Ticket</a>
                                 <?php elseif ($isLoggedIn): ?>
                                     <p style="color:#d32f2f; font-size: 0.85rem; text-align: center; font-weight: 700; padding: 10px; background: #fee2e2; border-radius: 10px;">
@@ -322,10 +360,21 @@ $recorridos = $recorridos ?? [];
         </div>
     </section>
 </main>
-
 <footer>
-    <p><strong>ZooWonderland</strong></p>
     <p style="font-size: 0.8rem; margin-top: 10px;">© <?= date('Y') ?> Compromiso con la Naturaleza. Todos los derechos reservados.</p>
+    
+    <div class="footer-contact">
+        <a href="mailto:soporte@zoowonderland.com" class="footer-link">
+            <i class="fa-solid fa-envelope"></i> soporte@zoowonderland.com
+        </a>
+        <span class="footer-sep">|</span>
+        <a href="https://wa.me/59173216929?text=Hola!%20Me%20gustaría%20recibir%20más%20información%20sobre%20las%20visitas%20guiadas"
+           target="_blank" 
+           class="footer-link">
+            <i class="fa-brands fa-whatsapp" style="color: #171817;"></i> 73216929
+        </a>
+    </div>
+
 </footer>
 
 </body>

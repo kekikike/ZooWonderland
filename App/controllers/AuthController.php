@@ -46,6 +46,11 @@ public function login(): void
 
         $user = AuthService::user();
 
+        if ($user && $user->esAdministrador()) {
+            header('Location: index.php?r=admin/dashboard');
+            exit;
+        }
+
         if ($user && $user->esGuia()) {
             header('Location: index.php?r=guias/dashboard');
             exit;

@@ -3,88 +3,69 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\Ticket;
+use Core\Database;
 
 /**
- * Repositorio de tickets (simulado en memoria)
+ * Repositorio de tickets persistente en base de datos.
  */
 class TicketRepository
 {
-    private array $tickets = [];
-    private int $nextId = 1;
+    private \PDO $db;
 
     public function __construct()
     {
-        $this->seedData();
+        $this->db = Database::getInstance()->getConnection();
     }
 
     /**
-     * Datos de prueba
+     * Cuenta tickets vendidos para un recorrido/fecha/hora.
      */
-    private function seedData(): void
+    public function countByRecorridoFechaHora(int $recorridoId, string $fecha, string $hora): int
     {
-        $this->tickets = [];
-    }
-
-    /**
-     * Obtiene todos los tickets
-     */
-    public function findAll(): array
-    {
-        return array_values($this->tickets);
-    }
-
-    /**
-     * Busca por ID
-     */
-    public function findById(int $id): ?Ticket
-    {
-        return $this->tickets[$id] ?? null;
-    }
-
-    /**
-     * Busca por código QR
-     */
-    public function findByCodigoQR(string $codigo): ?Ticket
-    {
-        foreach ($this->tickets as $ticket) {
-            if ($ticket->getCodigoQR() === $codigo) {
-                return $ticket;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Busca por fecha
-     */
-    public function findByFecha(string $fecha): array
-    {
-        return array_filter(
-            $this->tickets,
-            fn($t) => $t->getFecha() === $fecha
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) as cnt FROM tickets WHERE id_recorrido = :r AND fecha = :f AND hora = :h"
         );
+        $stmt->execute([':r' => $recorridoId, ':f' => $fecha, ':h' => $hora]);
+        $row = $stmt->fetch();
+        return (int)($row['cnt'] ?? 0);
     }
 
     /**
-     * Agrega ticket
+     * Crea un ticket y devuelve su id.
      */
-    public function add(Ticket $ticket): void
+    public function create(int $compraId, int $recorridoId, string $fecha, string $hora, string $codigoQR): int
     {
-        $this->tickets[$ticket->getId()] = $ticket;
+        $stmt = $this->db->prepare(
+            "INSERT INTO tickets (hora, fecha, codigo_qr, id_compra, id_recorrido) VALUES (:h, :f, :c, :comp, :rec)"
+        );
+        $stmt->execute([
+            ':h'   => $hora,
+            ':f'   => $fecha,
+            ':c'   => $codigoQR,
+            ':comp'=> $compraId,
+            ':rec' => $recorridoId
+        ]);
+        return (int)$this->db->lastInsertId();
     }
 
-    /**
-     * Elimina ticket
-     */
+    public function findByCompra(int $compraId): array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM tickets WHERE id_compra = :c");
+        $stmt->execute([':c' => $compraId]);
+        return $stmt->fetchAll();
+    }
+
+    public function findByCodigoQR(string $codigo): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM tickets WHERE codigo_qr = :c LIMIT 1");
+        $stmt->execute([':c' => $codigo]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public function delete(int $id): bool
     {
-        if (!isset($this->tickets[$id])) {
-            return false;
-        }
-
-        unset($this->tickets[$id]);
-        return true;
+        $stmt = $this->db->prepare("DELETE FROM tickets WHERE id_ticket = :id");
+        return $stmt->execute([':id' => $id]);
     }
 }
