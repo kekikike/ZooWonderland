@@ -76,9 +76,14 @@ switch ($r) {
         $compraCtrl->downloadPdf();
         break;
 
+    case 'historial':
+        $userCtrl = new \App\Controllers\UsuarioController();
+        $userCtrl->historial();
+        break;
+
     case 'compras/historial':
-        $compraCtrl = new \App\Controllers\CompraController();
-        $compraCtrl->historial();
+        header('Location: index.php?r=historial');
+        exit;
         break;
 
     // ── RESERVAS ────────────────────────────────────────────────
@@ -97,8 +102,8 @@ switch ($r) {
         break;
 
     case 'reservas/historial':
-        $reservaCtrl = new \App\Controllers\ReservaController();
-        $reservaCtrl->showHistorial();
+        header('Location: index.php?r=historial');
+        exit;
         break;
 
     case 'reservas/pdf':

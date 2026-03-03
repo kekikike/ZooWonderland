@@ -179,14 +179,14 @@ class CompraService
      */
     private function generarHtmlComprobante(array $datos): string
     {
-        $compraId = htmlspecialchars($datos['id'] ?? $datos['compra_id'] ?? '');
-        $recorrido = htmlspecialchars($datos['recorrido'] ?? '');
-        $cantidad = (int)($datos['cantidad'] ?? 0);
-        $fecha = htmlspecialchars($datos['fecha'] ?? '');
-        $hora = htmlspecialchars($datos['hora'] ?? '');
+        $compraId  = htmlspecialchars((string)($datos['id'] ?? $datos['compra_id'] ?? ''));
+        $recorrido = htmlspecialchars((string)($datos['recorrido'] ?? ''));
+        $cantidad   = (int)($datos['cantidad'] ?? 0);
+        $fecha      = htmlspecialchars((string)($datos['fecha'] ?? ''));
+        $hora       = htmlspecialchars((string)($datos['hora'] ?? ''));
         $precioUnit = number_format((float)($datos['precio_unit'] ?? 0), 2);
-        $montoFmt = number_format((float)($datos['monto_total'] ?? 0), 2);
-        $codigo = htmlspecialchars($datos['codigo'] ?? '');
+        $montoFmt   = number_format((float)($datos['monto_total'] ?? 0), 2);
+        $codigo     = htmlspecialchars((string)($datos['codigo'] ?? ''));
 
         return "
 <!DOCTYPE html>
