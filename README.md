@@ -97,3 +97,15 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 
 Antropomorfos - Tecnología Web II
 
+## Login
+admin
+Usuario: faviopzoo
+Contraseña: favio2026
+
+guia
+Usuario: charliep
+Contraseña: cha2026
+
+cliente
+Usuario: juancm
+Contraseña: 123
