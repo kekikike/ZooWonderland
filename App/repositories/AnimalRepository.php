@@ -35,6 +35,45 @@ class AnimalRepository
     }
 
     /**
+     * Obtiene animales por área
+     */
+    public function findByArea(int $areaId): array
+    {
+        $sql = 'SELECT a.*, ar.nombre AS area_nombre
+                FROM animales a
+                LEFT JOIN areas ar ON a.id_area = ar.id_area
+                WHERE a.id_area = ?
+                ORDER BY a.id_animal';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$areaId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Búsqueda combinada por texto y opcionalmente por área.
+     */
+    public function search(string $query, ?int $areaId = null): array
+    {
+        $q = '%' . strtolower($query) . '%';
+        $params = [$q, $q, $q, $q];
+        $sql = 'SELECT a.*, ar.nombre AS area_nombre
+                FROM animales a
+                LEFT JOIN areas ar ON a.id_area = ar.id_area
+                WHERE (LOWER(a.especie) LIKE ?
+                   OR LOWER(a.nombre_comun) LIKE ?
+                   OR LOWER(a.descripcion) LIKE ?
+                   OR LOWER(a.habitat) LIKE ?)';
+        if ($areaId && $areaId > 0) {
+            $sql .= ' AND a.id_area = ?';
+            $params[] = $areaId;
+        }
+        $sql .= ' ORDER BY a.id_animal';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Busca animal por id.
      *
      * @param int $id
@@ -127,19 +166,5 @@ class AnimalRepository
      * Búsqueda de animales por texto en especie, nombre_comun, descripcion o habitat.
      * Retorna array con resultados, incluye area_nombre.
      */
-    public function search(string $query): array
-    {
-        $q = '%' . strtolower($query) . '%';
-        $sql = 'SELECT a.*, ar.nombre AS area_nombre
-                FROM animales a
-                LEFT JOIN areas ar ON a.id_area = ar.id_area
-                WHERE LOWER(a.especie) LIKE ?
-                   OR LOWER(a.nombre_comun) LIKE ?
-                   OR LOWER(a.descripcion) LIKE ?
-                   OR LOWER(a.habitat) LIKE ?
-                ORDER BY a.id_animal';
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$q, $q, $q, $q]);
-        return $stmt->fetchAll();
-    }
+
 }

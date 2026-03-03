@@ -48,15 +48,23 @@ class AnimalController
     {
         $this->checkAuth();
         
-        // capturar búsqueda
+        // capturar búsqueda y filtro de área
         $searchQuery = trim($_GET['q'] ?? '');
-        
-        if ($searchQuery !== '') {
+        $areaFilter  = (int)($_GET['area'] ?? 0);
+
+        if ($searchQuery !== '' && $areaFilter > 0) {
+            $animales = $this->repo->search($searchQuery, $areaFilter);
+        } elseif ($searchQuery !== '') {
             $animales = $this->repo->search($searchQuery);
+        } elseif ($areaFilter > 0) {
+            $animales = $this->repo->findByArea($areaFilter);
         } else {
             $animales = $this->repo->findAll();
         }
         
+        // también necesitamos la lista de áreas para el filtro
+        $areas = $this->areaRepo->findAll();
+
         require APP_PATH . '/Views/admin/animales.php';
     }
 

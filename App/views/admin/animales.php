@@ -169,6 +169,15 @@
                         value="<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>"
                         style="flex: 1; padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;"
                     >
+                    <select name="area" style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95rem;">
+                        <option value="0">Todas las áreas</option>
+                        <?php foreach ($areas as $ar):
+                            $aid = is_array($ar) ? $ar['id_area'] : $ar->getId();
+                            $aname = is_array($ar) ? $ar['nombre'] : $ar->getNombre();
+                            $sel = $aid == ($_GET['area'] ?? 0) ? 'selected' : '';
+                            echo "<option value=\"$aid\" $sel>" . htmlspecialchars($aname) . "</option>";
+                        endforeach; ?>
+                    </select>
                     <button type="submit" style="background: var(--selva-light); color: white; padding: 0.8rem 1.5rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
                         <i class="fas fa-search"></i> Buscar
                     </button>
