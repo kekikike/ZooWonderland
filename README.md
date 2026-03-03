@@ -20,10 +20,12 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 /
 ├── App/
 │   ├── constrollers/
+|   |   ├── AdminController.php
 |   |   ├── AnimalController.php
 |   |   ├── AreaController.php
 |   |   ├── AuthController.php
 |   |   ├── CompraController.php
+|   |   ├── GuiaController.php
 |   |   ├── HomeController.php
 |   |   ├── ReservaController.php
 |   |   ├── TicketController.php
@@ -33,22 +35,20 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 │   │   ├── animal.php
 │   │   ├── area.php
 |   |   ├── Cliente.php
-|   |   ├── Guia.php
 │   │   ├── compra.php
+|   |   ├── Guia.php
 |   |   ├── recorrido.php
+|   |   ├── Reporte.php
 |   |   ├── reserva.php
 |   |   ├── ticket.php
-│   │   └── usuario.php
+│   │   └── Usuario.php
 │   ├── repositories/
-│   │   ├── interfaces/
-│   │   |   ├── AnimalRepositoryInterface.php
-│   │   |   ├── AreaRepositoryInterface.php
-│   │   |   ├── ReservaRepositoryInterface.php
-│   │   |   └── UsuarioRepositoryInterface.php
 │   │   ├── AnimalRepository.php
 |   |   ├── AreaRepository.php
 |   |   ├── CompraRepository.php
+|   |   ├── GuiaRepository.php
 |   |   ├── RecorridoRepository.php
+|   |   ├── ReporteRepository.php
 |   |   ├── ReservaRepository.php
 │   │   ├── TicketRepository.php
 │   │   └── UsuarioRepository.php
@@ -56,37 +56,70 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 │   │   |── AuthService.php
 |   |   ├── CompraService.php
 |   |   ├── RegisterService.php
-│   │   └── ReservasService.php
+│   │   └── ReservaService.php
 │   ├── views/
+|   |   ├── admin/
+|   |   |   ├── animal_form.php
+|   |   |   ├── animales.php
+|   |   |   ├── dashboard.php
+|   |   |   └── recorridos.php
 |   |   ├── animales/
 |   |   ├── areas/
 |   |   ├── auth/
+|   |   |   ├── login.php
+|   |   |   ├── perfil.php
+|   |   |   └── register.php
 |   |   ├── compras/
+|   |   |   ├── crear.php
+|   |   |   ├── historial.php
+|   |   |   ├── listar.php
+|   |   |   └── login.php
+|   |   ├── errors/
+|   |   |   └── 403.php
 |   |   ├── guias/
-|   |   ├── compras/
-|   |   ├── guias/
+|   |   |   ├── partials/
+|   |   |   |   └── tabs.php
+|   |   |   ├── dashboard.php
+|   |   |   ├── detalle_recorrido.php
+|   |   |   ├── horarios.php
+|   |   |   ├── reporte_crear.php
+|   |   |   ├── reporte_historial.php
+|   |   |   └── reporte_seleccionar.php
 |   |   ├── reservas/
+|   |   |   ├── historial.php
+|   |   |   ├── listar.php
+|   |   |   ├── pagoqr.php
+|   |   |   └── reservar.php
 |   |   ├── tickets/
+|   |   ├── usuarios/
+|   |   |   └── historial.php
 |   |   └── home.php
 ├── config/
 │   ├── constants.php
 │   └── Database.php
 ├── core/
+│   ├── Authorization.php
 │   ├── config.php
+│   ├── Database.php
 │   ├── Logger.php
-│   ├── session.php
-│   └── Database.php
+│   └── session.php
 ├── public/
 │   ├── img/
+│   ├── historial.php
 │   ├── index.php
-│   └── logout.php
+│   ├── logout.php
+│   ├── pagoqr_reserva.php
+│   └── reservar.php
 ├── rutas/
 │   └── web.php
 ├── vendor/
 ├── .gitignore
+├── dbzoowonderland.sql
 ├── composer.json
 ├── composer.lock
-└── README.md
+├── Plan_Iteraciones_Sistema.md
+├── README.md
+└── US-13_IMPLEMENTACION.md
 
 ## Módulos
 
