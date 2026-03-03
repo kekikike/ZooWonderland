@@ -264,6 +264,9 @@ $recorridos = $recorridos ?? [];
                 <a href="index.php?r=reservar">Tours Grupales</a>
                 <a href="index.php?r=reservas/historial">Historial Reservas</a>
             <?php endif; ?>
+            <?php if ($isLoggedIn && $user && $user->esAdministrador()): ?>
+                <a href="index.php?r=admin/dashboard">Panel Admin</a>
+            <?php endif; ?>
         </div>
 
         <div class="auth-area">

@@ -3,115 +3,143 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\Animal;
+use Core\Database;
 
 /**
- * Repositorio de animales (simulado en memoria)
+ * Repositorio que opera sobre la tabla `animales` de la base de datos.
  */
 class AnimalRepository
 {
-    private array $animales = [];
-    private int $nextId = 1;
+    private \PDO $db;
 
     public function __construct()
     {
-        $this->seedData();
+        $this->db = Database::getInstance()->getConnection();
     }
 
     /**
-     * Datos de prueba
-     */
-    private function seedData(): void
-    {
-        $datos = [
-            ['León', 'León Africano', 'Sabana', 'Rey de la selva', 'Activo', 1],
-            ['Oso', 'Oso Pardo', 'Bosque', 'Gran tamaño', 'Activo', 2],
-            ['Tigre', 'Tigre de Bengala', 'Selva', 'Depredador', 'Activo', 1],
-            ['Mono', 'Mono Capuchino', 'Selva', 'Ágil', 'En observación', 3],
-        ];
-
-        foreach ($datos as $data) {
-
-            [$especie, $nombre, $habitat, $desc, $estado, $areaId] = $data;
-
-            $animal = new Animal(
-                $this->nextId++,
-                $especie,
-                $nombre,
-                $habitat,
-                $desc,
-                $estado,
-                $areaId
-            );
-
-            $this->animales[$animal->getId()] = $animal;
-        }
-    }
-
-    /**
-     * Obtiene todos
+     * Devuelve todos los animales (cada fila como array asociativo).
+     * Los 29 animales presentes en el volcado de la base estarán listados.
+     *
+     * @return array[]
      */
     public function findAll(): array
     {
-        return array_values($this->animales);
+        // incluimos nombre de área para facilitar la vista
+        $sql = 'SELECT a.*, ar.nombre AS area_nombre
+                FROM animales a
+                LEFT JOIN areas ar ON a.id_area = ar.id_area
+                ORDER BY a.id_animal';
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll();
     }
 
     /**
-     * Busca por ID
+     * Busca animal por id.
+     *
+     * @param int $id
+     * @return array|null
      */
-    public function findById(int $id): ?Animal
+    public function findById(int $id): ?array
     {
-        return $this->animales[$id] ?? null;
+        $sql = 'SELECT a.*, ar.nombre AS area_nombre
+                FROM animales a
+                LEFT JOIN areas ar ON a.id_area = ar.id_area
+                WHERE a.id_animal = ?';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     /**
-     * Busca por área
+     * Inserta un nuevo animal y retorna el id generado.
      */
-    public function findByArea(int $areaId): array
-    {
-        return array_filter(
-            $this->animales,
-            fn($a) => $a->getAreaId() === $areaId
+    public function create(
+        string $especie,
+        string $nombreComun,
+        string $habitat,
+        string $descripcion,
+        string $estado,
+        int $areaId
+    ): int {
+        $stmt = $this->db->prepare(
+            'INSERT INTO animales (especie,nombre_comun,habitat,descripcion,estado,id_area)
+             VALUES (?,?,?,?,?,?)'
         );
+        $stmt->execute([$especie, $nombreComun, $habitat, $descripcion, $estado, $areaId]);
+        return (int)$this->db->lastInsertId();
     }
 
     /**
-     * Busca por estado
+     * Actualiza un registro existente. Retorna true si afectó fila.
      */
-    public function findByEstado(string $estado): array
+    public function update(int $id, array $data): bool
     {
-        return array_filter(
-            $this->animales,
-            fn($a) => $a->getInfo()['estado'] === $estado
-        );
-    }
+        $fields = [];
+        $values = [];
 
-    /**
-     * Búsqueda general
-     */
-    public function search(string $query): array
-    {
-        return array_filter($this->animales, function ($animal) use ($query) {
+        if (isset($data['especie'])) {
+            $fields[] = 'especie = ?';
+            $values[] = $data['especie'];
+        }
+        if (isset($data['nombre'])) {
+            $fields[] = 'nombre_comun = ?';
+            $values[] = $data['nombre'];
+        }
+        if (isset($data['habitat'])) {
+            $fields[] = 'habitat = ?';
+            $values[] = $data['habitat'];
+        }
+        if (isset($data['descripcion'])) {
+            $fields[] = 'descripcion = ?';
+            $values[] = $data['descripcion'];
+        }
+        if (isset($data['estado'])) {
+            $fields[] = 'estado = ?';
+            $values[] = $data['estado'];
+        }
+        if (isset($data['areaId'])) {
+            $fields[] = 'id_area = ?';
+            $values[] = $data['areaId'];
+        }
 
-            $info = implode(' ', $animal->getInfo());
-
-            return str_contains(
-                strtolower($info),
-                strtolower($query)
-            );
-        });
-    }
-
-    /**
-     * Elimina animal
-     */
-    public function delete(int $id): bool
-    {
-        if (!isset($this->animales[$id])) {
+        if (empty($fields)) {
             return false;
         }
 
-        unset($this->animales[$id]);
-        return true;
+        $values[] = $id;
+        $sql = 'UPDATE animales SET ' . implode(', ', $fields) . ' WHERE id_animal = ?';
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($values);
+    }
+
+    /**
+     * Elimina un animal por id
+     */
+    public function delete(int $id): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM animales WHERE id_animal = ?');
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Búsqueda de animales por texto en especie, nombre_comun, descripcion o habitat.
+     * Retorna array con resultados, incluye area_nombre.
+     */
+    public function search(string $query): array
+    {
+        $q = '%' . strtolower($query) . '%';
+        $sql = 'SELECT a.*, ar.nombre AS area_nombre
+                FROM animales a
+                LEFT JOIN areas ar ON a.id_area = ar.id_area
+                WHERE LOWER(a.especie) LIKE ?
+                   OR LOWER(a.nombre_comun) LIKE ?
+                   OR LOWER(a.descripcion) LIKE ?
+                   OR LOWER(a.habitat) LIKE ?
+                ORDER BY a.id_animal';
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$q, $q, $q, $q]);
+        return $stmt->fetchAll();
     }
 }

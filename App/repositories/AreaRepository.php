@@ -3,104 +3,67 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Models\Area;
+use Core\Database;
 
 /**
- * Repositorio de áreas (simulado en memoria)
+ * Acceso a la tabla `areas`.
  */
 class AreaRepository
 {
-    private array $areas = [];
-    private int $nextId = 1;
+    private \PDO $db;
 
     public function __construct()
     {
-        $this->seedData();
+        $this->db = Database::getInstance()->getConnection();
     }
 
     /**
-     * Datos de prueba
-     */
-    private function seedData(): void
-    {
-        $datos = [
-            ['Zona General', false, 'Área abierta al público'],
-            ['Área de Felinos', true, 'Zona restringida'],
-            ['Área de Osos', true, 'Zona restringida'],
-            ['Área de Acuario', true, 'Zona protegida'],
-            ['Zona de Aves', true, 'Área cerrada al público'],
-            ['Zona Interactiva', true, 'Área de interacción con los animales'],
-
-        ];
-
-        foreach ($datos as $data) {
-
-            [$nombre, $restringida, $descripcion] = $data;
-
-            $area = new Area(
-                $this->nextId++,
-                $nombre,
-                $restringida,
-                $descripcion
-            );
-
-            $this->areas[$area->getId()] = $area;
-        }
-    }
-
-    /**
-     * Obtiene todas las áreas
+     * Todas las áreas ordenadas por id.
+     * @return array[]
      */
     public function findAll(): array
     {
-        return array_values($this->areas);
+        $stmt = $this->db->query('SELECT * FROM areas ORDER BY id_area');
+        return $stmt->fetchAll();
     }
 
     /**
-     * Busca por ID
+     * Busca área por id.
+     * @return array|null
      */
-    public function findById(int $id): ?Area
+    public function findById(int $id): ?array
     {
-        return $this->areas[$id] ?? null;
+        $stmt = $this->db->prepare('SELECT * FROM areas WHERE id_area = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     /**
-     * Busca por tipo (restringida / no restringida)
+     * Busca por restricción (0/1)
+     * @return array[]
      */
     public function findByRestriccion(bool $restringida): array
     {
-        return array_filter(
-            $this->areas,
-            fn($a) => $a->isRestringida() === $restringida
-        );
+        $stmt = $this->db->prepare('SELECT * FROM areas WHERE restringida = ?');
+        $stmt->execute([$restringida ? 1 : 0]);
+        return $stmt->fetchAll();
     }
 
     /**
-     * Búsqueda general
+     * Búsqueda de texto en nombre o descripción.
      */
     public function search(string $query): array
     {
-        return array_filter($this->areas, function ($area) use ($query) {
-
-            $info = implode(' ', $area->getInfo());
-
-            return str_contains(
-                strtolower($info),
-                strtolower($query)
-            );
-        });
+        $q = '%' . strtolower($query) . '%';
+        $stmt = $this->db->prepare('SELECT * FROM areas WHERE LOWER(nombre) LIKE ? OR LOWER(descripcion) LIKE ?');
+        $stmt->execute([$q, $q]);
+        return $stmt->fetchAll();
     }
 
-    /**
-     * Elimina área
-     */
     public function delete(int $id): bool
     {
-        if (!isset($this->areas[$id])) {
-            return false;
-        }
-
-        unset($this->areas[$id]);
-        return true;
+        $stmt = $this->db->prepare('DELETE FROM areas WHERE id_area = ?');
+        return $stmt->execute([$id]);
     }
 }

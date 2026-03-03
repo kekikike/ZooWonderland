@@ -1,7 +1,6 @@
 <?php
 // public/index.php
 declare(strict_types=1);
-use App\Services\AuthService;
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL & ~E_DEPRECATED);
@@ -192,6 +191,72 @@ switch ($r) {
         $areas = $guiaRepo->getAreasPorRecorrido($id_recorrido);
 
         require_once APP_PATH . '/Views/guias/detalle_recorrido.php';
+        break;
+
+    // ── ADMIN: panel de administración de recorridos ──────────────
+    case 'admin/dashboard':
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->dashboard();
+        break;
+
+    case 'admin/recorridos':
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->recorridos();
+        break;
+
+    // ── ADMIN: animales (CRUD) ──────────────────────────────────
+    case 'admin/animales':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->index();
+        break;
+
+    case 'admin/animales/crear':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->crear();
+        break;
+
+    case 'admin/animales/guardar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->guardar();
+        break;
+
+    case 'admin/animales/editar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->editar();
+        break;
+
+    case 'admin/animales/actualizar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->actualizar();
+        break;
+
+    case 'admin/animales/eliminar':
+        $animCtrl = new \App\Controllers\AnimalController();
+        $animCtrl->eliminar();
+        break;
+
+    case 'admin/areas':
+        // TODO: Implementar gestión de áreas
+        header('Location: index.php?r=admin/dashboard');
+        exit;
+        break;
+
+    case 'admin/reservas':
+        // TODO: Implementar vista de reservas
+        header('Location: index.php?r=admin/dashboard');
+        exit;
+        break;
+
+    case 'admin/usuarios':
+        // TODO: Implementar gestión de usuarios
+        header('Location: index.php?r=admin/dashboard');
+        exit;
+        break;
+
+    case 'admin/reportes':
+        // TODO: Implementar reportes
+        header('Location: index.php?r=admin/dashboard');
+        exit;
         break;
 
     default:

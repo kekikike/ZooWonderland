@@ -54,6 +54,11 @@ class Usuario
     return $this->rol === 'guia';
 }
 
+    public function esAdministrador(): bool
+    {
+        return $this->rol === 'administrador';
+    }
+
 
    
 }

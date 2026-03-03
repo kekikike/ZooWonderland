@@ -56,4 +56,35 @@ class Animal
     {
         $this->estado = $estado;
     }
+
+    // --- setters para permitir ediciones ---
+    public function setEspecie(string $especie): void
+    {
+        $this->especie = $especie;
+    }
+
+    public function setNombreComun(string $nombre): void
+    {
+        $this->nombreComun = $nombre;
+    }
+
+    public function setHabitat(string $habitat): void
+    {
+        $this->habitat = $habitat;
+    }
+
+    public function setDescripcion(string $descripcion): void
+    {
+        $this->descripcion = $descripcion;
+    }
+
+    public function setEstado(string $estado): void
+    {
+        $this->estado = $estado;
+    }
+
+    public function setAreaId(int $areaId): void
+    {
+        $this->areaId = $areaId;
+    }
 }
