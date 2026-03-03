@@ -67,6 +67,8 @@ class ReservaController
             exit;
         }
 
+        $usuario = $this->auth->user();
+
         $form = [
             'recorrido_id'     => (int)($_POST['recorrido_id'] ?? 0),
             'institucion'      => trim($_POST['institucion'] ?? ''),
@@ -89,7 +91,6 @@ class ReservaController
         if (!$validacion['valido']) {
             $errores           = $validacion['errores'];
             $mensaje           = $validacion['mensaje'];
-            $usuario           = $this->auth->user();
             $recorridosGuiados = $this->service->obtenerRecorridosGuiados();
             $fechaMin          = date('Y-m-d', strtotime('+3 days'));
             require APP_PATH . '/views/reservas/reservar.php';
@@ -173,6 +174,11 @@ class ReservaController
                 $recorrido
             );
             
+            // Si faltan los datos extras (por sesión expirada), calculamos el monto
+            if (!isset($e['monto_total']) || empty($e['monto_total'])) {
+                $e['monto_total'] = $recorrido->getPrecio() * $reservaObj->getCupos();
+            }
+            
             $todasLasReservas[] = ['reserva' => $reservaObj, 'extras' => $e];
         }
 
@@ -188,17 +194,30 @@ class ReservaController
         $id = (int)($_GET['id'] ?? 0);
         $reserva = $this->repo->findById($id);
         
-        if (!$reserva) {
-            exit('Reserva no encontrada');
+        $usuario = $this->auth->user();
+        $cliente = $this->compraRepo->findClienteByUsuario($usuario->id_usuario);
+        $clienteId = $cliente['id_cliente'] ?? 0;
+
+        if (!$reserva || $reserva['id_cliente'] != $clienteId) {
+            exit('No autorizado o reserva no encontrada');
         }
 
-        $extras = ($_SESSION['zoo_reservas_extras'] ?? [])[$id] ?? null;
-        if (!$extras) {
-            exit('Datos adicionales no encontrados');
+        // Obtener extras de la sesión
+        $extras = ($_SESSION['zoo_reservas_extras'] ?? [])[$id] ?? [];
+        
+        // Si no hay extras en sesión (por ej. sesión nueva), proveer mínimos para el PDF
+        if (!isset($extras['monto_total']) || empty($extras['monto_total'])) {
+            $recorridoData = $this->recorridoRepo->findById($reserva['id_recorrido']);
+            $extras['monto_total'] = ($recorridoData['precio'] ?? 0) * $reserva['cupos'];
         }
+        if (!isset($extras['codigo'])) {
+            $extras['codigo'] = strtoupper(substr(md5($reserva['id_reserva'] . $reserva['institucion'] . $reserva['fecha']), 0, 10));
+        }
+        if (!isset($extras['tipo_institucion'])) $extras['tipo_institucion'] = 'otro';
+        if (!isset($extras['contacto_nombre'])) $extras['contacto_nombre'] = 'N/A';
 
         // Construir objeto Recorrido
-        $recorridoData = $this->recorridoRepo->findById($reserva['id_recorrido']);
+        $recorridoData = $this->recorridoRepo->findById((int)$reserva['id_recorrido']);
         if (!$recorridoData) {
             exit('Recorrido no encontrado');
         }
