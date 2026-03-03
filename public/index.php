@@ -78,6 +78,11 @@ switch ($r) {
         $compraCtrl->downloadPdf();
         break;
 
+    case 'historial':
+        $userCtrl = new \App\Controllers\UsuarioController();
+        $userCtrl->historial();
+        break;
+
     case 'compras/historial':
         \Core\Authorization::requireCliente();
         $compraCtrl = new \App\Controllers\CompraController();

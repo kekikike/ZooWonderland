@@ -262,7 +262,6 @@ $recorridos = $recorridos ?? [];
             <a href="#visitanos">Recorridos</a>
             <?php if ($esCliente): ?>
                 <a href="index.php?r=reservar">Tours Grupales</a>
-                <a href="index.php?r=reservas/historial">Historial Reservas</a>
             <?php endif; ?>
             <?php if ($isLoggedIn && $user && $user->esAdministrador()): ?>
                 <a href="index.php?r=admin/dashboard">Panel Admin</a>
@@ -277,9 +276,8 @@ $recorridos = $recorridos ?? [];
                     </span>
                     <div class="user-links">
                         <?php if ($esCliente): ?>
-                            <a href="index.php?r=compras/historial" title="Mis Compras"><i class="fa-solid fa-ticket"></i></a>
-                            <a href="index.php?r=reservas/historial" title="Mis Reservas"><i class="fa-solid fa-calendar-days"></i></a>
-                        <?php endif; ?> 
+                            <a href="index.php?r=historial" title="Mi Historial"><i class="fa-solid fa-clock-rotate-left"></i></a>
+                        <?php endif; ?>
                         <a href="index.php?r=perfil" title="Mi Perfil"><i class="fa-solid fa-circle-user"></i></a>
                         <a href="index.php?r=logout" class="logout" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></a>
                     </div>

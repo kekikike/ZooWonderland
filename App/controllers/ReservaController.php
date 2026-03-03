@@ -122,10 +122,49 @@ class ReservaController
             exit;
         }
 
-        $reservaId = $_SESSION['ultima_reserva_id'];
-        $datos     = $_SESSION['ultima_reserva_datos'];
-        $reserva   = $this->repo->findById($reservaId);
-        $usuario   = $this->auth->user();
+        $reservaId = (int)($_SESSION['ultima_reserva_id'] ?? 0);
+        $reservaData = $this->repo->findById($reservaId);
+        if (!$reservaData) {
+            header('Location: index.php');
+            exit;
+        }
+
+        // Obtener datos extras de la sesión
+        $datos = $_SESSION['ultima_reserva_datos'] ?? [];
+        
+        // Construir objeto Recorrido (necesario para el monto si falta la sesión)
+        $recorridoData = $this->recorridoRepo->findById((int)$reservaData['id_recorrido']);
+
+        // Si no hay datos en sesión (por ej. recarga de página tras expirar), proveer mínimos
+        if (empty($datos)) {
+            $monto = (float)($recorridoData['precio'] ?? 0) * (int)$reservaData['cupos'];
+            $datos = [
+                'monto_total' => $monto,
+                'codigo'      => strtoupper(substr(md5($reservaData['id_reserva'] . $reservaData['institucion'] . $reservaData['fecha']), 0, 10)),
+                'qr_pago'     => 'img/qr.jpeg'
+            ];
+        }
+
+        $recorrido = new Recorrido(
+            (int)($recorridoData['id_recorrido'] ?? $recorridoData['id']),
+            (string)$recorridoData['nombre'],
+            (string)$recorridoData['tipo'],
+            (float)$recorridoData['precio'],
+            (int)$recorridoData['duracion'],
+            (int)$recorridoData['capacidad']
+        );
+
+        // Construir objeto Reserva
+        $reserva = new Reserva(
+            (int)$reservaData['id_reserva'],
+            (string)$reservaData['hora'],
+            (string)$reservaData['fecha'],
+            (int)$reservaData['cupos'],
+            (string)$reservaData['institucion'],
+            $recorrido
+        );
+
+        $usuario = $this->auth->user();
 
         require APP_PATH . '/views/reservas/pagoqr.php';
     }
