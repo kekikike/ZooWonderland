@@ -52,6 +52,7 @@
             align-items: center;
             max-width: 1400px;
             margin: 0 auto;
+            gap: 3rem;
         }
 
         .logo {
@@ -61,12 +62,14 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             text-decoration: none;
             letter-spacing: -1px;
+            white-space: nowrap;
         }
 
         .menu {
             display: flex;
             gap: 2.5rem;
             align-items: center;
+            flex-grow: 1;
         }
 
         .menu a {
