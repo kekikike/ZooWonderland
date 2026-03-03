@@ -126,11 +126,37 @@ switch ($r) {
         break;
 
     case 'guias/horarios':
-        $user = \Core\Authorization::requireGuia();
-        $guiaRepo = new \App\Repositories\GuiaRepository();
-        $datosGuia = $guiaRepo->getHorariosGuia($user->id_usuario);
-        require_once APP_PATH . '/Views/guias/horarios.php';
-        break;
+
+    $user = \Core\Authorization::requireGuia();
+
+    $semanaOffset = (int)($_GET['semana'] ?? 0);
+    $semanaOffset = max(0, min(1, $semanaOffset));
+
+    $hoy = new DateTime();
+
+    $lunes = clone $hoy;
+    $lunes->modify('Monday this week');
+
+    if ($semanaOffset === 1) {
+        $lunes->modify('+7 days');
+    }
+
+    $inicioSemana = (clone $lunes)->modify('+1 day')->format('Y-m-d');
+    $finSemana    = (clone $lunes)->modify('+6 days')->format('Y-m-d');
+
+    $guiaRepo = new \App\Repositories\GuiaRepository();
+
+    $datosGuia = $guiaRepo->getHorariosGuia($user->id_usuario);
+
+    $recorridosPorSemana = $guiaRepo->getRecorridosPorSemana(
+        $user->id_usuario,
+        $inicioSemana,
+        $finSemana
+    );
+
+    require_once APP_PATH . '/Views/guias/horarios.php';
+
+    break;
 
     case 'guias/detalle-recorrido':
         $user = \Core\Authorization::requireGuia();
