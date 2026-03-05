@@ -16,7 +16,7 @@ require_once ROOT_PATH . '/vendor/autoload.php';
 
 require_once CORE_PATH . '/Session.php';
 require_once CORE_PATH . '/Database.php';
-require_once CORE_PATH . '/Authorization.php';  // ← NUEVO
+require_once CORE_PATH . '/Authorization.php';
 
 \Core\Session::iniciarSesionSegura();
 \Core\Database::getInstance();
@@ -57,7 +57,7 @@ switch ($r) {
 
     // ── COMPRAS ─────────────────────────────────────────────────
     case 'compras/crear':
-        \Core\Authorization::requireCliente();  // ← solo clientes
+        \Core\Authorization::requireCliente();
         $compraCtrl = new \App\Controllers\CompraController();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $compraCtrl->procesar();
@@ -120,59 +120,58 @@ switch ($r) {
 
     // ── GUÍA ────────────────────────────────────────────────────
     case 'guias/dashboard':
-        $user = \Core\Authorization::requireGuia();  // ← usa el helper
+        $user = \Core\Authorization::requireGuia();
         $guiaCtrl = new \App\Controllers\GuiaController();
         $guiaCtrl->dashboard();
         break;
 
     case 'guias/horarios':
+        $user = \Core\Authorization::requireGuia();
 
-    $user = \Core\Authorization::requireGuia();
+        $semanaOffset = (int)($_GET['semana'] ?? 0);
+        $semanaOffset = max(0, min(1, $semanaOffset));
 
-    $semanaOffset = (int)($_GET['semana'] ?? 0);
-    $semanaOffset = max(0, min(1, $semanaOffset));
+        $hoy   = new DateTime();
+        $lunes = clone $hoy;
+        $lunes->modify('Monday this week');
 
-    $hoy = new DateTime();
+        if ($semanaOffset === 1) {
+            $lunes->modify('+7 days');
+        }
 
-    $lunes = clone $hoy;
-    $lunes->modify('Monday this week');
+        $inicioSemana = (clone $lunes)->modify('+1 day')->format('Y-m-d');
+        $finSemana    = (clone $lunes)->modify('+6 days')->format('Y-m-d');
 
-    if ($semanaOffset === 1) {
-        $lunes->modify('+7 days');
-    }
+        $guiaRepo            = new \App\Repositories\GuiaRepository();
+        $datosGuia           = $guiaRepo->getHorariosGuia($user->id_usuario);
+        $recorridosPorSemana = $guiaRepo->getRecorridosPorSemana(
+            $user->id_usuario,
+            $inicioSemana,
+            $finSemana
+        );
 
-    $inicioSemana = (clone $lunes)->modify('+1 day')->format('Y-m-d');
-    $finSemana    = (clone $lunes)->modify('+6 days')->format('Y-m-d');
-
-    $guiaRepo = new \App\Repositories\GuiaRepository();
-
-    $datosGuia = $guiaRepo->getHorariosGuia($user->id_usuario);
-
-    $recorridosPorSemana = $guiaRepo->getRecorridosPorSemana(
-        $user->id_usuario,
-        $inicioSemana,
-        $finSemana
-    );
-
-    require_once APP_PATH . '/Views/guias/horarios.php';
-
-    break;
+        require_once APP_PATH . '/Views/guias/horarios.php';
+        break;
 
     case 'guias/detalle-recorrido':
-        $user = \Core\Authorization::requireGuia();
+        $user         = \Core\Authorization::requireGuia();
         $id_recorrido = (int)($_GET['id'] ?? 0);
+
         if ($id_recorrido <= 0) {
             http_response_code(400);
             echo "<h1>400 Bad Request</h1>";
             exit;
         }
-        $guiaRepo = new \App\Repositories\GuiaRepository();
+
+        $guiaRepo  = new \App\Repositories\GuiaRepository();
         $recorrido = $guiaRepo->getDetalleRecorrido($id_recorrido, $user->id_usuario);
+
         if (!$recorrido) {
             http_response_code(404);
             echo "<h1>404 Recorrido no encontrado</h1>";
             exit;
         }
+
         $areas = $guiaRepo->getAreasPorRecorrido($id_recorrido);
         require_once APP_PATH . '/Views/guias/detalle_recorrido.php';
         break;
@@ -180,7 +179,7 @@ switch ($r) {
     case 'guias/reportes-crear':
     case 'guias/reportes-guardar':
     case 'guias/reportes-historial':
-        $user = \Core\Authorization::requireGuia();
+        $user     = \Core\Authorization::requireGuia();
         $guiaCtrl = new \App\Controllers\GuiaController();
         if ($r === 'guias/reportes-crear') {
             $guiaCtrl->showReportForm();
@@ -200,14 +199,14 @@ switch ($r) {
     case 'admin/animales/editar':
     case 'admin/animales/actualizar':
     case 'admin/animales/eliminar':
-        $user = \Core\Authorization::requireAdmin();  // ← protege todo el panel admin
+        $user      = \Core\Authorization::requireAdmin();
         $adminCtrl = new \App\Controllers\AdminController();
+
         if ($r === 'admin/dashboard') {
             $adminCtrl->dashboard();
         } elseif ($r === 'admin/recorridos') {
             $adminCtrl->recorridos();
         } else {
-            // Maneja las sub-rutas de animales
             $animCtrl = new \App\Controllers\AnimalController();
             if ($r === 'admin/animales') {
                 $animCtrl->index();
@@ -225,8 +224,34 @@ switch ($r) {
         }
         break;
 
+    // ── ADMIN: gestión de usuarios (HU-10) ──────────────────────
+    case 'admin/usuarios':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->usuarios();
+        break;
+
+    case 'admin/usuario-editar':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->editarUsuarioForm();
+        break;
+
+    case 'admin/usuario-editar-post':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->editarUsuarioPost();
+        break;
+
+    case 'admin/usuario-toggle':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->toggleEstado();
+        break;
+
+    // ── 404 ─────────────────────────────────────────────────────
     default:
         http_response_code(404);
-        echo "<h1>404 - Ruta no encontrada: $r</h1>";
+        echo "<h1>404 - Ruta no encontrada: " . htmlspecialchars($r) . "</h1>";
         exit;
 }
