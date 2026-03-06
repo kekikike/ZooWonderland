@@ -177,8 +177,9 @@ class ReservaService
         $recorridoData = $validacion['recorridoData'];
 
         // Construir objeto Recorrido
+        $recorridoId = (int)($recorridoData['id_recorrido'] ?? $recorridoData['id'] ?? 0);
         $recorrido = new Recorrido(
-            (int)$recorridoData['id'],
+            $recorridoId,
             (string)$recorridoData['nombre'],
             (string)$recorridoData['tipo'],
             (float)$recorridoData['precio'],

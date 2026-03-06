@@ -4,104 +4,155 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 /**
- * Repositorio de recorridos (simulado en memoria)
+ * Repositorio de recorridos persistente en base de datos.
  */
+use Core\Database;
+
 class RecorridoRepository
 {
-    private array $recorridos = [];
-    private int $nextId = 1;
+    private \PDO $db;
 
     public function __construct()
     {
-        $this->seedData();
+        $this->db = Database::getInstance()->getConnection();
     }
 
     /**
-     * Datos de prueba
-     */
-    private function seedData(): void
-    {
-        $datos = [
-            ['Recorrido General', 'No Guiado', 15, 60, 50],
-            ['Felinos VIP', 'Guiado', 50, 60, 50],
-            ['Osos Andinos', 'Guiado', 45, 30, 50],
-            ['Condores', 'Guiado', 40, 30, 50],
-            ['Acuario', 'Guiado', 20, 30, 50],
-            ['Recorrido Interactivo', 'Guiado', 30, 60, 50],
-        ];
-
-        foreach ($datos as $data) {
-
-            [$nombre, $tipo, $precio, $duracion, $capacidad] = $data;
-
-            $this->recorridos[$this->nextId] = [
-                'id' => $this->nextId,
-                'nombre' => $nombre,
-                'tipo' => $tipo,
-                'precio' => $precio,
-                'duracion' => $duracion,
-                'capacidad' => $capacidad,
-            ];
-
-            $this->nextId++;
-        }
-    }
-
-    /**
-     * Obtiene todos
+     * Obtiene todos los recorridos ordenados por ID.
+     * @return array[]
      */
     public function findAll(): array
     {
-        return array_values($this->recorridos);
+        $stmt = $this->db->query('SELECT * FROM recorridos ORDER BY id_recorrido');
+        return $stmt->fetchAll();
     }
 
     /**
-     * Busca por ID
+     * Busca un recorrido por su id.
      */
     public function findById(int $id): ?array
     {
-        return $this->recorridos[$id] ?? null;
+        $stmt = $this->db->prepare('SELECT * FROM recorridos WHERE id_recorrido = ? LIMIT 1');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     /**
-     * Filtra por tipo
+     * Retorna los recorridos filtrados por tipo.
+     * @param string $tipo  'Guiado' o 'No Guiado'.
+     * @return array[]
      */
     public function findByTipo(string $tipo): array
     {
-        return array_filter(
-            $this->recorridos,
-            fn($r) => $r['tipo'] === $tipo
-        );
+        $stmt = $this->db->prepare('SELECT * FROM recorridos WHERE tipo = ?');
+        $stmt->execute([$tipo]);
+        return $stmt->fetchAll();
     }
 
     /**
-     * Busca por nombre
+     * Búsqueda de texto en el nombre (case insensitive).
      */
     public function search(string $query): array
     {
-        return array_filter($this->recorridos, function ($r) use ($query) {
-
-            return str_contains(
-                strtolower($r['nombre']),
-                strtolower($query)
-            );
-        });
+        $q = '%' . strtolower($query) . '%';
+        $stmt = $this->db->prepare('SELECT * FROM recorridos WHERE LOWER(nombre) LIKE ?');
+        $stmt->execute([$q]);
+        return $stmt->fetchAll();
     }
 
     /**
-     * Estadísticas básicas
+     * Crea un nuevo recorrido + relaciones a áreas.
+     * Devuelve el id generado o null en caso de fallo.
      */
-    public function getEstadisticas(): array
+    public function create(array $data): ?int
     {
-        $total = count($this->recorridos);
+        $this->db->beginTransaction();
+        $stmt = $this->db->prepare(
+            'INSERT INTO recorridos (nombre,tipo,precio,duracion,capacidad) VALUES (?,?,?,?,?)'
+        );
+        $ok = $stmt->execute([
+            $data['nombre'],
+            $data['tipo'],
+            $data['precio'],
+            $data['duracion'],
+            $data['capacidad'],
+        ]);
+        if (!$ok) {
+            $this->db->rollBack();
+            return null;
+        }
+        $id = (int)$this->db->lastInsertId();
+        if (!empty($data['areas']) && is_array($data['areas'])) {
+            $this->setAreas($id, $data['areas']);
+        }
+        $this->db->commit();
+        return $id;
+    }
 
-        $guiados = count($this->findByTipo('Guiado'));
-        $noGuiados = count($this->findByTipo('No Guiado'));
+    /**
+     * Actualiza un recorrido existente y sus áreas asociadas.
+     */
+    public function update(int $id, array $data): bool
+    {
+        $this->db->beginTransaction();
+        $stmt = $this->db->prepare(
+            'UPDATE recorridos SET nombre = ?, tipo = ?, precio = ?, duracion = ?, capacidad = ? WHERE id_recorrido = ?'
+        );
+        $ok = $stmt->execute([
+            $data['nombre'],
+            $data['tipo'],
+            $data['precio'],
+            $data['duracion'],
+            $data['capacidad'],
+            $id,
+        ]);
+        if (!$ok) {
+            $this->db->rollBack();
+            return false;
+        }
+        $this->setAreas($id, $data['areas'] ?? []);
+        $this->db->commit();
+        return true;
+    }
 
-        return [
-            'total' => $total,
-            'guiados' => $guiados,
-            'no_guiados' => $noGuiados,
-        ];
+    /**
+     * Elimina un recorrido (las restricciones de FK en la base se encargan
+     * de prevenir borrados si existen reservas activas).
+     */
+    public function delete(int $id): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM recorridos WHERE id_recorrido = ?');
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Obtiene las áreas asociadas a un recorrido.
+     */
+    public function getAreas(int $recorridoId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT a.* FROM areas a
+             INNER JOIN recorrido_area ra ON a.id_area = ra.id_area
+             WHERE ra.id_recorrido = ?'
+        );
+        $stmt->execute([$recorridoId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Reemplaza las asociaciones área&#x2192;recorrido.
+     */
+    private function setAreas(int $recorridoId, array $areaIds): void
+    {
+        $del = $this->db->prepare('DELETE FROM recorrido_area WHERE id_recorrido = ?');
+        $del->execute([$recorridoId]);
+        if (empty($areaIds)) {
+            return;
+        }
+        $ins = $this->db->prepare('INSERT INTO recorrido_area (id_recorrido,id_area) VALUES (?,?)');
+        foreach ($areaIds as $aid) {
+            $ins->execute([$recorridoId, $aid]);
+        }
     }
 }

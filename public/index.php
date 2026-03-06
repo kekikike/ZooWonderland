@@ -193,6 +193,11 @@ switch ($r) {
     // ── ADMIN ───────────────────────────────────────────────────
     case 'admin/dashboard':
     case 'admin/recorridos':
+    case 'admin/recorridos/crear':
+    case 'admin/recorridos/guardar':
+    case 'admin/recorridos/editar':
+    case 'admin/recorridos/actualizar':
+    case 'admin/recorridos/eliminar':
     case 'admin/animales':
     case 'admin/animales/crear':
     case 'admin/animales/guardar':
@@ -206,6 +211,16 @@ switch ($r) {
             $adminCtrl->dashboard();
         } elseif ($r === 'admin/recorridos') {
             $adminCtrl->recorridos();
+        } elseif ($r === 'admin/recorridos/crear') {
+            $adminCtrl->crearRecorrido();
+        } elseif ($r === 'admin/recorridos/guardar') {
+            $adminCtrl->guardarRecorrido();
+        } elseif ($r === 'admin/recorridos/editar') {
+            $adminCtrl->editarRecorrido();
+        } elseif ($r === 'admin/recorridos/actualizar') {
+            $adminCtrl->actualizarRecorrido();
+        } elseif ($r === 'admin/recorridos/eliminar') {
+            $adminCtrl->eliminarRecorrido();
         } else {
             $animCtrl = new \App\Controllers\AnimalController();
             if ($r === 'admin/animales') {

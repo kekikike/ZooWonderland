@@ -6,6 +6,8 @@ namespace App\Controllers;
 use App\Services\AuthService;
 use App\Repositories\RecorridoRepository;
 use App\Repositories\UsuarioRepository;
+use App\Repositories\AreaRepository;
+use App\Repositories\ReservaRepository;
 
 class AdminController
 {
@@ -88,6 +90,232 @@ class AdminController
         $user       = $this->checkAuth();
         $recorridos = $this->recorridoRepo->findAll() ?? [];
         require APP_PATH . '/Views/admin/recorridos.php';
+    }
+
+    /**
+     * Mostrar formulario para crear un recorrido.
+     */
+    public function crearRecorrido(): void
+    {
+        $this->checkAuth();
+        $areas = (new AreaRepository())->findAll();
+        $recorrido = null;
+        $selectedAreas = [];
+        $errores = $_SESSION['form_errores'] ?? [];
+        $datos = $_SESSION['form_datos'] ?? [];
+        unset($_SESSION['form_datos'], $_SESSION['form_errores']);
+        $action = 'guardar';
+        require APP_PATH . '/Views/admin/recorrido_form.php';
+    }
+
+    /**
+     * Guarda nuevo recorrido (POST).
+     */
+    public function guardarRecorrido(): void
+    {
+        $this->requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+
+        $nombre     = trim($_POST['nombre'] ?? '');
+        $tipo       = trim($_POST['tipo'] ?? 'No Guiado');
+        $precio     = (float)($_POST['precio'] ?? 0);
+        $duracion   = (int)($_POST['duracion'] ?? 0);
+        $capacidad  = (int)($_POST['capacidad'] ?? 0);
+        $areasIds   = $_POST['areas'] ?? [];
+
+        $errores = [];
+        if ($nombre === '') {
+            $errores[] = 'El nombre es obligatorio.';
+        }
+        if ($precio <= 0) {
+            $errores[] = 'El precio debe ser mayor que cero.';
+        }
+        if (!in_array($tipo, ['Guiado','No Guiado'], true)) {
+            $tipo = 'No Guiado';
+        }
+
+        // validar áreas existentes
+        $areaRepo = new AreaRepository();
+        $validAreas = [];
+        foreach ($areasIds as $aid) {
+            $aidInt = (int)$aid;
+            if ($aidInt > 0 && $areaRepo->findById($aidInt)) {
+                $validAreas[] = $aidInt;
+            }
+        }
+        if (empty($validAreas)) {
+            $errores[] = 'Debe seleccionar al menos un área válida.';
+        }
+
+        if (!empty($errores)) {
+            $_SESSION['form_errores'] = $errores;
+            $_SESSION['form_datos']   = [
+                'nombre' => $nombre,
+                'tipo' => $tipo,
+                'precio' => $precio,
+                'duracion' => $duracion,
+                'capacidad' => $capacidad,
+                'areas' => $validAreas,
+            ];
+            header('Location: index.php?r=admin/recorridos/crear');
+            exit;
+        }
+
+        $id = $this->recorridoRepo->create([
+            'nombre' => $nombre,
+            'tipo' => $tipo,
+            'precio' => $precio,
+            'duracion' => $duracion,
+            'capacidad' => $capacidad,
+            'areas' => $validAreas,
+        ]);
+
+        $_SESSION['flash_mensaje'] = $id ? 'Recorrido creado correctamente.' : 'Error al crear el recorrido.';
+        $_SESSION['flash_tipo'] = $id ? 'ok' : 'error';
+        header('Location: index.php?r=admin/recorridos');
+        exit;
+    }
+
+    /**
+     * Formulario de edición de recorrido.
+     */
+    public function editarRecorrido(): void
+    {
+        $this->checkAuth();
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id === 0) {
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+        $recorrido = $this->recorridoRepo->findById($id);
+        if (!$recorrido) {
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+        $areas = (new AreaRepository())->findAll();
+        $selectedAreas = $this->recorridoRepo->getAreas($id);
+        $selectedAreas = array_map(fn($a) => $a['id_area'] ?? $a['id'], $selectedAreas);
+        $errores = $_SESSION['form_errores'] ?? [];
+        $datos   = $_SESSION['form_datos'] ?? [];
+        unset($_SESSION['form_errores'], $_SESSION['form_datos']);
+        $action = "actualizar&id={$id}";
+        require APP_PATH . '/Views/admin/recorrido_form.php';
+    }
+
+    /**
+     * Actualiza el recorrido (POST).
+     */
+    public function actualizarRecorrido(): void
+    {
+        $this->requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+
+        $id = (int)($_GET['id'] ?? 0);
+        $recorrido = $this->recorridoRepo->findById($id);
+        if (!$recorrido) {
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+
+        $nombre     = trim($_POST['nombre'] ?? '');
+        $tipo       = trim($_POST['tipo'] ?? 'No Guiado');
+        $precio     = (float)($_POST['precio'] ?? 0);
+        $duracion   = (int)($_POST['duracion'] ?? 0);
+        $capacidad  = (int)($_POST['capacidad'] ?? 0);
+        $areasIds   = $_POST['areas'] ?? [];
+
+        $errores = [];
+        if ($nombre === '') {
+            $errores[] = 'El nombre es obligatorio.';
+        }
+        if ($precio <= 0) {
+            $errores[] = 'El precio debe ser mayor que cero.';
+        }
+        if (!in_array($tipo, ['Guiado','No Guiado'], true)) {
+            $tipo = 'No Guiado';
+        }
+
+        // validar áreas
+        $areaRepo = new AreaRepository();
+        $validAreas = [];
+        foreach ($areasIds as $aid) {
+            $aidInt = (int)$aid;
+            if ($aidInt > 0 && $areaRepo->findById($aidInt)) {
+                $validAreas[] = $aidInt;
+            }
+        }
+        if (empty($validAreas)) {
+            $errores[] = 'Debe seleccionar al menos un área válida.';
+        }
+
+        if (!empty($errores)) {
+            $_SESSION['form_errores'] = $errores;
+            $_SESSION['form_datos']   = [
+                'nombre' => $nombre,
+                'tipo' => $tipo,
+                'precio' => $precio,
+                'duracion' => $duracion,
+                'capacidad' => $capacidad,
+                'areas' => $validAreas,
+            ];
+            header("Location: index.php?r=admin/recorridos/editar&id={$id}");
+            exit;
+        }
+
+        $ok = $this->recorridoRepo->update($id, [
+            'nombre' => $nombre,
+            'tipo' => $tipo,
+            'precio' => $precio,
+            'duracion' => $duracion,
+            'capacidad' => $capacidad,
+            'areas' => $validAreas,
+        ]);
+
+        $_SESSION['flash_mensaje'] = $ok ? 'Recorrido actualizado correctamente.' : 'Error al actualizar el recorrido.';
+        $_SESSION['flash_tipo'] = $ok ? 'ok' : 'error';
+        header('Location: index.php?r=admin/recorridos');
+        exit;
+    }
+
+    /**
+     * Elimina un recorrido si no tiene reservas activas.
+     */
+    public function eliminarRecorrido(): void
+    {
+        $this->requireAdmin();
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id === 0) {
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+
+        // comprobar que no existan reservas activas para ese recorrido
+        $resRepo = new ReservaRepository();
+        $count = $resRepo->countActivasByRecorrido($id);
+        if ($count > 0) {
+            $_SESSION['flash_mensaje'] = 'No se puede eliminar el recorrido porque hay reservas activas.';
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/recorridos');
+            exit;
+        }
+
+        try {
+            $ok = $this->recorridoRepo->delete($id);
+            $_SESSION['flash_mensaje'] = $ok ? 'Recorrido eliminado.' : 'Error al eliminar el recorrido.';
+            $_SESSION['flash_tipo'] = $ok ? 'ok' : 'error';
+        } catch (\PDOException $e) {
+            // restricción FK
+            $_SESSION['flash_mensaje'] = 'No se puede eliminar el recorrido porque tiene datos relacionados.';
+            $_SESSION['flash_tipo'] = 'error';
+        }
+        header('Location: index.php?r=admin/recorridos');
+        exit;
     }
 
     // ════════════════════════════════════════════════════════════

@@ -74,6 +74,14 @@
             box-shadow: var(--shadow-md);
             animation: fadeInUp 1s ease 0.2s both;
         }
+        .flash {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .flash.ok { background: #e6f7ff; color: #0275d8; border: 1px solid #b3e5fc; }
+        .flash.error { background: #ffe6e6; color: #c0392b; border: 1px solid #f5c6cb; }
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -153,9 +161,14 @@
         </div>
 
         <div class="content-section">
+            <?php if (!empty($_SESSION['flash_mensaje'])): ?>
+                <div class="flash <?php echo $_SESSION['flash_tipo'] ?? 'ok'; ?>">
+                    <?php echo htmlspecialchars($_SESSION['flash_mensaje']); unset($_SESSION['flash_mensaje'], $_SESSION['flash_tipo']); ?>
+                </div>
+            <?php endif; ?>
             <div class="section-header">
                 <h2><i class="fas fa-compass"></i> Recorridos</h2>
-                <a href="index.php?r=admin/recorridos" class="btn-primary"><i class="fas fa-plus-circle"></i> Nuevo Recorrido</a>
+                <a href="index.php?r=admin/recorridos/crear" class="btn-primary"><i class="fas fa-plus-circle"></i> Nuevo Recorrido</a>
             </div>
 
             <?php if (empty($recorridos)): ?>

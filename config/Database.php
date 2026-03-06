@@ -5,7 +5,7 @@ return [
     'port'     => 3306,
     'database' => 'zoowonderland',  
     'username' => 'root',
-    'password' => 'cc++4kglt',
+    'password' => '',
     'charset'  => 'utf8mb4',
 ];
 

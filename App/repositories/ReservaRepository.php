@@ -5,9 +5,6 @@ namespace App\Repositories;
 
 use Core\Database;
 
-/**
- * Repositorio de reservas grupales persistido en la base de datos.
- */
 class ReservaRepository
 {
     private \PDO $db;
@@ -100,6 +97,16 @@ class ReservaRepository
             ':fecha'      => $fecha,
             ':hora'       => $hora,
         ]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Cuenta todas las reservas activas (estado=1) para un recorrido.
+     */
+    public function countActivasByRecorrido(int $recorridoId): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM reservas WHERE id_recorrido = ? AND estado = 1');
+        $stmt->execute([$recorridoId]);
         return (int)$stmt->fetchColumn();
     }
 }
