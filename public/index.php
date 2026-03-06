@@ -13,13 +13,63 @@ define('CONFIG_PATH', ROOT_PATH . '/config');
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 
 require_once ROOT_PATH . '/vendor/autoload.php';
-
-require_once CORE_PATH . '/Session.php';
 require_once CORE_PATH . '/Database.php';
-require_once CORE_PATH . '/Authorization.php';
+require_once CORE_PATH . '/Router.php';
 
-\Core\Session::iniciarSesionSegura();
 \Core\Database::getInstance();
+
+// ── Detectar si es petición API o vista ──────────────────────────
+$requestUri = strtok($_SERVER['REQUEST_URI'], '?');
+$requestUri = str_replace('/ZooWonderland/public', '', $requestUri);
+$requestUri = '/' . trim($requestUri, '/');
+
+$esApi = str_starts_with($requestUri, '/api');
+
+// ════════════════════════════════════════════════════════════════
+// MODO API REST  —  rutas que empiezan con /api/
+// ════════════════════════════════════════════════════════════════
+if ($esApi) {
+
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
+    header("Access-Control-Allow-Origin: {$origin}");
+    header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+    header('Access-Control-Allow-Credentials: true');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
+
+    set_exception_handler(function (\Throwable $e) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error interno del servidor.',
+            'debug'   => [
+                'exception' => get_class($e),
+                'message'   => $e->getMessage(),
+                'file'      => $e->getFile(),
+                'line'      => $e->getLine(),
+            ],
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    });
+
+    $router = require ROOT_PATH . '/routes/api.php';
+    $router->dispatch($_SERVER['REQUEST_METHOD'], $requestUri);
+    exit;
+}
+
+// ════════════════════════════════════════════════════════════════
+// MODO VISTAS PHP
+// ════════════════════════════════════════════════════════════════
+
+
+require_once CORE_PATH . '/Authorization.php';
+define('BASE_URL', '/ZooWonderland/public/index.php');
+
 
 $r = $_GET['r'] ?? '/';
 $r = trim($r, '/');
@@ -53,69 +103,6 @@ switch ($r) {
     case 'logout':
         $authCtrl = new \App\Controllers\AuthController();
         $authCtrl->logout();
-        break;
-
-    // ── COMPRAS ─────────────────────────────────────────────────
-    case 'compras/crear':
-        \Core\Authorization::requireCliente();
-        $compraCtrl = new \App\Controllers\CompraController();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $compraCtrl->procesar();
-        } else {
-            $compraCtrl->crear();
-        }
-        break;
-
-    case 'compras/pagoqr':
-        \Core\Authorization::requireCliente();
-        $compraCtrl = new \App\Controllers\CompraController();
-        $compraCtrl->showPagoQR();
-        break;
-
-    case 'compras/pdf':
-        \Core\Authorization::requireCliente();
-        $compraCtrl = new \App\Controllers\CompraController();
-        $compraCtrl->downloadPdf();
-        break;
-
-    case 'historial':
-        $userCtrl = new \App\Controllers\UsuarioController();
-        $userCtrl->historial();
-        break;
-
-    case 'compras/historial':
-        \Core\Authorization::requireCliente();
-        $compraCtrl = new \App\Controllers\CompraController();
-        $compraCtrl->historial();
-        break;
-
-    // ── RESERVAS ────────────────────────────────────────────────
-    case 'reservar':
-        \Core\Authorization::requireCliente();
-        $reservaCtrl = new \App\Controllers\ReservaController();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $reservaCtrl->processForm();
-        } else {
-            $reservaCtrl->showForm();
-        }
-        break;
-
-    case 'reservas/pagoqr':
-        \Core\Authorization::requireCliente();
-        $reservaCtrl = new \App\Controllers\ReservaController();
-        $reservaCtrl->showPagoQR();
-        break;
-
-    case 'reservas/historial':
-        \Core\Authorization::requireCliente();
-        $reservaCtrl = new \App\Controllers\ReservaController();
-        $reservaCtrl->showHistorial();
-        break;
-
-    case 'reservas/pdf':
-        \Core\Authorization::requireCliente();
-        $reservaCtrl = new \App\Controllers\ReservaController();
-        $reservaCtrl->downloadPdf();
         break;
 
     // ── GUÍA ────────────────────────────────────────────────────
@@ -221,25 +208,9 @@ switch ($r) {
             $adminCtrl->actualizarRecorrido();
         } elseif ($r === 'admin/recorridos/eliminar') {
             $adminCtrl->eliminarRecorrido();
-        } else {
-            $animCtrl = new \App\Controllers\AnimalController();
-            if ($r === 'admin/animales') {
-                $animCtrl->index();
-            } elseif ($r === 'admin/animales/crear') {
-                $animCtrl->crear();
-            } elseif ($r === 'admin/animales/guardar') {
-                $animCtrl->guardar();
-            } elseif ($r === 'admin/animales/editar') {
-                $animCtrl->editar();
-            } elseif ($r === 'admin/animales/actualizar') {
-                $animCtrl->actualizar();
-            } elseif ($r === 'admin/animales/eliminar') {
-                $animCtrl->eliminar();
-            }
         }
         break;
 
-    // ── ADMIN: gestión de usuarios (HU-10) ──────────────────────
     case 'admin/usuarios':
         $user      = \Core\Authorization::requireAdmin();
         $adminCtrl = new \App\Controllers\AdminController();

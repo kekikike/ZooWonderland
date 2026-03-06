@@ -32,7 +32,6 @@ class ComposerStaticInit45efdba36adaa374ad8bd423f6fbd95b
         'C' =>
         array (
             'Core\\' => 5,
-            'Controllers\\' => 12,
         ),
         'B' =>
         array (
@@ -76,10 +75,6 @@ class ComposerStaticInit45efdba36adaa374ad8bd423f6fbd95b
         'Core\\' =>
         array (
             0 => __DIR__ . '/../..' . '/core',
-        ),
-        'Controllers\\' =>
-        array (
-            0 => __DIR__ . '/../..' . '/Controllers',
         ),
         'BaconQrCode\\' =>
         array (

@@ -1,169 +1,168 @@
 <?php
+// app/controllers/Api/AnimalController.php
 declare(strict_types=1);
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
 
-use App\Services\AuthService;
-use App\Repositories\AnimalRepository;
-use App\Repositories\AreaRepository;
+use App\Helpers\Response;
+use App\Middleware\AuthMiddleware;
+use App\Middleware\AdminMiddleware;
+use Core\Database;
 
 class AnimalController
 {
-    private AuthService $auth;
-    private AnimalRepository $repo;
-    private AreaRepository $areaRepo;
+    private \PDO          $db;
+    private AuthMiddleware  $auth;
+    private AdminMiddleware $admin;
 
     public function __construct()
     {
-        $this->auth = new AuthService();
-        $this->repo  = new AnimalRepository();
-        $this->areaRepo = new AreaRepository();
+        $this->db    = Database::getInstance()->getConnection();
+        $this->auth  = new AuthMiddleware();
+        $this->admin = new AdminMiddleware();
     }
 
-    /**
-     * Verifica que el usuario esté logueado y sea administrador.
-     * Si no lo está, redirige y termina la ejecución.
-     *
-     * @return \App\Models\Usuario
-     */
-    private function checkAuth(): \App\Models\Usuario
+    // ── GET /api/animales ────────────────────────────────────────
+    /** Público. Query params: area, estado, busqueda */
+    public function index(array $params = []): void
     {
-        if (!$this->auth->check()) {
-            header('Location: index.php?r=login');
-            exit;
+        $sql    = "SELECT a.*, ar.nombre AS area_nombre FROM animales a
+                   LEFT JOIN areas ar ON ar.id_area = a.id_area WHERE 1=1";
+        $bind   = [];
+
+        if (!empty($_GET['area'])) {
+            $sql .= " AND a.id_area = :area";
+            $bind[':area'] = (int)$_GET['area'];
+        }
+        if (!empty($_GET['estado'])) {
+            $sql .= " AND a.estado = :estado";
+            $bind[':estado'] = $_GET['estado'];
+        }
+        if (!empty($_GET['busqueda'])) {
+            $like = '%' . $_GET['busqueda'] . '%';
+            $sql .= " AND (a.especie LIKE :b1 OR a.nombre_comun LIKE :b2)";
+            $bind[':b1'] = $like;
+            $bind[':b2'] = $like;
         }
 
-        $user = $this->auth->user();
-        if (!$user || !$user->esAdministrador()) {
-            header('Location: index.php');
-            exit;
-        }
+        $sql .= " ORDER BY a.nombre_comun ASC";
 
-        return $user;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($bind);
+
+        Response::ok($stmt->fetchAll(\PDO::FETCH_ASSOC));
     }
 
-    /* ---------- acciones CRUD ---------- */
-
-    public function index(): void
+    // ── GET /api/animales/{id} ───────────────────────────────────
+    /** Público */
+    public function show(array $params): void
     {
-        $this->checkAuth();
-        
-        // capturar búsqueda y filtro de área
-        $searchQuery = trim($_GET['q'] ?? '');
-        $areaFilter  = (int)($_GET['area'] ?? 0);
+        $id   = (int)($params['id'] ?? 0);
+        $stmt = $this->db->prepare("
+            SELECT a.*, ar.nombre AS area_nombre, ar.restringida
+            FROM animales a
+            LEFT JOIN areas ar ON ar.id_area = a.id_area
+            WHERE a.id_animal = :id
+        ");
+        $stmt->execute([':id' => $id]);
+        $animal = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-        if ($searchQuery !== '' && $areaFilter > 0) {
-            $animales = $this->repo->search($searchQuery, $areaFilter);
-        } elseif ($searchQuery !== '') {
-            $animales = $this->repo->search($searchQuery);
-        } elseif ($areaFilter > 0) {
-            $animales = $this->repo->findByArea($areaFilter);
-        } else {
-            $animales = $this->repo->findAll();
-        }
-        
-        // también necesitamos la lista de áreas para el filtro
-        $areas = $this->areaRepo->findAll();
-
-        require APP_PATH . '/Views/admin/animales.php';
+        if (!$animal) Response::notFound("Animal #{$id} no encontrado.");
+        Response::ok($animal);
     }
 
-    public function crear(): void
+    // ── POST /api/animales ───────────────────────────────────────
+    /** Solo admin. Body JSON con los campos del animal. */
+    public function store(array $params = []): void
     {
-        $this->checkAuth();
-        $animal = null; // indica creación
-        $action = 'guardar';
-        $areas  = $this->areaRepo->findAll();
-        require APP_PATH . '/Views/admin/animal_form.php';
+        $authUser = $this->auth->handle();
+        $this->admin->handle($authUser);
+
+        $body   = $this->getJson();
+        $errors = $this->validate($body);
+        if (!empty($errors)) Response::validationError($errors);
+
+        $stmt = $this->db->prepare("
+            INSERT INTO animales (especie, nombre_comun, habitat, descripcion, foto, estado, id_area)
+            VALUES (:especie, :nombre_comun, :habitat, :descripcion, :foto, :estado, :id_area)
+        ");
+        $stmt->execute([
+            ':especie'     => $body['especie'],
+            ':nombre_comun'=> $body['nombre_comun'] ?? null,
+            ':habitat'     => $body['habitat']      ?? null,
+            ':descripcion' => $body['descripcion']  ?? null,
+            ':foto'        => $body['foto']         ?? null,
+            ':estado'      => $body['estado']       ?? 'Activo',
+            ':id_area'     => (int)$body['id_area'],
+        ]);
+
+        $newId = (int)$this->db->lastInsertId();
+        $this->show(['id' => $newId]);   // responde con el recurso creado (201 implícito)
     }
 
-    public function guardar(): void
+    // ── PUT /api/animales/{id} ───────────────────────────────────
+    /** Solo admin */
+    public function update(array $params): void
     {
-        $this->checkAuth();
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?r=admin/animales');
-            exit;
-        }
+        $authUser = $this->auth->handle();
+        $this->admin->handle($authUser);
 
-        $especie     = trim($_POST['especie'] ?? '');
-        $nombre      = trim($_POST['nombre'] ?? '');
-        $habitat     = trim($_POST['habitat'] ?? '');
-        $descripcion = trim($_POST['descripcion'] ?? '');
-        $estado      = trim($_POST['estado'] ?? 'Activo');
-        $areaId      = (int)($_POST['area_id'] ?? 0);
-        // si se seleccionó un área, verificar existencia
-        if ($areaId > 0 && !$this->areaRepo->findById($areaId)) {
-            $areaId = 0; //ignorar si no existe
-        }
+        $id   = (int)($params['id'] ?? 0);
+        $body = $this->getJson();
+        $errors = $this->validate($body);
+        if (!empty($errors)) Response::validationError($errors);
 
-        // validación mínima
-        if ($especie === '' || $habitat === '' || $descripcion === '') {
-            // volver al formulario con errores simples (no se implementa flash)
-            $_SESSION['form_errors'] = 'Especie, hábitat y descripción son obligatorios.';
-            header('Location: index.php?r=admin/animales/crear');
-            exit;
-        }
+        $stmt = $this->db->prepare("
+            UPDATE animales SET
+                especie      = :especie,
+                nombre_comun = :nombre_comun,
+                habitat      = :habitat,
+                descripcion  = :descripcion,
+                foto         = :foto,
+                estado       = :estado,
+                id_area      = :id_area
+            WHERE id_animal  = :id
+        ");
+        $stmt->execute([
+            ':especie'     => $body['especie'],
+            ':nombre_comun'=> $body['nombre_comun'] ?? null,
+            ':habitat'     => $body['habitat']      ?? null,
+            ':descripcion' => $body['descripcion']  ?? null,
+            ':foto'        => $body['foto']         ?? null,
+            ':estado'      => $body['estado']       ?? 'Activo',
+            ':id_area'     => (int)$body['id_area'],
+            ':id'          => $id,
+        ]);
 
-        $this->repo->create($especie, $nombre, $habitat, $descripcion, $estado, $areaId);
-        header('Location: index.php?r=admin/animales');
-        exit;
+        $this->show(['id' => $id]);
     }
 
-    public function editar(): void
+    // ── DELETE /api/animales/{id} ────────────────────────────────
+    /** Solo admin. Soft delete (estado = 'Inactivo') */
+    public function destroy(array $params): void
     {
-        $this->checkAuth();
-        $id = (int)($_GET['id'] ?? 0);
-        $animal = $this->repo->findById($id);
-        if (!$animal) {
-            header('Location: index.php?r=admin/animales');
-            exit;
-        }
-        $action = 'actualizar&id=' . $id;
-        $areas  = $this->areaRepo->findAll();
-        require APP_PATH . '/Views/admin/animal_form.php';
+        $authUser = $this->auth->handle();
+        $this->admin->handle($authUser);
+
+        $id   = (int)($params['id'] ?? 0);
+        $stmt = $this->db->prepare("UPDATE animales SET estado = 'Inactivo' WHERE id_animal = :id");
+        $stmt->execute([':id' => $id]);
+
+        if ($stmt->rowCount() === 0) Response::notFound("Animal #{$id} no encontrado.");
+        Response::ok(['id_animal' => $id], 'Animal desactivado.');
     }
 
-    public function actualizar(): void
+    // ── Helpers ──────────────────────────────────────────────────
+    private function validate(array $body): array
     {
-        $this->checkAuth();
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?r=admin/animales');
-            exit;
-        }
-
-        $id = (int)($_GET['id'] ?? 0);
-        // verificar existencia
-        $animal = $this->repo->findById($id);
-        if (!$animal) {
-            header('Location: index.php?r=admin/animales');
-            exit;
-        }
-
-        $areaId = (int)($_POST['area_id'] ?? 0);
-        if ($areaId > 0 && !$this->areaRepo->findById($areaId)) {
-            $areaId = 0;
-        }
-
-        $data = [
-            'especie'     => trim($_POST['especie'] ?? ''),
-            'nombre'      => trim($_POST['nombre'] ?? ''),
-            'habitat'     => trim($_POST['habitat'] ?? ''),
-            'descripcion' => trim($_POST['descripcion'] ?? ''),
-            'estado'      => trim($_POST['estado'] ?? ''),
-            'areaId'      => $areaId,
-        ];
-
-        $this->repo->update($id, $data);
-        header('Location: index.php?r=admin/animales');
-        exit;
+        $errors = [];
+        if (empty($body['especie']))  $errors[] = 'especie es obligatorio.';
+        if (empty($body['id_area']))  $errors[] = 'id_area es obligatorio.';
+        return $errors;
     }
 
-    public function eliminar(): void
+    private function getJson(): array
     {
-        $this->checkAuth();
-        $id = (int)($_GET['id'] ?? 0);
-        $this->repo->delete($id);
-        header('Location: index.php?r=admin/animales');
-        exit;
+        return json_decode(file_get_contents('php://input'), true) ?? [];
     }
 }

@@ -1,15 +1,26 @@
 <?php
+// app/Models/Cliente.php
+declare(strict_types=1);
+
 namespace App\Models;
-class Administrador extends Usuario
+
+class Cliente extends Usuario
 {
-    public function gestionarUsuarios(): string
+    public ?int    $id_cliente;
+    public ?string $nit;
+    public ?string $tipo_cuenta;
+
+    public function __construct(array $data)
     {
-        return "Usuarios gestionados";
+        parent::__construct($data);
+
+        $this->id_cliente  = isset($data['id_cliente'])  ? (int)$data['id_cliente'] : null;
+        $this->nit         = $data['nit']                ?? $data['cliente_nit']    ?? null;
+        $this->tipo_cuenta = $data['tipo_cuenta']        ?? $data['cliente_tipo']   ?? null;
     }
 
-    public function generarReportes(): string
+    public function comprarEntrada(): string
     {
-        return "Reporte generado";
+        return "Entrada comprada";
     }
 }
-

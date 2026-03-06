@@ -3,7 +3,7 @@
         'name' => 'antropomorfos/zoo-wonderland',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'd537d8cbc75f4bc0dba624653bb57f1e04081402',
+        'reference' => '9ed590701518bbdfa1633b976cddd4cad9b54ffa',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'antropomorfos/zoo-wonderland' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'd537d8cbc75f4bc0dba624653bb57f1e04081402',
+            'reference' => '9ed590701518bbdfa1633b976cddd4cad9b54ffa',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
