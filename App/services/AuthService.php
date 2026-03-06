@@ -1,5 +1,5 @@
 <?php
-// app/Services/AuthService.php
+
 declare(strict_types=1);
 
 namespace App\Services;
@@ -11,7 +11,7 @@ use Core\Database;
 class AuthService
 {
     private const COOKIE_NAME = 'zoo_token';
-    private const COOKIE_DAYS = 1; // 1 día = 8 horas aprox, ajustar si quieres más
+    private const COOKIE_DAYS = 7; // 1 día = 8 horas aprox, ajustar si quieres más
 
     // ── Intento de login ─────────────────────────────────────────
     public static function attempt(string $login, string $password): array
@@ -30,7 +30,7 @@ class AuthService
         // Generar token y guardarlo en BD
         $db       = Database::getInstance()->getConnection();
         $token    = bin2hex(random_bytes(32)); // 64 chars
-        $expireAt = (new \DateTime())->modify('+8 hours')->format('Y-m-d H:i:s');
+        $expireAt = (new \DateTime())->modify('+1 day')->format('Y-m-d H:i:s');
         $ip       = $_SERVER['REMOTE_ADDR'] ?? null;
 
         // Revocar tokens anteriores

@@ -77,14 +77,17 @@ class Router
 
     /** Instancia el controlador y llama el método, pasando params */
     private function call(callable|array $handler, array $params): void
-    {
-        if (is_callable($handler)) {
-            $handler($params);
-            return;
-        }
-
-        [$class, $method] = $handler;
-        $controller = new $class();
-        $controller->$method($params);
+{
+    if (is_callable($handler)) {
+        $handler(...array_values($params));
+        return;
     }
+
+    [$class, $method] = $handler;
+    $controller = new $class();
+
+    // Castear a int si el valor es numérico
+    $args = array_map(fn($v) => is_numeric($v) ? (int)$v : $v, array_values($params));
+    $controller->$method(...$args);
+}
 }

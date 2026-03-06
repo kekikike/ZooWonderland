@@ -15,10 +15,11 @@ $router->post('/api/auth/logout', [AuthController::class, 'logout']);
 $router->get( '/api/auth/me',     [AuthController::class, 'me']);
 
 // ── USUARIOS  —  /api/usuarios  (solo admin) ─────────────────────
-$router->get(   '/usuarios',             [UsuarioController::class, 'index']);
-$router->get(   '/usuarios/{id}',        [UsuarioController::class, 'show']);
-$router->put(   '/usuarios/{id}',        [UsuarioController::class, 'update']);
-$router->patch( '/usuarios/{id}/estado', [UsuarioController::class, 'toggleEstado']);
+$router->get(   '/api/usuarios',             [UsuarioController::class, 'index']);
+$router->get(   '/api/usuarios/{id}',        [UsuarioController::class, 'show']);
+$router->put(   '/api/usuarios/{id}',        [UsuarioController::class, 'update']);
+$router->patch( '/api/usuarios/{id}/estado', [UsuarioController::class, 'toggleEstado']);
+$router->post('/api/usuarios', [UsuarioController::class, 'store']);
 
 // ── ANIMALES  —  /api/animales ───────────────────────────────────
 $router->get(   '/api/animales',      [AnimalController::class, 'index']);
