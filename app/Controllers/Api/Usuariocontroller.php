@@ -41,7 +41,7 @@ class UsuarioController
     }
 
     // ── GET /api/usuarios/{id} ───────────────────────────────────
-    public function show(int $id): void
+    public function show(string|int $id): void
     {
         $authUser = (new AuthMiddleware())->handle();
         (new AdminMiddleware())->handle($authUser);
@@ -115,6 +115,63 @@ class UsuarioController
         $this->repo->cambiarEstado($id, $estado);
 
         Response::ok(['id_usuario' => $id, 'estado' => $estado], 'Estado actualizado.');
+    }
+
+    // ── POST /api/usuarios ──────────────────────────────────────
+    public function store(): void
+    {
+        $authUser = (new AuthMiddleware())->handle();
+        (new AdminMiddleware())->handle($authUser);
+
+        $body = $this->getJson();
+
+        $nombre1        = trim($body["nombre1"]        ?? "");
+        $apellido1      = trim($body["apellido1"]      ?? "");
+        $correo         = trim($body["correo"]         ?? "");
+        $nombre_usuario = trim($body["nombre_usuario"] ?? "");
+        $password       = trim($body["password"]       ?? "");
+
+        if (!$nombre1 || !$apellido1 || !$correo || !$nombre_usuario || !$password) {
+            Response::badRequest("Los campos nombre1, apellido1, correo, nombre_usuario y password son obligatorios.");
+        }
+
+        try {
+            $id = $this->repo->create([
+                "nombre1"        => $nombre1,
+                "nombre2"        => trim($body["nombre2"]   ?? ""),
+                "apellido1"      => $apellido1,
+                "apellido2"      => trim($body["apellido2"] ?? ""),
+                "ci"             => trim($body["ci"]        ?? ""),
+                "correo"         => $correo,
+                "telefono"       => trim($body["telefono"]  ?? ""),
+                "nombre_usuario" => $nombre_usuario,
+                "password"       => $password,
+            ]);
+
+            $usuario = $this->repo->getUsuarioPorId($id);
+            Response::created($usuario, "Usuario creado correctamente.");
+
+        } catch (\Exception $e) {
+            Response::conflict($e->getMessage());
+        }
+    }
+    // ── DELETE /api/usuarios/{id} ────────────────────────────────
+    public function destroy(int $id): void
+    {
+        $authUser = (new AuthMiddleware())->handle();
+        (new AdminMiddleware())->handle($authUser);
+
+        if ($id === $authUser['id_usuario']) {
+            Response::forbidden('No puedes eliminarte a ti mismo.');
+        }
+
+        $usuario = $this->repo->getUsuarioPorId($id);
+        if (!$usuario) {
+            Response::notFound('Usuario no encontrado.');
+        }
+
+        $this->repo->cambiarEstado($id, 0);
+        Response::ok(null, 'Usuario desactivado correctamente.');
     }
 
     // ── Helper ───────────────────────────────────────────────────

@@ -42,12 +42,12 @@ class AuthController
         }
 
         // Revocar tokens anteriores
-        $this->db->prepare("UPDATE api_token SET activo = 0 WHERE id_usuario = :id")
-                 ->execute([':id' => $usuario->id_usuario]);
+        // $this->db->prepare("UPDATE api_token SET activo = 0 WHERE id_usuario = :id")
+        //         ->execute([':id' => $usuario->id_usuario]);
 
         // Generar nuevo token
         $token    = bin2hex(random_bytes(32));
-        $expireAt = (new \DateTime())->modify('+8 hours')->format('Y-m-d H:i:s');
+        $expireAt = (new \DateTime())->modify('+1 day')->format('Y-m-d H:i:s');
 
         $this->db->prepare("
             INSERT INTO api_token (id_usuario, token, expire_at, ip_origen, activo)
