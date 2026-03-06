@@ -3,9 +3,9 @@
 return [
     'host'     => 'localhost',
     'port'     => 3306,
-    'database' => 'zoowonderland',  
+    'database' => 'zoowonderland2',  
     'username' => 'root',
-    'password' => '',
+    'password' => 'mipmopmap26PanQ',
     'charset'  => 'utf8mb4',
 ];
 
