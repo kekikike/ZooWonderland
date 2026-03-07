@@ -2,7 +2,7 @@
 // app/controllers/Api/UsuarioController.php
 declare(strict_types=1);
 
-namespace App\Controllers\Api;
+namespace App\Controllers;
 
 use App\Helpers\Response;
 use App\Middleware\AuthMiddleware;

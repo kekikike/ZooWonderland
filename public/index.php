@@ -66,10 +66,8 @@ if ($esApi) {
 // MODO VISTAS PHP
 // ════════════════════════════════════════════════════════════════
 
-
 require_once CORE_PATH . '/Authorization.php';
 define('BASE_URL', '/ZooWonderland/public/index.php');
-
 
 $r = $_GET['r'] ?? '/';
 $r = trim($r, '/');
@@ -103,6 +101,69 @@ switch ($r) {
     case 'logout':
         $authCtrl = new \App\Controllers\AuthController();
         $authCtrl->logout();
+        break;
+
+    // ── COMPRAS ─────────────────────────────────────────────────
+    case 'compras/crear':
+        \Core\Authorization::requireCliente();
+        $compraCtrl = new \App\Controllers\CompraController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $compraCtrl->procesar();
+        } else {
+            $compraCtrl->crear();
+        }
+        break;
+
+    case 'compras/pagoqr':
+        \Core\Authorization::requireCliente();
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->showPagoQR();
+        break;
+
+    case 'compras/pdf':
+        \Core\Authorization::requireCliente();
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->downloadPdf();
+        break;
+
+    case 'historial':
+        $userCtrl = new \App\Controllers\UsuarioController();
+        $userCtrl->historial();
+        break;
+
+    case 'compras/historial':
+        \Core\Authorization::requireCliente();
+        $compraCtrl = new \App\Controllers\CompraController();
+        $compraCtrl->historial();
+        break;
+
+    // ── RESERVAS ────────────────────────────────────────────────
+    case 'reservar':
+        \Core\Authorization::requireCliente();
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $reservaCtrl->processForm();
+        } else {
+            $reservaCtrl->showForm();
+        }
+        break;
+
+    case 'reservas/pagoqr':
+        \Core\Authorization::requireCliente();
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->showPagoQR();
+        break;
+
+    case 'reservas/historial':
+        \Core\Authorization::requireCliente();
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->showHistorial();
+        break;
+
+    case 'reservas/pdf':
+        \Core\Authorization::requireCliente();
+        $reservaCtrl = new \App\Controllers\ReservaController();
+        $reservaCtrl->downloadPdf();
         break;
 
     // ── GUÍA ────────────────────────────────────────────────────
@@ -208,6 +269,21 @@ switch ($r) {
             $adminCtrl->actualizarRecorrido();
         } elseif ($r === 'admin/recorridos/eliminar') {
             $adminCtrl->eliminarRecorrido();
+        } else {
+            $animCtrl = new \App\Controllers\AnimalController();
+            if ($r === 'admin/animales') {
+                $animCtrl->index();
+            } elseif ($r === 'admin/animales/crear') {
+                $animCtrl->crear();
+            } elseif ($r === 'admin/animales/guardar') {
+                $animCtrl->guardar();
+            } elseif ($r === 'admin/animales/editar') {
+                $animCtrl->editar();
+            } elseif ($r === 'admin/animales/actualizar') {
+                $animCtrl->actualizar();
+            } elseif ($r === 'admin/animales/eliminar') {
+                $animCtrl->eliminar();
+            }
         }
         break;
 
