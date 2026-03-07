@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 07, 2026 at 12:55 AM
+-- Generation Time: Mar 07, 2026 at 01:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `zoowonderland2`
+-- Database: `zoowonderland`
 --
 CREATE DATABASE IF NOT EXISTS `zoowonderland` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `zoowonderland`;
@@ -29,15 +29,12 @@ USE `zoowonderland`;
 -- Table structure for table `administradores`
 --
 
-CREATE TABLE IF NOT EXISTS `administradores` (
-  `id_admin` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `administradores` (
+  `id_admin` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_admin`),
-  UNIQUE KEY `id_usuario` (`id_usuario`),
-  KEY `idx_admin_usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `administradores`
@@ -52,8 +49,8 @@ INSERT INTO `administradores` (`id_admin`, `id_usuario`, `estado`, `fecha_regist
 -- Table structure for table `animales`
 --
 
-CREATE TABLE IF NOT EXISTS `animales` (
-  `id_animal` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `animales` (
+  `id_animal` int(11) NOT NULL,
   `especie` varchar(100) NOT NULL,
   `nombre_comun` varchar(100) DEFAULT NULL,
   `habitat` varchar(100) DEFAULT NULL,
@@ -61,11 +58,8 @@ CREATE TABLE IF NOT EXISTS `animales` (
   `foto` varchar(800) DEFAULT NULL,
   `estado` varchar(50) DEFAULT NULL,
   `id_area` int(11) NOT NULL,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_animal`),
-  KEY `idx_animal_area` (`id_area`),
-  KEY `idx_especie` (`especie`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `animales`
@@ -107,20 +101,15 @@ INSERT INTO `animales` (`id_animal`, `especie`, `nombre_comun`, `habitat`, `desc
 -- Table structure for table `api_token`
 --
 
-CREATE TABLE IF NOT EXISTS `api_token` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `api_token` (
+  `id` int(11) NOT NULL,
   `id_usuario` int(11) NOT NULL,
   `token` varchar(64) NOT NULL,
   `expire_at` datetime NOT NULL,
   `last_used` datetime DEFAULT NULL,
   `ip_origen` varchar(45) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `token` (`token`),
-  KEY `idx_token` (`token`),
-  KEY `idx_usuario` (`id_usuario`),
-  KEY `idx_expires` (`expire_at`)
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -129,16 +118,14 @@ CREATE TABLE IF NOT EXISTS `api_token` (
 -- Table structure for table `areas`
 --
 
-CREATE TABLE IF NOT EXISTS `areas` (
-  `id_area` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `areas` (
+  `id_area` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `restringida` tinyint(1) DEFAULT 0,
   `descripcion` text DEFAULT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_area`),
-  UNIQUE KEY `nombre` (`nombre`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `areas`
@@ -162,17 +149,14 @@ INSERT INTO `areas` (`id_area`, `nombre`, `restringida`, `descripcion`, `estado`
 -- Table structure for table `clientes`
 --
 
-CREATE TABLE IF NOT EXISTS `clientes` (
-  `id_cliente` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `clientes` (
+  `id_cliente` int(11) NOT NULL,
   `nit` varchar(30) DEFAULT NULL,
   `tipo_cuenta` varchar(50) DEFAULT NULL,
   `id_usuario` int(11) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_cliente`),
-  UNIQUE KEY `id_usuario` (`id_usuario`),
-  KEY `idx_cliente_usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `clientes`
@@ -191,19 +175,16 @@ INSERT INTO `clientes` (`id_cliente`, `nit`, `tipo_cuenta`, `id_usuario`, `estad
 -- Table structure for table `compras`
 --
 
-CREATE TABLE IF NOT EXISTS `compras` (
-  `id_compra` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `compras` (
+  `id_compra` int(11) NOT NULL,
   `fecha` date NOT NULL,
   `hora` time NOT NULL,
   `monto` decimal(10,2) NOT NULL,
   `estado_pago` tinyint(1) DEFAULT 0,
   `id_cliente` int(11) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_compra`),
-  KEY `idx_compra_cliente` (`id_cliente`),
-  KEY `idx_compra_fecha` (`fecha`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `compras`
@@ -237,18 +218,15 @@ INSERT INTO `compras` (`id_compra`, `fecha`, `hora`, `monto`, `estado_pago`, `id
 -- Table structure for table `detalle_compra`
 --
 
-CREATE TABLE IF NOT EXISTS `detalle_compra` (
-  `id_detalle` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `detalle_compra` (
+  `id_detalle` int(11) NOT NULL,
   `id_compra` int(11) NOT NULL,
   `id_ticket` int(11) NOT NULL,
   `precio_unitario` decimal(10,2) NOT NULL,
   `cantidad` int(11) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_detalle`),
-  KEY `idx_detalle_compra` (`id_compra`),
-  KEY `idx_detalle_ticket` (`id_ticket`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `detalle_compra`
@@ -291,8 +269,8 @@ INSERT INTO `detalle_compra` (`id_detalle`, `id_compra`, `id_ticket`, `precio_un
 -- Table structure for table `eventos`
 --
 
-CREATE TABLE IF NOT EXISTS `eventos` (
-  `id_evento` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `eventos` (
+  `id_evento` int(11) NOT NULL,
   `nombre_evento` varchar(150) NOT NULL,
   `descripcion` text DEFAULT NULL,
   `fecha_inicio` datetime NOT NULL,
@@ -305,9 +283,7 @@ CREATE TABLE IF NOT EXISTS `eventos` (
   `estado` tinyint(4) DEFAULT 1,
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
-  `fecha_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id_evento`),
-  KEY `fk_evento_guia` (`encargado_id`)
+  `fecha_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -316,17 +292,15 @@ CREATE TABLE IF NOT EXISTS `eventos` (
 -- Table structure for table `evento_actividades`
 --
 
-CREATE TABLE IF NOT EXISTS `evento_actividades` (
-  `id_actividad` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `evento_actividades` (
+  `id_actividad` int(11) NOT NULL,
   `evento_id` int(11) NOT NULL,
   `nombre_actividad` varchar(150) NOT NULL,
   `descripcion` text DEFAULT NULL,
   `hora_inicio` time DEFAULT NULL,
   `hora_fin` time DEFAULT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_actividad`),
-  KEY `fk_evento_actividad` (`evento_id`)
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -335,17 +309,14 @@ CREATE TABLE IF NOT EXISTS `evento_actividades` (
 -- Table structure for table `guias`
 --
 
-CREATE TABLE IF NOT EXISTS `guias` (
-  `id_guia` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `guias` (
+  `id_guia` int(11) NOT NULL,
   `horarios` text DEFAULT NULL,
   `dias_trabajo` text DEFAULT NULL,
   `id_usuario` int(11) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_guia`),
-  UNIQUE KEY `id_usuario` (`id_usuario`),
-  KEY `idx_guia_usuario` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `guias`
@@ -364,18 +335,14 @@ INSERT INTO `guias` (`id_guia`, `horarios`, `dias_trabajo`, `id_usuario`, `estad
 -- Table structure for table `guia_recorrido`
 --
 
-CREATE TABLE IF NOT EXISTS `guia_recorrido` (
-  `id_guia_recorrido` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `guia_recorrido` (
+  `id_guia_recorrido` int(11) NOT NULL,
   `id_guia` int(11) NOT NULL,
   `id_recorrido` int(11) NOT NULL,
   `fecha_asignacion` date NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_guia_recorrido`),
-  UNIQUE KEY `id_guia` (`id_guia`,`id_recorrido`),
-  KEY `idx_gr_guia` (`id_guia`),
-  KEY `idx_gr_recorrido` (`id_recorrido`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `guia_recorrido`
@@ -399,19 +366,16 @@ INSERT INTO `guia_recorrido` (`id_guia_recorrido`, `id_guia`, `id_recorrido`, `f
 -- Table structure for table `recorridos`
 --
 
-CREATE TABLE IF NOT EXISTS `recorridos` (
-  `id_recorrido` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `recorridos` (
+  `id_recorrido` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `tipo` varchar(50) DEFAULT NULL,
   `precio` decimal(10,2) NOT NULL,
   `duracion` int(11) DEFAULT NULL,
   `capacidad` int(11) DEFAULT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_recorrido`),
-  KEY `idx_recorrido_nombre` (`nombre`),
-  KEY `idx_recorrido_tipo` (`tipo`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `recorridos`
@@ -431,17 +395,13 @@ INSERT INTO `recorridos` (`id_recorrido`, `nombre`, `tipo`, `precio`, `duracion`
 -- Table structure for table `recorrido_area`
 --
 
-CREATE TABLE IF NOT EXISTS `recorrido_area` (
-  `id_recorrido_area` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `recorrido_area` (
+  `id_recorrido_area` int(11) NOT NULL,
   `id_recorrido` int(11) NOT NULL,
   `id_area` int(11) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_recorrido_area`),
-  UNIQUE KEY `id_recorrido` (`id_recorrido`,`id_area`),
-  KEY `idx_ra_recorrido` (`id_recorrido`),
-  KEY `idx_ra_area` (`id_area`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `recorrido_area`
@@ -469,17 +429,14 @@ INSERT INTO `recorrido_area` (`id_recorrido_area`, `id_recorrido`, `id_area`, `e
 -- Table structure for table `reportes`
 --
 
-CREATE TABLE IF NOT EXISTS `reportes` (
-  `id_reporte` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `reportes` (
+  `id_reporte` int(11) NOT NULL,
   `id_guia_recorrido` int(11) NOT NULL,
   `observaciones` text NOT NULL,
   `fecha_reporte` timestamp NOT NULL DEFAULT current_timestamp(),
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_reporte`),
-  UNIQUE KEY `idx_gr_unico` (`id_guia_recorrido`),
-  KEY `idx_reporte_gr` (`id_guia_recorrido`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `reportes`
@@ -494,8 +451,8 @@ INSERT INTO `reportes` (`id_reporte`, `id_guia_recorrido`, `observaciones`, `fec
 -- Table structure for table `reservas`
 --
 
-CREATE TABLE IF NOT EXISTS `reservas` (
-  `id_reserva` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `reservas` (
+  `id_reserva` int(11) NOT NULL,
   `fecha` date NOT NULL,
   `hora` time NOT NULL,
   `cupos` int(11) NOT NULL,
@@ -504,12 +461,8 @@ CREATE TABLE IF NOT EXISTS `reservas` (
   `estado_pago` tinyint(1) DEFAULT 0,
   `estado` tinyint(1) DEFAULT 1,
   `id_cliente` int(11) NOT NULL,
-  `id_recorrido` int(11) NOT NULL,
-  PRIMARY KEY (`id_reserva`),
-  KEY `idx_reserva_cliente` (`id_cliente`),
-  KEY `idx_reserva_recorrido` (`id_recorrido`),
-  KEY `idx_reserva_fecha` (`fecha`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `id_recorrido` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `reservas`
@@ -528,15 +481,13 @@ INSERT INTO `reservas` (`id_reserva`, `fecha`, `hora`, `cupos`, `institucion`, `
 -- Table structure for table `roles`
 --
 
-CREATE TABLE IF NOT EXISTS `roles` (
-  `id_rol` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `roles` (
+  `id_rol` int(11) NOT NULL,
   `nombre_rol` varchar(50) NOT NULL,
   `descripcion` varchar(150) DEFAULT NULL,
   `estado` tinyint(4) DEFAULT 1,
-  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_rol`),
-  UNIQUE KEY `nombre_rol` (`nombre_rol`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `roles`
@@ -553,53 +504,51 @@ INSERT INTO `roles` (`id_rol`, `nombre_rol`, `descripcion`, `estado`, `fecha_reg
 -- Table structure for table `tickets`
 --
 
-CREATE TABLE IF NOT EXISTS `tickets` (
-  `id_ticket` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `tickets` (
+  `id_ticket` int(11) NOT NULL,
   `hora` time NOT NULL,
   `fecha` date NOT NULL,
   `codigo_qr` varchar(255) NOT NULL,
   `id_compra` int(11) NOT NULL,
   `id_recorrido` int(11) NOT NULL,
-  PRIMARY KEY (`id_ticket`),
-  UNIQUE KEY `codigo_qr` (`codigo_qr`),
-  KEY `idx_ticket_compra` (`id_compra`),
-  KEY `idx_ticket_recorrido` (`id_recorrido`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `estado` tinyint(4) DEFAULT 1,
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `tickets`
 --
 
-INSERT INTO `tickets` (`id_ticket`, `hora`, `fecha`, `codigo_qr`, `id_compra`, `id_recorrido`) VALUES
-(1, '09:30:00', '2026-01-05', 'QR001', 1, 1),
-(2, '09:30:00', '2026-01-05', 'QR002', 1, 2),
-(3, '10:15:00', '2026-01-06', 'QR003', 2, 1),
-(4, '11:00:00', '2026-01-07', 'QR004', 3, 2),
-(5, '11:00:00', '2026-01-07', 'QR005', 3, 3),
-(6, '12:30:00', '2026-01-08', 'QR006', 4, 1),
-(7, '14:00:00', '2026-01-09', 'QR007', 5, 2),
-(8, '14:00:00', '2026-01-09', 'QR008', 5, 2),
-(9, '14:00:00', '2026-01-09', 'QR009', 5, 2),
-(10, '09:45:00', '2026-01-10', 'QR010', 6, 6),
-(11, '10:20:00', '2026-01-11', 'QR011', 7, 2),
-(12, '11:10:00', '2026-01-12', 'QR012', 8, 1),
-(13, '12:40:00', '2026-01-13', 'QR013', 9, 4),
-(14, '12:40:00', '2026-01-13', 'QR014', 9, 5),
-(15, '13:30:00', '2026-01-14', 'QR015', 10, 5),
-(16, '09:50:00', '2026-01-15', 'QR016', 11, 6),
-(17, '09:50:00', '2026-01-15', 'QR017', 11, 6),
-(18, '10:45:00', '2026-01-16', 'QR018', 12, 3),
-(19, '11:30:00', '2026-01-17', 'QR019', 13, 5),
-(20, '12:00:00', '2026-01-18', 'QR020', 14, 1),
-(21, '12:00:00', '2026-01-18', 'QR021', 14, 3),
-(22, '14:10:00', '2026-01-19', 'QR022', 15, 2),
-(23, '14:10:00', '2026-01-19', 'QR023', 15, 6),
-(24, '09:15:00', '2026-01-20', 'QR024', 16, 1),
-(25, '10:40:00', '2026-01-21', 'QR025', 17, 2),
-(26, '11:20:00', '2026-01-22', 'QR026', 18, 3),
-(27, '13:00:00', '2026-01-23', 'QR027', 19, 6),
-(28, '14:30:00', '2026-01-24', 'QR028', 20, 2),
-(29, '14:30:00', '2026-01-24', 'QR029', 20, 1);
+INSERT INTO `tickets` (`id_ticket`, `hora`, `fecha`, `codigo_qr`, `id_compra`, `id_recorrido`, `estado`, `fecha_registro`) VALUES
+(1, '09:30:00', '2026-01-05', 'QR001', 1, 1, 1, '2026-03-07 00:10:34'),
+(2, '09:30:00', '2026-01-05', 'QR002', 1, 2, 1, '2026-03-07 00:10:34'),
+(3, '10:15:00', '2026-01-06', 'QR003', 2, 1, 1, '2026-03-07 00:10:34'),
+(4, '11:00:00', '2026-01-07', 'QR004', 3, 2, 1, '2026-03-07 00:10:34'),
+(5, '11:00:00', '2026-01-07', 'QR005', 3, 3, 1, '2026-03-07 00:10:34'),
+(6, '12:30:00', '2026-01-08', 'QR006', 4, 1, 1, '2026-03-07 00:10:34'),
+(7, '14:00:00', '2026-01-09', 'QR007', 5, 2, 1, '2026-03-07 00:10:34'),
+(8, '14:00:00', '2026-01-09', 'QR008', 5, 2, 1, '2026-03-07 00:10:34'),
+(9, '14:00:00', '2026-01-09', 'QR009', 5, 2, 1, '2026-03-07 00:10:34'),
+(10, '09:45:00', '2026-01-10', 'QR010', 6, 6, 1, '2026-03-07 00:10:34'),
+(11, '10:20:00', '2026-01-11', 'QR011', 7, 2, 1, '2026-03-07 00:10:34'),
+(12, '11:10:00', '2026-01-12', 'QR012', 8, 1, 1, '2026-03-07 00:10:34'),
+(13, '12:40:00', '2026-01-13', 'QR013', 9, 4, 1, '2026-03-07 00:10:34'),
+(14, '12:40:00', '2026-01-13', 'QR014', 9, 5, 1, '2026-03-07 00:10:34'),
+(15, '13:30:00', '2026-01-14', 'QR015', 10, 5, 1, '2026-03-07 00:10:34'),
+(16, '09:50:00', '2026-01-15', 'QR016', 11, 6, 1, '2026-03-07 00:10:34'),
+(17, '09:50:00', '2026-01-15', 'QR017', 11, 6, 1, '2026-03-07 00:10:34'),
+(18, '10:45:00', '2026-01-16', 'QR018', 12, 3, 1, '2026-03-07 00:10:34'),
+(19, '11:30:00', '2026-01-17', 'QR019', 13, 5, 1, '2026-03-07 00:10:34'),
+(20, '12:00:00', '2026-01-18', 'QR020', 14, 1, 1, '2026-03-07 00:10:34'),
+(21, '12:00:00', '2026-01-18', 'QR021', 14, 3, 1, '2026-03-07 00:10:34'),
+(22, '14:10:00', '2026-01-19', 'QR022', 15, 2, 1, '2026-03-07 00:10:34'),
+(23, '14:10:00', '2026-01-19', 'QR023', 15, 6, 1, '2026-03-07 00:10:34'),
+(24, '09:15:00', '2026-01-20', 'QR024', 16, 1, 1, '2026-03-07 00:10:34'),
+(25, '10:40:00', '2026-01-21', 'QR025', 17, 2, 1, '2026-03-07 00:10:34'),
+(26, '11:20:00', '2026-01-22', 'QR026', 18, 3, 1, '2026-03-07 00:10:34'),
+(27, '13:00:00', '2026-01-23', 'QR027', 19, 6, 1, '2026-03-07 00:10:34'),
+(28, '14:30:00', '2026-01-24', 'QR028', 20, 2, 1, '2026-03-07 00:10:34'),
+(29, '14:30:00', '2026-01-24', 'QR029', 20, 1, 1, '2026-03-07 00:10:34');
 
 -- --------------------------------------------------------
 
@@ -607,8 +556,8 @@ INSERT INTO `tickets` (`id_ticket`, `hora`, `fecha`, `codigo_qr`, `id_compra`, `
 -- Table structure for table `usuarios`
 --
 
-CREATE TABLE IF NOT EXISTS `usuarios` (
-  `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `usuarios` (
+  `id_usuario` int(11) NOT NULL,
   `nombre1` varchar(50) NOT NULL,
   `nombre2` varchar(50) DEFAULT NULL,
   `apellido1` varchar(50) NOT NULL,
@@ -620,32 +569,291 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `contrasena` varchar(255) NOT NULL,
   `estado` tinyint(4) DEFAULT 1,
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
-  `id_rol` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id_usuario`),
-  UNIQUE KEY `ci` (`ci`),
-  UNIQUE KEY `correo` (`correo`),
-  UNIQUE KEY `nombre_usuario` (`nombre_usuario`),
-  KEY `idx_email` (`correo`),
-  KEY `idx_username` (`nombre_usuario`),
-  KEY `fk_usuario_rol` (`id_rol`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `id_rol` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `usuarios`
 --
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre1`, `nombre2`, `apellido1`, `apellido2`, `ci`, `correo`, `telefono`, `nombre_usuario`, `contrasena`, `estado`, `fecha_registro`, `id_rol`) VALUES
-(1, 'Favio', 'Estefano', 'Palomares', 'Lima', 84537272, 'favio@gmail.com', '78943431', 'faviopzoo', '$2y$12$K62IvhlFPpdJB3dwQiu6bOBrFw1sIIOSQ2wjjlJat/UY0mhU6NEay', 1, '2026-03-06 23:48:50', NULL),
-(2, 'Charlie', 'Fernando', 'Papas', 'Mamani', 8333302, 'charlie@gmail.com', '78900002', 'charliep', '$2y$12$VNl.SOXerOKJIqLjF8NIkenKa3ij9MDGaIpLTNw/GP81EalWBAZjy', 1, '2026-03-06 23:48:50', NULL),
-(3, 'María', 'Elena', 'Flores', 'Rojas', 8333303, 'maria@gmail.com', '78900003', 'mariaf', '$2y$12$NvrpW12dldxSGynk0A.o2.h5VH39opz/L9wusMcpDOJ8iXkXkqpkS', 1, '2026-03-06 23:48:50', NULL),
-(4, 'José', 'Antonio', 'Paredes', 'Lopez', 8333304, 'jose@gmail.com', '78900004', 'josepa', '$2y$12$TIoAXorc3Panq6NSM5l7T.qqTiOaa6jAnZC45W380hDfgrovsdeM', 1, '2026-03-06 23:48:50', NULL),
-(5, 'Ana', 'Lucía', 'Garcia', 'Choque', 8333305, 'ana@gmail.com', '78900005', 'anav', '$2y$12$WFBCZSzSvEtHqH4iwOMhE.XK/iMrIp7jhSDPJ3.ZtT24H9rJhXw7a', 1, '2026-03-06 23:48:50', NULL),
-(6, 'Pedro', 'Luis', 'Gutiérrez', 'Soto', 8333306, 'pedro@gmail.com', '78900006', 'pedros', '$2y$12$au0mOqSXxhOdC/Z..RLxxecPrOfKCXBM9/dMj7eLRXwhdY1.8y5l.', 1, '2026-03-06 23:48:50', NULL),
-(7, 'Juan', 'Carlos', 'Mendoza', 'Ruiz', 800007, 'juan@gmail.com', '78900007', 'juancm', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', NULL),
-(8, 'Laura', 'Isabel', 'Pinto', 'Salas', 800008, 'laura@gmail.com', '78900008', 'lauraps', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', NULL),
-(9, 'Miguel', 'Ángel', 'Torrez', 'Ramos', 800009, 'miguel@gmail.com', '78900009', 'migueltr', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', NULL),
-(10, 'Sofía', 'Natalia', 'Cruz', 'Rivera', 800010, 'sofia@gmail.com', '78900010', 'soficr', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', NULL),
-(11, 'Diego', 'Andrés', 'Herrera', 'Paz', 800011, 'diego@gmail.com', '78900011', 'diegohp', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', NULL);
+(1, 'Favio', 'Estefano', 'Palomares', 'Lima', 84537272, 'favio@gmail.com', '78943431', 'faviopzoo', '$2y$12$K62IvhlFPpdJB3dwQiu6bOBrFw1sIIOSQ2wjjlJat/UY0mhU6NEay', 1, '2026-03-06 23:48:50', 1),
+(2, 'Charlie', 'Fernando', 'Papas', 'Mamani', 8333302, 'charlie@gmail.com', '78900002', 'charliep', '$2y$12$VNl.SOXerOKJIqLjF8NIkenKa3ij9MDGaIpLTNw/GP81EalWBAZjy', 1, '2026-03-06 23:48:50', 2),
+(3, 'María', 'Elena', 'Flores', 'Rojas', 8333303, 'maria@gmail.com', '78900003', 'mariaf', '$2y$12$NvrpW12dldxSGynk0A.o2.h5VH39opz/L9wusMcpDOJ8iXkXkqpkS', 1, '2026-03-06 23:48:50', 2),
+(4, 'José', 'Antonio', 'Paredes', 'Lopez', 8333304, 'jose@gmail.com', '78900004', 'josepa', '$2y$12$TIoAXorc3Panq6NSM5l7T.qqTiOaa6jAnZC45W380hDfgrovsdeM', 1, '2026-03-06 23:48:50', 2),
+(5, 'Ana', 'Lucía', 'Garcia', 'Choque', 8333305, 'ana@gmail.com', '78900005', 'anav', '$2y$12$WFBCZSzSvEtHqH4iwOMhE.XK/iMrIp7jhSDPJ3.ZtT24H9rJhXw7a', 1, '2026-03-06 23:48:50', 2),
+(6, 'Pedro', 'Luis', 'Gutiérrez', 'Soto', 8333306, 'pedro@gmail.com', '78900006', 'pedros', '$2y$12$au0mOqSXxhOdC/Z..RLxxecPrOfKCXBM9/dMj7eLRXwhdY1.8y5l.', 1, '2026-03-06 23:48:50', 2),
+(7, 'Juan', 'Carlos', 'Mendoza', 'Ruiz', 800007, 'juan@gmail.com', '78900007', 'juancm', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', 3),
+(8, 'Laura', 'Isabel', 'Pinto', 'Salas', 800008, 'laura@gmail.com', '78900008', 'lauraps', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', 3),
+(9, 'Miguel', 'Ángel', 'Torrez', 'Ramos', 800009, 'miguel@gmail.com', '78900009', 'migueltr', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', 3),
+(10, 'Sofía', 'Natalia', 'Cruz', 'Rivera', 800010, 'sofia@gmail.com', '78900010', 'soficr', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', 3),
+(11, 'Diego', 'Andrés', 'Herrera', 'Paz', 800011, 'diego@gmail.com', '78900011', 'diegohp', '$2y$12$PhpjbCEPFRQxkym0RjGx2udYTrsHZQ.HqmV6xJfwVPGVCQBbQ49U6', 1, '2026-03-06 23:48:50', 3);
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `administradores`
+--
+ALTER TABLE `administradores`
+  ADD PRIMARY KEY (`id_admin`),
+  ADD UNIQUE KEY `id_usuario` (`id_usuario`),
+  ADD KEY `idx_admin_usuario` (`id_usuario`);
+
+--
+-- Indexes for table `animales`
+--
+ALTER TABLE `animales`
+  ADD PRIMARY KEY (`id_animal`),
+  ADD KEY `idx_animal_area` (`id_area`),
+  ADD KEY `idx_especie` (`especie`);
+
+--
+-- Indexes for table `api_token`
+--
+ALTER TABLE `api_token`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD KEY `idx_token` (`token`),
+  ADD KEY `idx_usuario` (`id_usuario`),
+  ADD KEY `idx_expires` (`expire_at`);
+
+--
+-- Indexes for table `areas`
+--
+ALTER TABLE `areas`
+  ADD PRIMARY KEY (`id_area`),
+  ADD UNIQUE KEY `nombre` (`nombre`);
+
+--
+-- Indexes for table `clientes`
+--
+ALTER TABLE `clientes`
+  ADD PRIMARY KEY (`id_cliente`),
+  ADD UNIQUE KEY `id_usuario` (`id_usuario`),
+  ADD KEY `idx_cliente_usuario` (`id_usuario`);
+
+--
+-- Indexes for table `compras`
+--
+ALTER TABLE `compras`
+  ADD PRIMARY KEY (`id_compra`),
+  ADD KEY `idx_compra_cliente` (`id_cliente`),
+  ADD KEY `idx_compra_fecha` (`fecha`);
+
+--
+-- Indexes for table `detalle_compra`
+--
+ALTER TABLE `detalle_compra`
+  ADD PRIMARY KEY (`id_detalle`),
+  ADD KEY `idx_detalle_compra` (`id_compra`),
+  ADD KEY `idx_detalle_ticket` (`id_ticket`);
+
+--
+-- Indexes for table `eventos`
+--
+ALTER TABLE `eventos`
+  ADD PRIMARY KEY (`id_evento`),
+  ADD KEY `fk_evento_guia` (`encargado_id`);
+
+--
+-- Indexes for table `evento_actividades`
+--
+ALTER TABLE `evento_actividades`
+  ADD PRIMARY KEY (`id_actividad`),
+  ADD KEY `fk_evento_actividad` (`evento_id`);
+
+--
+-- Indexes for table `guias`
+--
+ALTER TABLE `guias`
+  ADD PRIMARY KEY (`id_guia`),
+  ADD UNIQUE KEY `id_usuario` (`id_usuario`),
+  ADD KEY `idx_guia_usuario` (`id_usuario`);
+
+--
+-- Indexes for table `guia_recorrido`
+--
+ALTER TABLE `guia_recorrido`
+  ADD PRIMARY KEY (`id_guia_recorrido`),
+  ADD UNIQUE KEY `id_guia` (`id_guia`,`id_recorrido`),
+  ADD KEY `idx_gr_guia` (`id_guia`),
+  ADD KEY `idx_gr_recorrido` (`id_recorrido`);
+
+--
+-- Indexes for table `recorridos`
+--
+ALTER TABLE `recorridos`
+  ADD PRIMARY KEY (`id_recorrido`),
+  ADD KEY `idx_recorrido_nombre` (`nombre`),
+  ADD KEY `idx_recorrido_tipo` (`tipo`);
+
+--
+-- Indexes for table `recorrido_area`
+--
+ALTER TABLE `recorrido_area`
+  ADD PRIMARY KEY (`id_recorrido_area`),
+  ADD UNIQUE KEY `id_recorrido` (`id_recorrido`,`id_area`),
+  ADD KEY `idx_ra_recorrido` (`id_recorrido`),
+  ADD KEY `idx_ra_area` (`id_area`);
+
+--
+-- Indexes for table `reportes`
+--
+ALTER TABLE `reportes`
+  ADD PRIMARY KEY (`id_reporte`),
+  ADD UNIQUE KEY `idx_gr_unico` (`id_guia_recorrido`),
+  ADD KEY `idx_reporte_gr` (`id_guia_recorrido`);
+
+--
+-- Indexes for table `reservas`
+--
+ALTER TABLE `reservas`
+  ADD PRIMARY KEY (`id_reserva`),
+  ADD KEY `idx_reserva_cliente` (`id_cliente`),
+  ADD KEY `idx_reserva_recorrido` (`id_recorrido`),
+  ADD KEY `idx_reserva_fecha` (`fecha`);
+
+--
+-- Indexes for table `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id_rol`),
+  ADD UNIQUE KEY `nombre_rol` (`nombre_rol`);
+
+--
+-- Indexes for table `tickets`
+--
+ALTER TABLE `tickets`
+  ADD PRIMARY KEY (`id_ticket`),
+  ADD UNIQUE KEY `codigo_qr` (`codigo_qr`),
+  ADD KEY `idx_ticket_compra` (`id_compra`),
+  ADD KEY `idx_ticket_recorrido` (`id_recorrido`);
+
+--
+-- Indexes for table `usuarios`
+--
+ALTER TABLE `usuarios`
+  ADD PRIMARY KEY (`id_usuario`),
+  ADD UNIQUE KEY `ci` (`ci`),
+  ADD UNIQUE KEY `correo` (`correo`),
+  ADD UNIQUE KEY `nombre_usuario` (`nombre_usuario`),
+  ADD KEY `idx_email` (`correo`),
+  ADD KEY `idx_username` (`nombre_usuario`),
+  ADD KEY `fk_usuario_rol` (`id_rol`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `administradores`
+--
+ALTER TABLE `administradores`
+  MODIFY `id_admin` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `animales`
+--
+ALTER TABLE `animales`
+  MODIFY `id_animal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT for table `api_token`
+--
+ALTER TABLE `api_token`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `areas`
+--
+ALTER TABLE `areas`
+  MODIFY `id_area` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `clientes`
+--
+ALTER TABLE `clientes`
+  MODIFY `id_cliente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `compras`
+--
+ALTER TABLE `compras`
+  MODIFY `id_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+
+--
+-- AUTO_INCREMENT for table `detalle_compra`
+--
+ALTER TABLE `detalle_compra`
+  MODIFY `id_detalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT for table `eventos`
+--
+ALTER TABLE `eventos`
+  MODIFY `id_evento` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `evento_actividades`
+--
+ALTER TABLE `evento_actividades`
+  MODIFY `id_actividad` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `guias`
+--
+ALTER TABLE `guias`
+  MODIFY `id_guia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `guia_recorrido`
+--
+ALTER TABLE `guia_recorrido`
+  MODIFY `id_guia_recorrido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `recorridos`
+--
+ALTER TABLE `recorridos`
+  MODIFY `id_recorrido` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `recorrido_area`
+--
+ALTER TABLE `recorrido_area`
+  MODIFY `id_recorrido_area` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `reportes`
+--
+ALTER TABLE `reportes`
+  MODIFY `id_reporte` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `reservas`
+--
+ALTER TABLE `reservas`
+  MODIFY `id_reserva` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
+-- AUTO_INCREMENT for table `roles`
+--
+ALTER TABLE `roles`
+  MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `tickets`
+--
+ALTER TABLE `tickets`
+  MODIFY `id_ticket` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+
+--
+-- AUTO_INCREMENT for table `usuarios`
+--
+ALTER TABLE `usuarios`
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables
