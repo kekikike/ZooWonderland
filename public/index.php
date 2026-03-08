@@ -126,7 +126,7 @@ switch ($r) {
         $compraCtrl->downloadPdf();
         break;
 
-    case 'historial':
+  case 'historial':
         $userCtrl = new \App\Controllers\UsuarioController();
         $userCtrl->historial();
         break;
@@ -310,6 +310,35 @@ switch ($r) {
         $adminCtrl = new \App\Controllers\AdminController();
         $adminCtrl->toggleEstado();
         break;
+case 'admin/eventos':
+    $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->eventos();
+    break;
+
+case 'admin/eventos/crear':
+case 'admin/eventos/editar':
+    $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->eventoForm();
+    break;
+
+case 'admin/eventos/guardar':
+    $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->saveEvento();
+    break;
+
+case 'admin/eventos/eliminar':
+    $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->deleteEvento();
+    break;
+case 'admin/eventos/detalle':
+        $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->detalleEvento();
+    break;
 
     // ── 404 ─────────────────────────────────────────────────────
     default:

@@ -267,6 +267,7 @@ $d = !empty($datos) ? $datos : $usuarioEditar;
             <a href="index.php?r=admin/reservas"><i class="fas fa-calendar-alt"></i> Reservas</a>
             <a href="index.php?r=admin/usuarios" class="active"><i class="fas fa-user-group"></i> Usuarios</a>
             <a href="index.php?r=admin/reportes"><i class="fas fa-file-chart-line"></i> Reportes</a>
+        <a href="index.php?r=admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
         </div>
         <div class="user-area">
             <span class="user-name">👋 <?= htmlspecialchars($user->getNombreParaMostrar()) ?></span>

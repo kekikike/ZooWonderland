@@ -8,18 +8,21 @@ use App\Repositories\RecorridoRepository;
 use App\Repositories\UsuarioRepository;
 use App\Repositories\AreaRepository;
 use App\Repositories\ReservaRepository;
+use App\Services\EventoService;
 
 class AdminController
 {
     private AuthService         $auth;
     private RecorridoRepository $recorridoRepo;
     private UsuarioRepository   $usuarioRepo;
+     private EventoService $eventoService;
 
     public function __construct()
     {
         $this->auth          = new AuthService();
         $this->recorridoRepo = new RecorridoRepository();
         $this->usuarioRepo   = new UsuarioRepository();
+        $this->eventoService = new EventoService();
     }
 
     // ── Auth: redirige si no es admin ─────────────────────────────
@@ -491,4 +494,128 @@ class AdminController
         header('Location: index.php?r=admin/usuarios');
         exit;
     }
+  //FUNCIONES PARTE PARA LOS EVENTOS
+    public function eventos(): void
+    {
+        $user = $this->checkAuth();
+        $filtros = $_GET;  // filtros de GET (vigencia, fecha, nombre)
+        $eventos = $this->eventoService->getAll($filtros);
+        $guias = (new \App\Repositories\GuiaRepository())->getGuiasDisponibles();
+        require APP_PATH . '/Views/admin/eventos.php';
+    }
+public function detalleEvento(): void
+    {
+       $user = $this->checkAuth();
+        $id = (int) ($_GET['id'] ?? 0);
+
+        if ($id <= 0) {
+            header('Location: index.php?r=admin/eventos');
+            exit;
+        }
+
+        $evento = $this->eventoService->getById($id);
+
+        if (!$evento) {
+            $_SESSION['error'] = 'Evento no encontrado';
+            header('Location: index.php?r=admin/eventos');
+            exit;
+        }
+
+        require APP_PATH . '/Views/admin/evento_detalle.php';
+    }
+    public function eventoForm(): void
+{
+    $user = $this->checkAuth();
+    $id = (int) ($_GET['id'] ?? 0);
+    $evento = $id ? $this->eventoService->getById($id) : null;
+
+    // Cargar guías disponibles (esto faltaba o estaba mal)
+    $guiaRepo = new \App\Repositories\GuiaRepository();
+    $guias = $guiaRepo->getGuiasDisponibles();
+
+    // Cargar áreas si las necesitas
+    $areaRepo = new \App\Repositories\AreaRepository(); // crea si no existe
+    $areas = $areaRepo->findAll();
+
+    $error = $_SESSION['error'] ?? null;
+    $success = $_SESSION['success'] ?? null;
+    $old = $_SESSION['old'] ?? [];
+
+    unset($_SESSION['error'], $_SESSION['success'], $_SESSION['old']);
+
+    require APP_PATH . '/Views/admin/evento_form.php';
+}
+
+
+    public function saveEvento(): void
+    {
+         $user = $this->checkAuth();
+
+        $data = $_POST;
+        $data['id'] = (int) ($data['id'] ?? 0);
+        $data['tiene_costo'] = isset($data['tiene_costo']) ? 1 : 0;
+        $data['precio'] = $data['precio'] ?? 0.00;
+        $data['limite_participantes'] = $data['limite_participantes'] ?? null;
+
+        // Manejar actividades (array de actividades)
+        $actividades = [];
+        if (!empty($data['actividad_nombre'])) {
+            for ($i = 0; $i < count($data['actividad_nombre']); $i++) {
+                if (!empty($data['actividad_nombre'][$i])) {
+                    $actividades[] = [
+                        'nombre' => $data['actividad_nombre'][$i],
+                        'descripcion' => $data['actividad_desc'][$i] ?? '',
+                        'hora_inicio' => $data['actividad_inicio'][$i] ?? null,
+                        'hora_fin' => $data['actividad_fin'][$i] ?? null,
+                    ];
+                }
+            }
+        }
+        $data['actividades'] = $actividades;
+
+        if ($data['id'] > 0) {
+            $result = $this->eventoService->update($data['id'], $data);
+        } else {
+            $result = $this->eventoService->create($data);
+        }
+
+        if ($result['success']) {
+            $_SESSION['success'] = $result['message'];
+            header('Location: index.php?r=admin/eventos');
+        } else {
+            $_SESSION['error'] = $result['message'];
+            $_SESSION['old'] = $data;
+            header('Location: index.php?r=admin/eventos/crear' . ($data['id'] > 0 ? '&id=' . $data['id'] : ''));
+        }
+        exit;
+    }
+
+   public function deleteEvento(): void
+{
+         $user = $this->checkAuth();
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: index.php?r=admin/eventos');
+        exit;
+    }
+
+    $id = (int) ($_POST['id'] ?? 0);
+
+    if ($id <= 0) {
+        $_SESSION['error'] = 'ID de evento inválido';
+        header('Location: index.php?r=admin/eventos');
+        exit;
+    }
+
+    $result = $this->eventoService->delete($id);
+
+    if ($result['success']) {
+        $_SESSION['success'] = $result['message'];
+    } else {
+        $_SESSION['error'] = $result['message'];
+    }
+
+    header('Location: index.php?r=admin/eventos');
+    exit;
+}
 }

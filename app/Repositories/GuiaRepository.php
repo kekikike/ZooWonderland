@@ -170,4 +170,31 @@ LIMIT 1
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $row ?: null;
     }
+     public function getGuiasDisponibles(): array
+{
+    $stmt = $this->db->prepare("
+        SELECT 
+            g.id_guia,
+            CONCAT(
+                COALESCE(u.nombre1, ''), ' ',
+                COALESCE(u.nombre2, ''), ' ',
+                COALESCE(u.apellido1, ''), ' ',
+                COALESCE(u.apellido2, '')
+            ) AS nombre_completo
+        FROM guias g
+        INNER JOIN usuarios u ON u.id_usuario = g.id_usuario
+        WHERE u.id_rol = 2
+          AND g.estado = 1
+        ORDER BY nombre_completo ASC
+    ");
+
+    $stmt->execute();
+    return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+}
+
+public function findAll(): array
+    {
+        $stmt = $this->db->query('SELECT * FROM guias ORDER BY id_guia');
+        return $stmt->fetchAll();
+    }
 }

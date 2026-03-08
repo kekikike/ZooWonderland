@@ -149,6 +149,7 @@
                 <a href="index.php?r=admin/recorridos" title="Gestionar Recorridos"><i class="fas fa-compass"></i> Recorridos</a>
                 <a href="index.php?r=admin/areas" title="Gestionar Áreas"><i class="fas fa-shapes"></i> Áreas</a>
                 <a href="index.php?r=admin/reservas" title="Reservas"><i class="fas fa-calendar-check"></i> Reservas</a>
+                <a href="index.php?r=admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
                 <a href="index.php?r=logout" title="Salir"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </nav>
