@@ -187,7 +187,8 @@ declare(strict_types=1);
         <div class="alert error"><i class="fa-solid fa-triangle-exclamation"></i> <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form id="registerForm" method="POST" action="index.php?r=registro">
+    <form id="registerForm" method="POST" action="/registro">
+        <?php echo csrf_field(); ?>
         <div class="form-grid">
             <div class="form-group">
                 <label>Primer nombre *</label>
@@ -287,9 +288,9 @@ declare(strict_types=1);
     </form>
 
     <div class="login-link">
-        ¿Ya tienes cuenta? <a href="index.php?r=login">Inicia sesión aquí</a>
+        ¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a>
     </div>
-    <a href="index.php" class="btn-home">
+    <a href="/" class="btn-home">
         <i class="fa-solid fa-house"></i> Volver al inicio
     </a>
 </div>
@@ -366,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'password_confirm':
                 if (value !== fields.password.value) { message = 'No coinciden'; isValid = false; }
                 break;
-            // Otros casos según tu lógica original...
         }
 
         errorEl.textContent = message;

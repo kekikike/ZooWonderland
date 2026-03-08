@@ -56,17 +56,17 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $data = [
-            'nombre1'          => trim($request->input('nombre1', '')),
-            'nombre2'          => trim($request->input('nombre2', '')),
-            'apellido1'        => trim($request->input('apellido1', '')),
-            'apellido2'        => trim($request->input('apellido2', '')),
-            'ci'               => trim($request->input('ci', '')),
-            'correo'           => trim($request->input('correo', '')),
-            'telefono'         => trim($request->input('telefono', '')),
-            'nombre_usuario'   => trim($request->input('nombre_usuario', '')),
-            'password'         => trim($request->input('password', '')),
-            'password_confirm' => trim($request->input('password_confirm', '')),
+       $data = [
+            'nombre1'          => trim((string) $request->input('nombre1', '')),
+            'nombre2'          => trim((string) $request->input('nombre2', '')),
+            'apellido1'        => trim((string) $request->input('apellido1', '')),
+            'apellido2'        => trim((string) $request->input('apellido2', '')),
+            'ci'               => trim((string) $request->input('ci', '')),
+            'correo'           => trim((string) $request->input('correo', '')),
+            'telefono'         => trim((string) $request->input('telefono', '')),
+            'nombre_usuario'   => trim((string) $request->input('nombre_usuario', '')),
+            'password'         => trim((string) $request->input('password', '')),
+            'password_confirm' => trim((string) $request->input('password_confirm', '')),
         ];
 
         if (!$data['nombre1'] || !$data['apellido1'] || !$data['correo'] || !$data['nombre_usuario'] || !$data['password']) {
