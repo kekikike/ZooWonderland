@@ -126,7 +126,7 @@ if ($error) unset($_SESSION['error']);
         Revisa cuidadosamente antes de guardar.
     </div>
 
-    <form method="POST" action="/guias/reportes-guardar" id="formReporte">
+    <form method="POST" action="/guias/reporte-guardar" id="formReporte">
         <?php echo csrf_field(); ?>
         <input type="hidden" name="id_guia_recorrido" value="<?= (int)$detalleRecorrido['id_guia_recorrido'] ?>">
         

@@ -105,7 +105,7 @@ class GuiaController extends Controller
 
     $this->reporteRepo->save($id_guia_recorrido, $observaciones);
 
-    return redirect('/guias/reportes-historial')->with('success', 'Reporte guardado correctamente.');
+    return redirect('/guias/dashboard')->with('success', 'Reporte guardado correctamente.');
 }
 
     public function showReportHistory(Request $request)
