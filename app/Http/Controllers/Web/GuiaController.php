@@ -90,24 +90,23 @@ class GuiaController extends Controller
 }
 
     public function processReport(Request $request)
-    {
-        $user               = $request->attributes->get('auth_user');
-        $id_guia_recorrido  = (int)$request->input('id_guia_recorrido', 0);
-        $descripcion        = trim($request->input('descripcion', ''));
-        $observaciones      = trim($request->input('observaciones', ''));
+{
+    $user              = $request->attributes->get('auth_user');
+    $id_guia_recorrido = (int)$request->input('id_guia_recorrido', 0);
+    $observaciones     = trim((string)$request->input('observaciones', ''));
 
-        if (!$id_guia_recorrido || !$descripcion) {
-            return redirect('/guias/reportes-crear')->with('error', 'Completa todos los campos obligatorios.');
-        }
-
-        if ($this->reporteRepo->existeReporte($id_guia_recorrido)) {
-            return redirect('/guias/reportes-crear')->with('error', 'Ya existe un reporte para esta asignación.');
-        }
-
-        $this->reporteRepo->save($id_guia_recorrido, $descripcion . "\n" . $observaciones);
-
-        return redirect('/guias/reportes-historial')->with('success', 'Reporte guardado correctamente.');
+    if (!$id_guia_recorrido || !$observaciones) {
+        return redirect('/guias/reportes-crear')->with('error', 'Completa todos los campos obligatorios.');
     }
+
+    if ($this->reporteRepo->existeReporte($id_guia_recorrido)) {
+        return redirect('/guias/reportes-crear')->with('error', 'Ya existe un reporte para esta asignación.');
+    }
+
+    $this->reporteRepo->save($id_guia_recorrido, $observaciones);
+
+    return redirect('/guias/reportes-historial')->with('success', 'Reporte guardado correctamente.');
+}
 
     public function showReportHistory(Request $request)
     {

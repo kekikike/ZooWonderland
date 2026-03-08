@@ -41,6 +41,7 @@ Route::middleware(['auth.zoo', 'auth.guia'])->group(function () {
     Route::get('/guias/reporte-crear',     [GuiaController::class, 'showReportForm']);
     Route::post('/guias/reporte-guardar',  [GuiaController::class, 'processReport']);
     Route::get('/guias/reporte-historial', [GuiaController::class, 'showReportHistory']);
+    
 });
 
 // ── ADMIN ─────────────────────────────────────────────────────────

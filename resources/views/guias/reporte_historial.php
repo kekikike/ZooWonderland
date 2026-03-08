@@ -128,34 +128,37 @@ if ($mensajeExito) unset($_SESSION['mensaje_exito']);
         </div>
     <?php else: ?>
         <div>
-            <?php foreach ($reportes as $reporte): ?>
-                <div class="reporte-card">
-                    <div class="reporte-top">
-                        <h2 class="recorrido-title">
-                            <i class="fa-solid fa-map"></i>
-                            <?= htmlspecialchars($reporte['recorrido_nombre']) ?>
-                        </h2>
-                        <div style="text-align: right;">
-                            <div class="fecha-guardado">
-                                <i class="fa-solid fa-calendar-days"></i>
-                                <?= (new DateTime($reporte['fecha_reporte']))->format('d/m/Y H:i') ?>
-                            </div>
-                            <div class="badge-inmutable">
-                                <i class="fa-solid fa-lock"></i> Inmutable
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="obs-text">
-                        <?= nl2br(htmlspecialchars($reporte['observaciones'])) ?>
-                    </div>
-
-                    <div style="font-size: 0.85rem; color: #999; border-top: 1px solid #eee; padding-top: 0.8rem;">
-                        <i class="fa-solid fa-info-circle"></i>
-                        Guardado el <?= (new DateTime($reporte['fecha_reporte']))->format('d') ?> de <?= (new DateTime($reporte['fecha_reporte']))->format('Y') ?> a las <?= (new DateTime($reporte['fecha_reporte']))->format('H:i') ?>
-                    </div>
+            <?php foreach ($reportes as $reporte): 
+    $nombreRecorrido = $reporte->guiaRecorrido->recorrido->nombre ?? 'Sin nombre';
+    $fechaReporte = new DateTime($reporte->fecha_reporte);
+?>
+    <div class="reporte-card">
+        <div class="reporte-top">
+            <h2 class="recorrido-title">
+                <i class="fa-solid fa-map"></i>
+                <?= htmlspecialchars($nombreRecorrido) ?>
+            </h2>
+            <div style="text-align: right;">
+                <div class="fecha-guardado">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <?= $fechaReporte->format('d/m/Y H:i') ?>
                 </div>
-            <?php endforeach; ?>
+                <div class="badge-inmutable">
+                    <i class="fa-solid fa-lock"></i> Inmutable
+                </div>
+            </div>
+        </div>
+
+        <div class="obs-text">
+            <?= nl2br(htmlspecialchars((string)($reporte->observaciones ?? ''))) ?>
+        </div>
+
+        <div style="font-size: 0.85rem; color: #999; border-top: 1px solid #eee; padding-top: 0.8rem;">
+            <i class="fa-solid fa-info-circle"></i>
+            Guardado el <?= $fechaReporte->format('d/m/Y') ?> a las <?= $fechaReporte->format('H:i') ?>
+        </div>
+    </div>
+<?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
