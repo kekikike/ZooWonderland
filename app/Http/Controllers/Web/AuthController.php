@@ -90,7 +90,7 @@ class AuthController extends Controller
     public function logout()
     {
         $this->auth->logout();
-        return redirect('/login');
+        return redirect('/');
     }
 
     private function redirectSegunRol()
