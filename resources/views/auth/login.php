@@ -201,7 +201,8 @@ declare(strict_types=1);
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="index.php?r=login">
+    <form method="POST" action="/login">
+        <?php echo csrf_field(); ?>
         <div class="form-group">
             <label for="login">Usuario</label>
             <div class="input-wrapper">
@@ -226,7 +227,7 @@ declare(strict_types=1);
 
     <div class="footer-links">
         ¿Aún no eres parte de la manada? <br>
-        <a href="index.php?r=registro">Crea tu cuenta aquí</a>
+        <a href="/registro">Crea tu cuenta aquí</a>
     </div>
 
     <a href="index.php" class="btn-home">

@@ -283,8 +283,8 @@ $recorridos = $recorridos ?? [];
                     </div>
                 </div>
             <?php else: ?>
-                <a href="index.php?r=login" class="btn btn-login">Ingresar</a>
-                <a href="index.php?r=registro" class="btn btn-registro">Registrarse</a>
+                <a href="/login" class="btn btn-login">Ingresar</a>
+                <a href="/registro" class="btn btn-registro">Registrarse</a>
             <?php endif; ?>
         </div>
     </nav>
