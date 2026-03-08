@@ -618,4 +618,202 @@ public function detalleEvento(): void
     header('Location: index.php?r=admin/eventos');
     exit;
 }
+
+    // ════════════════════════════════════════════════════════════
+    // GESTIÓN DE ASIGNACIONES DE GUÍAS (HU-07)
+    // ════════════════════════════════════════════════════════════
+
+    public function asignaciones(): void
+    {
+        $this->checkAuth();
+        $guiaRepo = new \App\Repositories\GuiaRepository();
+        $asignaciones = $guiaRepo->getAllAsignaciones();
+        
+        $mensaje = $_SESSION['flash_mensaje'] ?? null;
+        $tipoMsg = $_SESSION['flash_tipo'] ?? 'ok';
+        unset($_SESSION['flash_mensaje'], $_SESSION['flash_tipo']);
+        
+        require APP_PATH . '/Views/admin/asignaciones.php';
+    }
+
+    public function crearAsignacion(): void
+    {
+        $this->checkAuth();
+        $guiaRepo = new \App\Repositories\GuiaRepository();
+        
+        $guias = $guiaRepo->getGuiasDisponibles();
+        $recorridos = $this->recorridoRepo->findByTipo('Guiado');
+        
+        $mensaje = $_SESSION['flash_mensaje'] ?? null;
+        $tipoMsg = $_SESSION['flash_tipo'] ?? 'error';
+        $old     = $_SESSION['form_datos'] ?? [];
+        
+        unset($_SESSION['flash_mensaje'], $_SESSION['flash_tipo'], $_SESSION['form_datos']);
+
+        require APP_PATH . '/Views/admin/asignacion_form.php';
+    }
+
+    public function guardarAsignacion(): void
+    {
+        $this->requireAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?r=admin/asignaciones');
+            exit;
+        }
+
+        $id_guia = (int)($_POST['id_guia'] ?? 0);
+        $id_recorrido = (int)($_POST['id_recorrido'] ?? 0);
+        $fecha = trim($_POST['fecha'] ?? '');
+        $hora = trim($_POST['hora'] ?? '');
+
+        // Guardar para persistencia en caso de error
+        $_SESSION['form_datos'] = $_POST;
+
+        $guiaRepo = new \App\Repositories\GuiaRepository();
+        $recorrido = $this->recorridoRepo->findById($id_recorrido);
+        $guia = $guiaRepo->findGuiaById($id_guia);
+
+        if (!$recorrido || !$guia || empty($fecha) || empty($hora)) {
+            $_SESSION['flash_mensaje'] = 'Faltan datos obligatorios.';
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/asignaciones/crear');
+            exit;
+        }
+
+        // 0. Validar que la fecha no sea en el pasado
+        $hoy = date('Y-m-d');
+        if ($fecha < $hoy) {
+            $_SESSION['flash_mensaje'] = "No se pueden realizar asignaciones a fechas pasadas.";
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/asignaciones/crear');
+            exit;
+        }
+
+        // 1. Validar según horarios de atención
+        $diasMap = [
+            'Monday' => 'Lunes', 'Tuesday' => 'Martes', 'Wednesday' => 'Miércoles',
+            'Thursday' => 'Jueves', 'Friday' => 'Viernes', 'Saturday' => 'Sábado', 'Sunday' => 'Domingo'
+        ];
+        $timestamp = strtotime($fecha);
+        if ($timestamp === false) {
+             $_SESSION['flash_mensaje'] = "Fecha inválida.";
+             $_SESSION['flash_tipo'] = 'error';
+             header('Location: index.php?r=admin/asignaciones/crear');
+             exit;
+        }
+        $diaNombre = $diasMap[date('l', $timestamp)];
+        $guiaDias = $guia['dias_trabajo'] ?? '';
+        $trabajaEsteDia = false;
+
+        if ($guiaDias === 'Todos los días' || $guiaDias === 'Todos los dias') {
+            $trabajaEsteDia = true;
+        } elseif (strpos($guiaDias, $diaNombre) !== false) {
+            $trabajaEsteDia = true;
+        } elseif (preg_match('/(\w+)\s+a\s+(\w+)/i', $guiaDias, $rangeMatches)) {
+            $diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            $inicioIdx = array_search($rangeMatches[1], $diasSemana);
+            $finIdx = array_search($rangeMatches[2], $diasSemana);
+            $actualIdx = array_search($diaNombre, $diasSemana);
+            
+            if ($inicioIdx !== false && $finIdx !== false && $actualIdx !== false) {
+                 if ($inicioIdx <= $finIdx) {
+                     $trabajaEsteDia = ($actualIdx >= $inicioIdx && $actualIdx <= $finIdx);
+                 } else { // Caso circular (ej: Sábado a Martes)
+                     $trabajaEsteDia = ($actualIdx >= $inicioIdx || $actualIdx <= $finIdx);
+                 }
+            }
+        }
+
+        if (!$trabajaEsteDia) {
+            $_SESSION['flash_mensaje'] = "No se pudo guardar: El guía no trabaja los días $diaNombre (Su disponibilidad: $guiaDias).";
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/asignaciones/crear');
+            exit;
+        }
+
+        // Rango horario y Duración del Recorrido
+        if (preg_match('/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/', $guia['horarios'], $matches)) {
+            $hEntrada = date("H:i", strtotime($matches[1]));
+            $hSalida  = date("H:i", strtotime($matches[2]));
+            
+            $horaInicioSec = strtotime($hora);
+            $horaFinSec    = $horaInicioSec + ((int)$recorrido['duracion'] * 60);
+            
+            $horaFormatted    = date("H:i", $horaInicioSec);
+            $horaFinFormatted = date("H:i", $horaFinSec);
+            
+            if ($horaFormatted < $hEntrada) {
+                $_SESSION['flash_mensaje'] = "No se pudo guardar: La hora de inicio ($horaFormatted) es antes de la entrada del guía ($hEntrada).";
+                $_SESSION['flash_tipo'] = 'error';
+                header('Location: index.php?r=admin/asignaciones/crear');
+                exit;
+            }
+
+            if ($horaFinFormatted > $hSalida) {
+                $_SESSION['flash_mensaje'] = "No se pudo guardar: El recorrido termina a las $horaFinFormatted, pero el guía sale a las $hSalida.";
+                $_SESSION['flash_tipo'] = 'error';
+                header('Location: index.php?r=admin/asignaciones/crear');
+                exit;
+            }
+        } else {
+            // Si el formato no es el esperado, al menos validamos algo básico o dejamos pasar con advertencia en log
+            // Pero para el usuario, si está vacío o mal, podríamos avisar
+            if (empty($guia['horarios'])) {
+                $_SESSION['flash_mensaje'] = "No se pudo guardar: El guía seleccionado no tiene un horario configurado.";
+                $_SESSION['flash_tipo'] = 'error';
+                header('Location: index.php?r=admin/asignaciones/crear');
+                exit;
+            }
+        }
+
+        // 2. Verificar disponibilidad (traslapes)
+        if ($guiaRepo->existsAsignacion($id_guia, $fecha, $hora, (int)$recorrido['duracion'])) {
+            $_SESSION['flash_mensaje'] = 'El guía ya tiene otra asignación que se traslapa con estos horarios.';
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/asignaciones/crear');
+            exit;
+        }
+
+        // 3. Registrar asignación
+        try {
+            $ok = $guiaRepo->asignarGuia($id_guia, $id_recorrido, $fecha, $hora);
+            
+            if ($ok) {
+                unset($_SESSION['form_datos']);
+                $_SESSION['flash_mensaje'] = 'Asignación realizada correctamente.';
+                $_SESSION['flash_tipo'] = 'ok';
+                header('Location: index.php?r=admin/asignaciones');
+            } else {
+                throw new \Exception("No se pudo completar el registro en la base de datos.");
+            }
+        } catch (\PDOException $e) {
+            if ($e->getCode() == '42S22') {
+                $_SESSION['flash_mensaje'] = "Error: Faltan columnas en la base de datos. Por favor, ejecuta el script update_db.sql.";
+            } elseif ($e->getCode() == '23000') {
+                $_SESSION['flash_mensaje'] = "Este guía ya tiene asignado este recorrido (Restricción de duplicados).";
+            } else {
+                $_SESSION['flash_mensaje'] = "Error de base de datos: " . $e->getMessage();
+            }
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/asignaciones/crear');
+        } catch (\Exception $e) {
+            $_SESSION['flash_mensaje'] = $e->getMessage();
+            $_SESSION['flash_tipo'] = 'error';
+            header('Location: index.php?r=admin/asignaciones/crear');
+        }
+        exit;
+    }
+
+    public function eliminarAsignacion(): void
+    {
+        $this->requireAdmin();
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id > 0) {
+            $ok = (new \App\Repositories\GuiaRepository())->deleteAsignacion($id);
+            $_SESSION['flash_mensaje'] = $ok ? 'Asignación eliminada correctamente.' : 'Error al eliminar.';
+            $_SESSION['flash_tipo'] = $ok ? 'ok' : 'error';
+        }
+        header('Location: index.php?r=admin/asignaciones');
+        exit;
+    }
 }

@@ -506,6 +506,9 @@
                 <a href="index.php?r=admin/reportes" title="Ver Reportes">
                     <i class="fas fa-file-chart-line"></i> Reportes
                 </a>
+                <a href="index.php?r=admin/asignaciones" title="Asignar Guías">
+                    <i class="fas fa-user-tie"></i> Asignaciones
+                </a>
                  <a href="index.php?r=admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
             </div>
             <div class="user-area">

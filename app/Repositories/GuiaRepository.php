@@ -175,6 +175,8 @@ LIMIT 1
     $stmt = $this->db->prepare("
         SELECT 
             g.id_guia,
+            g.horarios,
+            g.dias_trabajo,
             CONCAT(
                 COALESCE(u.nombre1, ''), ' ',
                 COALESCE(u.nombre2, ''), ' ',
@@ -184,7 +186,7 @@ LIMIT 1
         FROM guias g
         INNER JOIN usuarios u ON u.id_usuario = g.id_usuario
         WHERE u.id_rol = 2
-          AND g.estado = 1
+          AND u.estado = 1
         ORDER BY nombre_completo ASC
     ");
 
@@ -192,9 +194,102 @@ LIMIT 1
     return $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 }
 
-public function findAll(): array
+    public function findAll(): array
     {
         $stmt = $this->db->query('SELECT * FROM guias ORDER BY id_guia');
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Busca un guía por su ID de tabla guias.
+     */
+    public function findGuiaById(int $id_guia): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT g.*, u.nombre1, u.apellido1 
+            FROM guias g
+            INNER JOIN usuarios u ON u.id_usuario = g.id_usuario
+            WHERE g.id_guia = ?
+        ");
+        $stmt->execute([$id_guia]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
+    }
+
+    /**
+     * Verifica si un guía ya tiene una asignación que se traslape con el horario dado.
+     */
+    public function existsAsignacion(int $id_guia, string $fecha, string $horaInicio, int $duracionMinutos): bool
+    {
+        $sql = "
+            SELECT 1 
+            FROM guia_recorrido gr
+            INNER JOIN recorridos r ON r.id_recorrido = gr.id_recorrido
+            WHERE gr.id_guia = :id_guia 
+              AND gr.fecha_asignacion = :fecha
+              AND (
+                  -- Caso 1: La nueva asignación empieza durante una existente
+                  (gr.hora_inicio <= :h_ini1 AND ADDTIME(gr.hora_inicio, SEC_TO_TIME(r.duracion * 60)) > :h_ini2)
+                  OR
+                  -- Caso 2: Una asignación existente empieza durante la nueva
+                  (:h_ini3 <= gr.hora_inicio AND ADDTIME(:h_ini4, SEC_TO_TIME(:duracion * 60)) > gr.hora_inicio)
+              )
+            LIMIT 1
+        ";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':id_guia'     => $id_guia,
+            ':fecha'       => $fecha,
+            ':h_ini1'      => $horaInicio,
+            ':h_ini2'      => $horaInicio,
+            ':h_ini3'      => $horaInicio,
+            ':h_ini4'      => $horaInicio,
+            ':duracion'    => $duracionMinutos
+        ]);
+        
+        return (bool)$stmt->fetch();
+    }
+
+    /**
+     * Registra una nueva asignación de guía a recorrido.
+     */
+    public function asignarGuia(int $id_guia, int $id_recorrido, string $fecha, string $hora): bool
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO guia_recorrido (id_guia, id_recorrido, fecha_asignacion, hora_inicio)
+            VALUES (?, ?, ?, ?)
+        ");
+        return $stmt->execute([$id_guia, $id_recorrido, $fecha, $hora]);
+    }
+
+    /**
+     * Obtiene todas las asignaciones para la vista de administración.
+     */
+    public function getAllAsignaciones(): array
+    {
+        $sql = "
+            SELECT 
+                gr.id_guia_recorrido,
+                gr.fecha_asignacion,
+                gr.hora_inicio,
+                r.nombre AS recorrido_nombre,
+                r.duracion,
+                CONCAT(COALESCE(u.nombre1,''), ' ', COALESCE(u.apellido1,'')) AS guia_nombre
+            FROM guia_recorrido gr
+            INNER JOIN guias g ON g.id_guia = gr.id_guia
+            INNER JOIN usuarios u ON u.id_usuario = g.id_usuario
+            INNER JOIN recorridos r ON r.id_recorrido = gr.id_recorrido
+            ORDER BY gr.fecha_asignacion DESC, gr.hora_inicio DESC
+        ";
+        return $this->db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Elimina una asignación.
+     */
+    public function deleteAsignacion(int $id): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM guia_recorrido WHERE id_guia_recorrido = ?");
+        return $stmt->execute([$id]);
     }
 }

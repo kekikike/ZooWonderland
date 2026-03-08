@@ -310,6 +310,30 @@ switch ($r) {
         $adminCtrl = new \App\Controllers\AdminController();
         $adminCtrl->toggleEstado();
         break;
+    case 'admin/asignaciones':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->asignaciones();
+        break;
+
+    case 'admin/asignaciones/crear':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->crearAsignacion();
+        break;
+
+    case 'admin/asignaciones/guardar':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->guardarAsignacion();
+        break;
+
+    case 'admin/asignaciones/eliminar':
+        $user      = \Core\Authorization::requireAdmin();
+        $adminCtrl = new \App\Controllers\AdminController();
+        $adminCtrl->eliminarAsignacion();
+        break;
+
 case 'admin/eventos':
     $user      = \Core\Authorization::requireAdmin();
     $adminCtrl = new \App\Controllers\AdminController();
