@@ -1,11 +1,3 @@
-<?php
-/** @var array $recorridosGuiados */
-/** @var array $form */
-/** @var array $errores */
-/** @var string $mensaje */
-/** @var string $fechaMin */
-/** @var \App\Models\Usuario $usuario */
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -63,14 +55,14 @@
         text-transform: uppercase;
         text-decoration: none;
     }
-    
+
     .menu { display: flex; gap: 2rem; }
     .menu a { color: var(--oscuro); text-decoration: none; font-weight: 600; }
 
     .user-welcome { display: flex; align-items: center; gap: 1rem; background: #f0f4f0; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.9rem; }
 
     .page-hero {
-        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), 
+        background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
                     url('https://images.unsplash.com/photo-1544924405-4f76263b655a?q=80&w=2070&auto=format&fit=crop') center/cover;
         height: 250px;
         display: flex;
@@ -164,14 +156,14 @@
 
 <header>
     <nav>
-        <a href="index.php" class="logo">🍃 ZooWonderland</a>
+        <a href="{{ route('home') }}" class="logo">🍃 ZooWonderland</a>
         <div class="menu">
-            <a href="index.php">Inicio</a>
-            <a href="index.php?r=reservas/historial">Mis Reservas</a>
+            <a href="{{ route('home') }}">Inicio</a>
+            <a href="{{ route('reservas.historial') }}">Mis Reservas</a>
         </div>
         <div class="user-welcome">
-            <i class="fa-solid fa-user-circle"></i> 
-            <strong><?= htmlspecialchars($usuario->getNombreParaMostrar()) ?></strong>
+            <i class="fa-solid fa-user-circle"></i>
+            <strong>{{ $usuario->getNombreParaMostrar() }}</strong>
         </div>
     </nav>
 </header>
@@ -195,119 +187,131 @@
 
         <div class="card-info" style="border-left-color: var(--verde-selva);">
             <h3><i class="fa-solid fa-map-location-dot"></i> Recorridos</h3>
-            <?php foreach ($recorridosGuiados as $r): ?>
+            @foreach ($recorridosGuiados as $r)
                 <div style="margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px dashed #eee;">
-                    <div style="font-weight: 700; color: var(--verde-oscuro);"><?= htmlspecialchars($r['nombre']) ?></div>
+                    <div style="font-weight: 700; color: var(--verde-oscuro);">{{ $r['nombre'] }}</div>
                     <div style="font-size: 0.85rem; color: #666;">
-                        <i class="fa-solid fa-tag"></i> Bs. <?= number_format($r['precio'], 2) ?>/persona
+                        <i class="fa-solid fa-tag"></i> Bs. {{ number_format($r['precio'], 2) }}/persona
                     </div>
                 </div>
-            <?php endforeach; ?>
+            @endforeach
         </div>
     </aside>
 
     <div class="form-container">
-        <?php if ($mensaje): ?>
+        @if (session('error'))
             <div class="alert alert-error">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                <?= htmlspecialchars($mensaje) ?>
+                {{ session('error') }}
             </div>
-        <?php endif; ?>
+        @endif
 
         <h2><i class="fa-solid fa-pen-to-square"></i> Datos de la Reserva</h2>
 
-        <form method="POST" action="index.php?r=reservar">
+        <form method="POST" action="{{ route('reservas.store') }}">
+            @csrf
             <div class="form-grid">
+
                 <div class="form-group full-width">
                     <label>Nombre de la Institución / Empresa</label>
-                    <input type="text" name="institucion" placeholder="Ej: Colegio San Agustín" 
-                           value="<?= htmlspecialchars($form['institucion']) ?>"
-                           class="<?= isset($errores['institucion']) ? 'input-error' : '' ?>">
-                    <?php if (isset($errores['institucion'])): ?>
-                        <div class="field-error"><?= $errores['institucion'] ?></div>
-                    <?php endif; ?>
+                    <input type="text" name="institucion" placeholder="Ej: Colegio San Agustín"
+                           value="{{ old('institucion', $form['institucion'] ?? '') }}"
+                           class="{{ $errors->has('institucion') ? 'input-error' : '' }}">
+                    @error('institucion')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Tipo de Institución</label>
                     <select name="tipo_institucion">
-                        <option value="colegio" <?= $form['tipo_institucion'] == 'colegio' ? 'selected' : '' ?>>Colegio / Escuela</option>
-                        <option value="universidad" <?= $form['tipo_institucion'] == 'universidad' ? 'selected' : '' ?>>Universidad</option>
-                        <option value="empresa" <?= $form['tipo_institucion'] == 'empresa' ? 'selected' : '' ?>>Empresa</option>
-                        <option value="ong" <?= $form['tipo_institucion'] == 'ong' ? 'selected' : '' ?>>ONG</option>
-                        <option value="otro" <?= $form['tipo_institucion'] == 'otro' ? 'selected' : '' ?>>Otro</option>
+                        @foreach (['colegio' => 'Colegio / Escuela', 'universidad' => 'Universidad', 'empresa' => 'Empresa', 'ong' => 'ONG', 'otro' => 'Otro'] as $val => $label)
+                            <option value="{{ $val }}" {{ old('tipo_institucion', $form['tipo_institucion'] ?? '') == $val ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Número de Personas (min 10)</label>
-                    <input type="number" name="numero_personas" min="10" max="200" 
-                           value="<?= $form['numero_personas'] ?>"
-                           class="<?= isset($errores['numero_personas']) ? 'input-error' : '' ?>">
-                    <?php if (isset($errores['numero_personas'])): ?>
-                        <div class="field-error"><?= $errores['numero_personas'] ?></div>
-                    <?php endif; ?>
+                    <input type="number" name="numero_personas" min="10" max="200"
+                           value="{{ old('numero_personas', $form['numero_personas'] ?? '') }}"
+                           class="{{ $errors->has('numero_personas') ? 'input-error' : '' }}">
+                    @error('numero_personas')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group full-width">
                     <label>Nombre del Responsable</label>
-                    <input type="text" name="contacto_nombre" placeholder="Nombre completo" 
-                           value="<?= htmlspecialchars($form['contacto_nombre']) ?>"
-                           class="<?= isset($errores['contacto_nombre']) ? 'input-error' : '' ?>">
+                    <input type="text" name="contacto_nombre" placeholder="Nombre completo"
+                           value="{{ old('contacto_nombre', $form['contacto_nombre'] ?? '') }}"
+                           class="{{ $errors->has('contacto_nombre') ? 'input-error' : '' }}">
+                    @error('contacto_nombre')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Teléfono de contacto</label>
                     <input type="text" name="contacto_telefono" placeholder="Ej: 71234567"
-                           value="<?= htmlspecialchars($form['contacto_telefono']) ?>"
-                           class="<?= isset($errores['contacto_telefono']) ? 'input-error' : '' ?>">
+                           value="{{ old('contacto_telefono', $form['contacto_telefono'] ?? '') }}"
+                           class="{{ $errors->has('contacto_telefono') ? 'input-error' : '' }}">
+                    @error('contacto_telefono')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Email de contacto</label>
                     <input type="email" name="contacto_email" placeholder="ejemplo@correo.com"
-                           value="<?= htmlspecialchars($form['contacto_email']) ?>"
-                           class="<?= isset($errores['contacto_email']) ? 'input-error' : '' ?>">
+                           value="{{ old('contacto_email', $form['contacto_email'] ?? '') }}"
+                           class="{{ $errors->has('contacto_email') ? 'input-error' : '' }}">
+                    @error('contacto_email')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group full-width">
                     <label>Seleccionar Recorrido</label>
                     <select name="recorrido_id">
-                        <?php foreach ($recorridosGuiados as $r): ?>
-                            <option value="<?= $r['id'] ?>" <?= $form['recorrido_id'] == $r['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($r['nombre']) ?> - Bs. <?= number_format($r['precio'], 2) ?>/pers.
+                        @foreach ($recorridosGuiados as $r)
+                            <option value="{{ $r['id'] }}" {{ old('recorrido_id', $form['recorrido_id'] ?? '') == $r['id'] ? 'selected' : '' }}>
+                                {{ $r['nombre'] }} - Bs. {{ number_format($r['precio'], 2) }}/pers.
                             </option>
-                        <?php endforeach; ?>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Fecha de la Visita</label>
-                    <input type="date" name="fecha" min="<?= $fechaMin ?>" 
-                           value="<?= htmlspecialchars($form['fecha']) ?>"
-                           class="<?= isset($errores['fecha']) ? 'input-error' : '' ?>">
-                    <?php if (isset($errores['fecha'])): ?>
-                        <div class="field-error"><?= $errores['fecha'] ?></div>
-                    <?php endif; ?>
+                    <input type="date" name="fecha" min="{{ $fechaMin }}"
+                           value="{{ old('fecha', $form['fecha'] ?? '') }}"
+                           class="{{ $errors->has('fecha') ? 'input-error' : '' }}">
+                    @error('fecha')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Hora preferida (09:00 - 15:00)</label>
-                    <input type="time" name="hora" value="<?= htmlspecialchars($form['hora']) ?>"
-                           class="<?= isset($errores['hora']) ? 'input-error' : '' ?>">
-                    <?php if (isset($errores['hora'])): ?>
-                        <div class="field-error"><?= $errores['hora'] ?></div>
-                    <?php endif; ?>
+                    <input type="time" name="hora"
+                           value="{{ old('hora', $form['hora'] ?? '') }}"
+                           class="{{ $errors->has('hora') ? 'input-error' : '' }}">
+                    @error('hora')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group full-width">
                     <label>Observaciones o Requerimientos Especiales</label>
-                    <textarea name="observaciones" rows="3" placeholder="Opcional..."><?= htmlspecialchars($form['observaciones']) ?></textarea>
+                    <textarea name="observaciones" rows="3" placeholder="Opcional...">{{ old('observaciones', $form['observaciones'] ?? '') }}</textarea>
                 </div>
             </div>
 
             <button type="submit" class="btn-submit">
-                <i class="fa-solid fa-calendar-check"></i> 
+                <i class="fa-solid fa-calendar-check"></i>
                 Confirmar Solicitud de Reserva
             </button>
         </form>
@@ -315,7 +319,7 @@
 </main>
 
 <footer>
-    <p>&copy; <?= date('Y') ?> ZooWonderland - Educación y Conservación</p>
+    <p>&copy; {{ date('Y') }} ZooWonderland - Educación y Conservación</p>
 </footer>
 
 </body>

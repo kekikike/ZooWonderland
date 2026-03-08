@@ -1,7 +1,3 @@
-<?php
-/** @var array $todasLasReservas */
-/** @var \App\Models\Usuario $usuario */
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,6 +9,7 @@
     <style>
     :root {
         --verde-selva:   #2e7d32;
+        --verde-oscuro:  #1b5e20;
         --amarillo-sol:  #ffca28;
         --gris-claro:    #f8faf8;
         --oscuro:        #0d3a1f;
@@ -88,13 +85,13 @@
 
     .reserva-price { text-align: right; }
     .reserva-price .amount { display: block; font-size: 1.4rem; font-weight: 800; color: var(--verde-oscuro); font-family: 'Montserrat', sans-serif; }
-    .reserva-price .status { 
-        font-size: 0.75rem; 
-        font-weight: 700; 
-        text-transform: uppercase; 
-        padding: 4px 10px; 
-        background: var(--amarillo-sol); 
-        border-radius: 50px; 
+    .reserva-price .status {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        background: var(--amarillo-sol);
+        border-radius: 50px;
         color: #000;
         display: inline-block;
         margin-top: 5px;
@@ -134,9 +131,9 @@
 <body>
 
 <header>
-    <a href="index.php" class="logo">🍃 ZooWonderland</a>
+    <a href="{{ route('home') }}" class="logo">🍃 ZooWonderland</a>
     <div style="font-size: 0.9rem; font-weight: 600; color: #666;">
-        <i class="fa-solid fa-user-circle"></i> <?= htmlspecialchars($usuario->getNombreParaMostrar()) ?>
+        <i class="fa-solid fa-user-circle"></i> {{ $usuario->getNombreParaMostrar() }}
     </div>
 </header>
 
@@ -146,47 +143,51 @@
         <p>Gestiona tus visitas grupales y descarga comprobantes</p>
     </div>
 
-    <?php if (empty($todasLasReservas)): ?>
+    @if ($todasLasReservas->isEmpty())
         <div class="empty-state">
             <i class="fa-solid fa-calendar-xmark"></i>
             <h2>Aún no tienes reservas registradas</h2>
-            <a href="index.php?r=reservar" style="color: var(--verde-selva); text-decoration: none; font-weight: 700; margin-top: 2rem; display: inline-block;">
+            <a href="{{ route('reservas.crear') }}" style="color: var(--verde-selva); text-decoration: none; font-weight: 700; margin-top: 2rem; display: inline-block;">
                 ¡Haz tu primera reserva ahora!
             </a>
         </div>
-    <?php else: ?>
+    @else
         <div class="reservas-list">
-            <?php foreach ($todasLasReservas as $item): 
-                $r = $item['reserva'];
-                $e = $item['extras'];
-            ?>
+            @foreach ($todasLasReservas as $item)
+                @php
+                    $r = $item['reserva'];
+                    $e = $item['extras'];
+                @endphp
+
                 <div class="reserva-card">
-                    <div class="reserva-id"><?= $r->getId() ?></div>
+                    <div class="reserva-id">{{ $r->getId() }}</div>
+
                     <div class="reserva-info">
-                        <h3><?= htmlspecialchars($r->getInstitucion()) ?></h3>
+                        <h3>{{ $r->getInstitucion() }}</h3>
                         <div class="reserva-meta">
-                            <span><i class="fa-solid fa-calendar"></i> <?= date('d/m/Y', strtotime($r->getFecha())) ?></span>
-                            <span><i class="fa-solid fa-clock"></i> <?= $r->getHora() ?></span>
-                            <span><i class="fa-solid fa-users"></i> <?= $r->getCupos() ?> personas</span>
-                            <span><i class="fa-solid fa-route"></i> <?= htmlspecialchars($r->getRecorrido()->getNombre()) ?></span>
+                            <span><i class="fa-solid fa-calendar"></i> {{ \Carbon\Carbon::parse($r->getFecha())->format('d/m/Y') }}</span>
+                            <span><i class="fa-solid fa-clock"></i> {{ $r->getHora() }}</span>
+                            <span><i class="fa-solid fa-users"></i> {{ $r->getCupos() }} personas</span>
+                            <span><i class="fa-solid fa-route"></i> {{ $r->getRecorrido()->getNombre() }}</span>
                         </div>
                     </div>
+
                     <div class="reserva-price">
-                        <span class="amount">Bs. <?= number_format($e['monto_total'], 2) ?></span>
+                        <span class="amount">Bs. {{ number_format($e['monto_total'], 2) }}</span>
                         <span class="status">Pendiente</span>
                         <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: flex-end;">
-                            <a href="index.php?r=reservas/pdf&id=<?= $r->getId() ?>" class="btn-action" title="Descargar PDF">
+                            <a href="{{ route('reservas.pdf', $r->getId()) }}" class="btn-action" title="Descargar PDF">
                                 <i class="fa-solid fa-file-pdf"></i>
                             </a>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
+            @endforeach
         </div>
-    <?php endif; ?>
+    @endif
 
     <div style="margin-top: 4rem; text-align: center;">
-        <a href="index.php" style="color: #666; text-decoration: none; font-weight: 600;">
+        <a href="{{ route('home') }}" style="color: #666; text-decoration: none; font-weight: 600;">
             <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
         </a>
     </div>

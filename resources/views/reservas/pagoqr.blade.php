@@ -1,8 +1,3 @@
-<?php
-/** @var array $datos */
-/** @var \App\Models\Reserva $reserva */
-/** @var \App\Models\Usuario $usuario */
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -73,12 +68,12 @@
 
     .qr-section { margin: 2rem 0; }
     .qr-section p { font-weight: 600; color: #555; margin-bottom: 1.5rem; }
-    .qr-section img { 
-        max-width: 250px; 
-        border-radius: 20px; 
-        padding: 10px; 
-        background: white; 
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1); 
+    .qr-section img {
+        max-width: 250px;
+        border-radius: 20px;
+        padding: 10px;
+        background: white;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         border: 2px solid #eee;
     }
 
@@ -109,32 +104,32 @@
     <div class="header-status">
         <i class="fa-solid fa-circle-check"></i>
         <h1>¡Reserva Registrada!</h1>
-        <p>Tu solicitud para <strong><?= htmlspecialchars($reserva->getInstitucion()) ?></strong> ha sido enviada al sistema.</p>
+        <p>Tu solicitud para <strong>{{ $reserva->getInstitucion() }}</strong> ha sido enviada al sistema.</p>
     </div>
 
     <div class="content">
         <div class="code-box">
             <small>Código de Gestión</small>
-            <strong><?= $datos['codigo'] ?></strong>
+            <strong>{{ $datos['codigo'] }}</strong>
         </div>
 
         <div class="details">
-            <p><span><i class="fa-solid fa-calendar"></i> Fecha:</span> <strong><?= $reserva->getFecha() ?></strong></p>
-            <p><span><i class="fa-solid fa-clock"></i> Hora:</span> <strong><?= $reserva->getHora() ?></strong></p>
-            <p><span><i class="fa-solid fa-users"></i> Visitantes:</span> <strong><?= $reserva->getCupos() ?> personas</strong></p>
-            <p><span><i class="fa-solid fa-sack-dollar"></i> Monto estimado:</span> <strong>Bs. <?= number_format($datos['monto_total'], 2) ?></strong></p>
+            <p><span><i class="fa-solid fa-calendar"></i> Fecha:</span> <strong>{{ $reserva->getFecha() }}</strong></p>
+            <p><span><i class="fa-solid fa-clock"></i> Hora:</span> <strong>{{ $reserva->getHora() }}</strong></p>
+            <p><span><i class="fa-solid fa-users"></i> Visitantes:</span> <strong>{{ $reserva->getCupos() }} personas</strong></p>
+            <p><span><i class="fa-solid fa-sack-dollar"></i> Monto estimado:</span> <strong>Bs. {{ number_format($datos['monto_total'], 2) }}</strong></p>
         </div>
 
         <div class="qr-section">
             <p>Escanea para coordinar el pago reserva:</p>
-            <img src="img/qr.jpeg" alt="QR Pago">
+            <img src="{{ asset('img/qr.jpeg') }}" alt="QR Pago">
         </div>
 
         <div class="actions">
-            <a href="index.php?r=reservas/pdf&id=<?= $reserva->getId() ?>" class="btn btn-pdf">
+            <a href="{{ route('reservas.pdf', $reserva->getId()) }}" class="btn btn-pdf">
                 <i class="fa-solid fa-file-pdf"></i> Descargar Comprobante PDF
             </a>
-            <a href="index.php" class="btn btn-home">
+            <a href="{{ route('home') }}" class="btn btn-home">
                 <i class="fa-solid fa-house"></i> Volver al Inicio
             </a>
         </div>
