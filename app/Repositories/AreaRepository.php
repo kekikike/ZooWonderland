@@ -1,69 +1,53 @@
 <?php
+// app/Repositories/AreaRepository.php
 declare(strict_types=1);
 
 namespace App\Repositories;
 
-use Core\Database;
+use App\Models\Area;
+use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Acceso a la tabla `areas`.
- */
 class AreaRepository
 {
-    private \PDO $db;
-
-    public function __construct()
+    public function findAll(): Collection
     {
-        $this->db = Database::getInstance()->getConnection();
+        return Area::orderBy('id_area')->get();
     }
 
-    /**
-     * Todas las áreas ordenadas por id.
-     * @return array[]
-     */
-    public function findAll(): array
+    public function findById(int $id): ?Area
     {
-        $stmt = $this->db->query('SELECT * FROM areas ORDER BY id_area');
-        return $stmt->fetchAll();
+        return Area::find($id);
     }
 
-    /**
-     * Busca área por id.
-     * @return array|null
-     */
-    public function findById(int $id): ?array
+    public function findByRestriccion(bool $restringida): Collection
     {
-        $stmt = $this->db->prepare('SELECT * FROM areas WHERE id_area = ?');
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        return $row ?: null;
+        return Area::where('restringida', $restringida)->get();
     }
 
-    /**
-     * Busca por restricción (0/1)
-     * @return array[]
-     */
-    public function findByRestriccion(bool $restringida): array
-    {
-        $stmt = $this->db->prepare('SELECT * FROM areas WHERE restringida = ?');
-        $stmt->execute([$restringida ? 1 : 0]);
-        return $stmt->fetchAll();
-    }
-
-    /**
-     * Búsqueda de texto en nombre o descripción.
-     */
-    public function search(string $query): array
+    public function search(string $query): Collection
     {
         $q = '%' . strtolower($query) . '%';
-        $stmt = $this->db->prepare('SELECT * FROM areas WHERE LOWER(nombre) LIKE ? OR LOWER(descripcion) LIKE ?');
-        $stmt->execute([$q, $q]);
-        return $stmt->fetchAll();
+        return Area::whereRaw('LOWER(nombre) LIKE ?', [$q])
+            ->orWhereRaw('LOWER(descripcion) LIKE ?', [$q])
+            ->get();
+    }
+
+    public function create(array $data): Area
+    {
+        return Area::create($data);
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        $area = Area::find($id);
+        if (!$area) return false;
+        return $area->update($data);
     }
 
     public function delete(int $id): bool
     {
-        $stmt = $this->db->prepare('DELETE FROM areas WHERE id_area = ?');
-        return $stmt->execute([$id]);
+        $area = Area::find($id);
+        if (!$area) return false;
+        return (bool) $area->delete();
     }
 }

@@ -4,39 +4,51 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-class Usuario
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+class Usuario extends Authenticatable
 {
-    public int     $id_usuario;
-    public string  $nombre1;
-    public string  $nombre2;
-    public string  $apellido1;
-    public string  $apellido2;
-    public ?int    $ci;
-    public string  $correo;
-    public string  $telefono;
-    public string  $nombre_usuario;
-    public string  $rol;   // 'cliente' | 'administrador' | 'guia'
-    public int     $estado;
-    public ?int    $id_rol;
+    protected $table      = 'usuarios';
+    protected $primaryKey = 'id_usuario';
 
-    public function __construct(array $data)
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'nombre1', 'nombre2', 'apellido1', 'apellido2',
+        'ci', 'correo', 'telefono', 'nombre_usuario',
+        'contrasena', 'estado', 'id_rol',
+    ];
+
+    protected $hidden = ['contrasena'];
+
+    // Eloquent usa 'password' por defecto para auth, lo mapeamos
+    protected $authPasswordName = 'contrasena';
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function rol(): BelongsTo
     {
-        $this->id_usuario     = (int)($data['id_usuario'] ?? 0);
-        $this->nombre1        = $data['nombre1']        ?? '';
-        $this->nombre2        = $data['nombre2']        ?? '';
-        $this->apellido1      = $data['apellido1']      ?? '';
-        $this->apellido2      = $data['apellido2']      ?? '';
-        $this->ci             = isset($data['ci']) ? (int)$data['ci'] : null;
-        $this->correo         = $data['correo']         ?? '';
-        $this->telefono       = $data['telefono']       ?? '';
-        $this->nombre_usuario = $data['nombre_usuario'] ?? '';
-        $this->estado         = (int)($data['estado']   ?? 1);
-        $this->id_rol         = isset($data['id_rol']) ? (int)$data['id_rol'] : null;
-
-        // Acepta tanto 'rol' (viejo) como 'nombre_rol' (nuevo JOIN)
-        $this->rol = $data['nombre_rol'] ?? $data['rol'] ?? 'cliente';
+        return $this->belongsTo(Rol::class, 'id_rol', 'id_rol');
     }
 
+    public function administrador(): HasOne
+    {
+        return $this->hasOne(Administrador::class, 'id_usuario', 'id_usuario');
+    }
+
+    public function guia(): HasOne
+    {
+        return $this->hasOne(Guia::class, 'id_usuario', 'id_usuario');
+    }
+
+    public function cliente(): HasOne
+    {
+        return $this->hasOne(Cliente::class, 'id_usuario', 'id_usuario');
+    }
+
+    // ── Helpers (igual que antes) ────────────────────────────────
     public function getNombreCompleto(): string
     {
         $partes = array_filter([
@@ -53,23 +65,28 @@ class Usuario
         return $this->getNombreCompleto() ?: $this->nombre_usuario;
     }
 
+    public function getNombreRol(): string
+    {
+        return $this->rol?->nombre_rol ?? 'cliente';
+    }
+
     public function esCliente(): bool
     {
-        return $this->rol === 'cliente';
+        return $this->getNombreRol() === Rol::CLIENTE;
     }
 
     public function esGuia(): bool
     {
-        return $this->rol === 'guia';
+        return $this->getNombreRol() === Rol::GUIA;
     }
 
     public function esAdministrador(): bool
     {
-        return $this->rol === 'administrador';
+        return $this->getNombreRol() === Rol::ADMINISTRADOR;
     }
 
     public function estaActivo(): bool
     {
-        return $this->estado === 1;
+        return (int)$this->estado === 1;
     }
 }

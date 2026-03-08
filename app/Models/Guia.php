@@ -4,37 +4,48 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-class Guia extends Usuario
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class Guia extends Model
 {
-    public ?int    $id_guia;
-    public ?string $horarios;
-    public ?string $dias_trabajo;
+    protected $table      = 'guias';
+    protected $primaryKey = 'id_guia';
 
-    public function __construct(array $data)
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'horarios', 'dias_trabajo', 'id_usuario', 'estado',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function usuario(): BelongsTo
     {
-        parent::__construct($data);
-
-        $this->id_guia      = isset($data['id_guia'])      ? (int)$data['id_guia'] : null;
-        $this->horarios     = $data['horarios']             ?? null;
-        $this->dias_trabajo = $data['dias_trabajo']         ?? $data['guia_dias']   ?? null;
+        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
     }
 
-    /**
-     * Devuelve el horario de entrada (primera parte antes del ' - ')
-     */
-    public function getHoraEntrada(): ?string
+    // guia_recorrido SÍ necesita modelo (tiene fecha_asignacion, hora_inicio)
+    public function guiaRecorridos(): HasMany
     {
-        if (!$this->horarios) return null;
-        return trim(explode('-', $this->horarios)[0] ?? '');
+        return $this->hasMany(GuiaRecorrido::class, 'id_guia', 'id_guia');
     }
 
-    /**
-     * Devuelve el horario de salida (segunda parte después del ' - ')
-     */
-    public function getHoraSalida(): ?string
+    public function recorridos(): BelongsToMany
     {
-        if (!$this->horarios) return null;
-        $partes = explode('-', $this->horarios);
-        return trim($partes[1] ?? '');
+        return $this->belongsToMany(
+            Recorrido::class,
+            'guia_recorrido',
+            'id_guia',
+            'id_recorrido'
+        )->withPivot('fecha_asignacion', 'hora_inicio', 'estado');
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaActivo(): bool
+    {
+        return (int)$this->estado === 1;
     }
 }

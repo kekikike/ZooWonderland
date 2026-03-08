@@ -1,111 +1,68 @@
 <?php
+// app/Repositories/CompraRepository.php
 declare(strict_types=1);
 
 namespace App\Repositories;
 
-use Core\Database;
+use App\Models\Compra;
+use App\Models\Cliente;
+use App\Models\Ticket;
+use App\Models\DetalleCompra;
+use Illuminate\Database\Eloquent\Collection;
 
 class CompraRepository
 {
-    private \PDO $db;
-
-    public function __construct()
+    public function findAll(): Collection
     {
-        $this->db = Database::getInstance()->getConnection();
+        return Compra::orderByDesc('fecha')->get();
     }
 
-    // Obtener todos los registros de compras
-    public function findAll(): array
+    public function findById(int $id): ?Compra
     {
-        $sql = "SELECT * FROM compras ORDER BY fecha DESC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
+        return Compra::with(['cliente', 'detalles.ticket.recorrido'])->find($id);
     }
 
-    // Obtener compra por su ID
-    public function findById(int $id): ?array
+    public function findByCliente(int $clienteId, ?string $fechaInicio = null, ?string $fechaFin = null): Collection
     {
-        $sql = "SELECT * FROM compras WHERE id_compra = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $id]);
-        $result = $stmt->fetch();
-        return $result ?: null;
+        return Compra::where('id_cliente', $clienteId)
+            ->when($fechaInicio, fn($b) => $b->where('fecha', '>=', $fechaInicio))
+            ->when($fechaFin,    fn($b) => $b->where('fecha', '<=', $fechaFin))
+            ->orderByDesc('fecha')
+            ->orderByDesc('hora')
+            ->get();
     }
 
-    // Obtener todas las compras de un cliente
-    public function findByCliente(int $clienteId, ?string $fechaInicio = null, ?string $fechaFin = null): array
+    public function findClienteByUsuario(int $usuarioId): ?Cliente
     {
-        $sql = "SELECT * FROM compras WHERE id_cliente = :id";
-
-        // Filtrado por fechas si se pasan
-        $params = ['id' => $clienteId];
-        if ($fechaInicio) {
-            $sql .= " AND fecha >= :fechaInicio";
-            $params['fechaInicio'] = $fechaInicio;
-        }
-        if ($fechaFin) {
-            $sql .= " AND fecha <= :fechaFin";
-            $params['fechaFin'] = $fechaFin;
-        }
-
-        $sql .= " ORDER BY fecha DESC, hora DESC";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-
-        return $stmt->fetchAll();
+        return Cliente::where('id_usuario', $usuarioId)->first();
     }
 
-    // Crear una nueva compra y devolver el ID generado
-    public function create(array $data): int
+    public function create(array $data): Compra
     {
-        $sql = "
-            INSERT INTO compras (id_cliente, fecha, hora, monto, estado_pago)
-            VALUES (:id_cliente, :fecha, :hora, :monto, :estado_pago)
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($data);
-        return (int) $this->db->lastInsertId();
-    }
-
-    // Obtener cliente por id_usuario
-    public function findClienteByUsuario(int $usuarioId): ?array
-    {
-        $sql = "SELECT * FROM clientes WHERE id_usuario = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute(['id' => $usuarioId]);
-        $cliente = $stmt->fetch();
-        return $cliente ?: null;
-    }
-
-    // Registrar detalle de compra para un ticket específico
-    public function addDetalle(int $compraId, int $ticketId, float $precioUnitario, int $cantidad = 1): void
-    {
-        $sql = "INSERT INTO detalle_compra
-                (id_compra, id_ticket, precio_unitario, cantidad)
-                VALUES (:compra, :ticket, :precio, :cantidad)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':compra'  => $compraId,
-            ':ticket'  => $ticketId,
-            ':precio'  => $precioUnitario,
-            ':cantidad'=> $cantidad,
+        return Compra::create([
+            'id_cliente'  => $data['id_cliente'],
+            'fecha'       => $data['fecha'],
+            'hora'        => $data['hora'],
+            'monto'       => $data['monto'],
+            'estado_pago' => $data['estado_pago'] ?? 0,
         ]);
     }
 
-    /**
-     * Devuelve la cantidad de tickets vendidos para un recorrido en fecha/hora.
-     */
+    public function addDetalle(int $compraId, int $ticketId, float $precioUnitario, int $cantidad = 1): DetalleCompra
+    {
+        return DetalleCompra::create([
+            'id_compra'      => $compraId,
+            'id_ticket'      => $ticketId,
+            'precio_unitario' => $precioUnitario,
+            'cantidad'       => $cantidad,
+        ]);
+    }
+
     public function countTicketsSold(int $recorridoId, string $fecha, string $hora): int
     {
-        $sql = "SELECT COUNT(*) FROM tickets WHERE id_recorrido = :recorrido AND fecha = :fecha AND hora = :hora";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':recorrido' => $recorridoId,
-            ':fecha'      => $fecha,
-            ':hora'       => $hora,
-        ]);
-        return (int) $stmt->fetchColumn();
+        return Ticket::where('id_recorrido', $recorridoId)
+            ->where('fecha', $fecha)
+            ->where('hora', $hora)
+            ->count();
     }
 }

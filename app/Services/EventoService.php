@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Repositories\EventoRepository;
 use App\Repositories\GuiaRepository;
-use App\Repositories\AreaRepository;  // Asumiendo que tienes uno para áreas
+use App\Repositories\AreaRepository;
 use Exception;
 
 class EventoService
@@ -17,37 +17,30 @@ class EventoService
 
     public function __construct()
     {
-        $this->repo = new EventoRepository();
+        $this->repo     = new EventoRepository();
         $this->guiaRepo = new GuiaRepository();
-        $this->areaRepo = new AreaRepository();  // Crea si no existe
+        $this->areaRepo = new AreaRepository();
     }
 
-    public function getAll(array $filtros = []): array
+    public function getAll(array $filtros = []): \Illuminate\Database\Eloquent\Collection
     {
         return $this->repo->findAll($filtros);
     }
 
-    public function getById(int $id): ?array
+    public function getById(int $id): ?\App\Models\Evento
     {
-        $evento = $this->repo->findById($id);
-        if ($evento) {
-            $evento['actividades'] = $this->repo->getActividades($id);
-        }
-        return $evento;
+        return $this->repo->findById($id);
     }
 
     public function create(array $data): array
     {
         try {
-            $this->validateData($data, true);
-
-            $id = $this->repo->create($data);
-
+            $this->validar($data, true);
+            $evento = $this->repo->create($data);
             if (!empty($data['actividades'])) {
-                $this->repo->saveActividades($id, $data['actividades']);
+                $this->repo->saveActividades($evento->id_evento, $data['actividades']);
             }
-
-            return ['success' => true, 'message' => 'Evento creado correctamente', 'id' => $id];
+            return ['success' => true, 'message' => 'Evento creado correctamente.', 'id' => $evento->id_evento];
         } catch (Exception $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }
@@ -56,19 +49,12 @@ class EventoService
     public function update(int $id, array $data): array
     {
         try {
-            $this->validateData($data, false);
-
-            $updated = $this->repo->update($id, $data);
-
-            if (!$updated) {
-                throw new Exception("No se pudo actualizar el evento");
-            }
-
+            $this->validar($data, false, $id);
+            $this->repo->update($id, $data);
             if (!empty($data['actividades'])) {
                 $this->repo->saveActividades($id, $data['actividades']);
             }
-
-            return ['success' => true, 'message' => 'Evento actualizado correctamente'];
+            return ['success' => true, 'message' => 'Evento actualizado correctamente.'];
         } catch (Exception $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }
@@ -77,81 +63,48 @@ class EventoService
     public function delete(int $id): array
     {
         try {
-            $deleted = $this->repo->delete($id,$estado=0 );
-            if (!$deleted) {
-                throw new Exception("No se pudo eliminar el evento");
-            }
-
-            return ['success' => true, 'message' => 'Evento eliminado correctamente'];
+            $this->repo->delete($id, 0);
+            return ['success' => true, 'message' => 'Evento eliminado correctamente.'];
         } catch (Exception $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 
-    private function validateData(array $data, bool $isCreate = false): void
+    public function getGuiasDisponibles(): \Illuminate\Database\Eloquent\Collection
     {
-        if (empty($data['nombre_evento'])) {
-            throw new Exception("El nombre del evento es obligatorio");
-        }
+        return $this->guiaRepo->getGuiasDisponibles();
+    }
 
-        if (empty($data['fecha_inicio']) || empty($data['fecha_fin'])) {
-            throw new Exception("Las fechas de inicio y fin son obligatorias");
-        }
+    public function getAreas(): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->areaRepo->findAll();
+    }
+
+    private function validar(array $data, bool $isCreate, int $id = 0): void
+    {
+        if (empty($data['nombre_evento']))  throw new Exception("El nombre del evento es obligatorio.");
+        if (empty($data['descripcion']))    throw new Exception("La descripción es obligatoria.");
+        if (empty($data['lugar']))          throw new Exception("El lugar es obligatorio.");
+        if (empty($data['fecha_inicio']) || empty($data['fecha_fin'])) throw new Exception("Las fechas son obligatorias.");
 
         $inicio = new \DateTime($data['fecha_inicio']);
-        $fin = new \DateTime($data['fecha_fin']);
+        $fin    = new \DateTime($data['fecha_fin']);
 
-        if ($inicio > $fin) {
-            throw new Exception("La fecha de inicio no puede ser posterior a la fecha de fin");
+        if ($inicio > $fin) throw new Exception("La fecha de inicio no puede ser posterior a la de fin.");
+        if (!empty($data['tiene_costo']) && (empty($data['precio']) || $data['precio'] <= 0)) {
+            throw new Exception("Si el evento tiene costo, el precio debe ser mayor a 0.");
+        }
+        if (($data['limite_participantes'] ?? 0) < 0) throw new Exception("El límite no puede ser negativo.");
+
+        foreach ($data['actividades'] ?? [] as $act) {
+            if (empty($act['nombre'])) throw new Exception("Cada actividad debe tener un nombre.");
         }
 
-        if ($data['tiene_costo'] && (empty($data['precio']) || $data['precio'] <= 0)) {
-            throw new Exception("Si el evento tiene costo, el precio debe ser mayor a 0");
-        }
-
-        if (empty($data['descripcion'])) {
-            throw new Exception("La descripción es obligatoria");
-        }
-
-        if (empty($data['lugar'])) {
-            throw new Exception("El lugar es obligatorio");
-        }
-
-        if ($data['limite_participantes'] < 0) {
-            throw new Exception("El límite de participantes no puede ser negativo");
-        }
-
-        if (!empty($data['actividades'])) {
-            foreach ($data['actividades'] as $act) {
-                if (empty($act['nombre'])) {
-                    throw new Exception("Cada actividad debe tener un nombre");
-                }
+        if (!$isCreate && $id > 0) {
+            $evento = $this->repo->findById($id);
+            if ($evento && $evento->fecha_inicio < now()) {
+                throw new Exception("No se puede editar un evento que ya inició.");
             }
         }
-
-        // Para editar: verificar si el evento ya empezó
-        if (!$isCreate) {
-            $eventoActual = $this->getById($data['id']);
-            $inicioActual = new \DateTime($eventoActual['fecha_inicio']);
-            if ($inicioActual < new \DateTime()) {
-                throw new Exception("No se puede editar un evento que ya inició");
-            }
-        }
-    }
-
-    /**
-     * Obtiene guías disponibles para encargados
-     */
-    public function getGuiasDisponibles(): array
-    {
-        return $this->guiaRepo->findAll();  // Asumiendo un método findAll en GuiaRepository
-    }
-
-    /**
-     * Obtiene áreas para lugares
-     */
-    public function getAreas(): array
-    {
-        return $this->areaRepo->findAll();  // Asumiendo findAll en AreaRepository
     }
 }

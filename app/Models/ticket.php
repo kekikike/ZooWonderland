@@ -1,55 +1,49 @@
 <?php
+// app/Models/Ticket.php
 declare(strict_types=1);
 
 namespace App\Models;
 
-class Ticket {
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-    private int $id;
-    private string $hora;
-    private string $fecha;
-    private string $codigoQR;
-    private Recorrido $recorrido;
+class Ticket extends Model
+{
+    protected $table      = 'tickets';
+    protected $primaryKey = 'id_ticket';
 
-    public function __construct(
-        int $id,
-        string $hora,
-        string $fecha,
-        string $codigoQR,
-        Recorrido $recorrido
-    ) {
-        $this->id = $id;
-        $this->hora = $hora;
-        $this->fecha = $fecha;
-        $this->codigoQR = $codigoQR;
-        $this->recorrido = $recorrido;
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'hora', 'fecha', 'codigo_qr', 'id_compra', 'id_recorrido', 'estado',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function compra(): BelongsTo
+    {
+        return $this->belongsTo(Compra::class, 'id_compra', 'id_compra');
     }
 
-    // Getters
-
-    public function getId(): int {
-        return $this->id;
+    public function recorrido(): BelongsTo
+    {
+        return $this->belongsTo(Recorrido::class, 'id_recorrido', 'id_recorrido');
     }
 
-    public function getHora(): string {
-        return $this->hora;
+    public function detalle(): HasOne
+    {
+        return $this->hasOne(DetalleCompra::class, 'id_ticket', 'id_ticket');
     }
 
-    public function getFecha(): string {
-        return $this->fecha;
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaActivo(): bool
+    {
+        return (int)$this->estado === 1;
     }
 
-    public function getCodigoQR(): string {
-        return $this->codigoQR;
-    }
-
-    public function getRecorrido(): Recorrido {
-        return $this->recorrido;
-    }
-
-    // Métodos
-
-    public function getInfo(): string {
-        return "Ticket #{$this->id} - {$this->fecha} {$this->hora}";
+    public function getInfo(): string
+    {
+        return "Ticket #{$this->id_ticket} - {$this->fecha} {$this->hora}";
     }
 }

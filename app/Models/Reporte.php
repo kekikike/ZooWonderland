@@ -1,30 +1,26 @@
 <?php
+// app/Models/Reporte.php
 declare(strict_types=1);
 
 namespace App\Models;
 
-class Reporte
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Reporte extends Model
 {
-    private int $id_reporte;
-    private int $id_guia_recorrido;
-    private string $observaciones;
-    private string $fecha_reporte;
+    protected $table      = 'reportes';
+    protected $primaryKey = 'id_reporte';
 
-    public function __construct(
-        int $id_reporte,
-        int $id_guia_recorrido,
-        string $observaciones,
-        string $fecha_reporte
-    ) {
-        $this->id_reporte        = $id_reporte;
-        $this->id_guia_recorrido = $id_guia_recorrido;
-        $this->observaciones     = $observaciones;
-        $this->fecha_reporte     = $fecha_reporte;
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'id_guia_recorrido', 'observaciones', 'fecha_reporte', 'estado',
+    ];
+
+    public function guiaRecorrido(): BelongsTo
+    {
+        return $this->belongsTo(GuiaRecorrido::class, 'id_guia_recorrido', 'id_guia_recorrido');
     }
-
-    // Getters
-    public function getIdReporte(): int { return $this->id_reporte; }
-    public function getIdGuiaRecorrido(): int { return $this->id_guia_recorrido; }
-    public function getObservaciones(): string { return $this->observaciones; }
-    public function getFechaReporte(): string { return $this->fecha_reporte; }
 }

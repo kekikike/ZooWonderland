@@ -1,144 +1,59 @@
-# ZooWonderland - Sistema de Gestión de Zoologico
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-Sistema desarrollado como proyecto del curso Tecnología Web II
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-## Requisitos
+## About Laravel
 
-- PHP 8.2 o superior
-- MySQL 8.0 o superior
-- Composer
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-## Instalación
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-1. Clonar el repositorio
-2. Ejecutar `composer install`
-3. Configurar archivo `.env`
-4. Importar base de datos
-5. Acceder a `http://localhost/zoowonderland/public`
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Estructura del Proyecto
-/
-├── App/
-│   ├── constrollers/
-|   |   ├── AdminController.php
-|   |   ├── AnimalController.php
-|   |   ├── AreaController.php
-|   |   ├── AuthController.php
-|   |   ├── CompraController.php
-|   |   ├── GuiaController.php
-|   |   ├── HomeController.php
-|   |   ├── ReservaController.php
-|   |   ├── TicketController.php
-|   |   └── UsuarioController.php
-│   ├── models/
-|   |   ├── Administrador.php
-│   │   ├── animal.php
-│   │   ├── area.php
-|   |   ├── Cliente.php
-│   │   ├── compra.php
-|   |   ├── Guia.php
-|   |   ├── recorrido.php
-|   |   ├── Reporte.php
-|   |   ├── reserva.php
-|   |   ├── ticket.php
-│   │   └── Usuario.php
-│   ├── repositories/
-│   │   ├── AnimalRepository.php
-|   |   ├── AreaRepository.php
-|   |   ├── CompraRepository.php
-|   |   ├── GuiaRepository.php
-|   |   ├── RecorridoRepository.php
-|   |   ├── ReporteRepository.php
-|   |   ├── ReservaRepository.php
-│   │   ├── TicketRepository.php
-│   │   └── UsuarioRepository.php
-│   ├── services/
-│   │   |── AuthService.php
-|   |   ├── CompraService.php
-|   |   ├── RegisterService.php
-│   │   └── ReservaService.php
-│   ├── views/
-|   |   ├── admin/
-|   |   |   ├── animal_form.php
-|   |   |   ├── animales.php
-|   |   |   ├── dashboard.php
-|   |   |   └── recorridos.php
-|   |   ├── animales/
-|   |   ├── areas/
-|   |   ├── auth/
-|   |   |   ├── login.php
-|   |   |   ├── perfil.php
-|   |   |   └── register.php
-|   |   ├── compras/
-|   |   |   ├── crear.php
-|   |   |   ├── historial.php
-|   |   |   ├── listar.php
-|   |   |   └── login.php
-|   |   ├── errors/
-|   |   |   └── 403.php
-|   |   ├── guias/
-|   |   |   ├── partials/
-|   |   |   |   └── tabs.php
-|   |   |   ├── dashboard.php
-|   |   |   ├── detalle_recorrido.php
-|   |   |   ├── horarios.php
-|   |   |   ├── reporte_crear.php
-|   |   |   ├── reporte_historial.php
-|   |   |   └── reporte_seleccionar.php
-|   |   ├── reservas/
-|   |   |   ├── historial.php
-|   |   |   ├── listar.php
-|   |   |   ├── pagoqr.php
-|   |   |   └── reservar.php
-|   |   ├── tickets/
-|   |   ├── usuarios/
-|   |   |   └── historial.php
-|   |   └── home.php
-├── config/
-│   ├── constants.php
-│   └── Database.php
-├── core/
-│   ├── Authorization.php
-│   ├── config.php
-│   ├── Database.php
-│   ├── Logger.php
-│   └── session.php
-├── public/
-│   ├── img/
-│   ├── historial.php
-│   ├── index.php
-│   ├── logout.php
-│   ├── pagoqr_reserva.php
-│   └── reservar.php
-├── rutas/
-│   └── web.php
-├── vendor/
-├── .gitignore
-├── dbzoowonderland.sql
-├── composer.json
-├── composer.lock
-├── Plan_Iteraciones_Sistema.md
-├── README.md
-└── US-13_IMPLEMENTACION.md
+## Learning Laravel
 
-## Módulos
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
 
-- Primera Iteración: Módulo cliente 
-- Segunda Iteración: En desarrollo
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Autor
+## Laravel Sponsors
 
-Antropomorfos - Tecnología Web II
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-## Login
-admin
-Usuario: faviopzoo
-Contraseña: favio2026
+### Premium Partners
 
-guia
-Usuario: charliep
-Contraseña: cha2026
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-cliente
-Usuario: juancm
-Contraseña: 123
+## Contributing
+
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

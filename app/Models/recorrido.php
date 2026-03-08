@@ -1,71 +1,68 @@
 <?php
+// app/Models/Recorrido.php
 declare(strict_types=1);
 
 namespace App\Models;
 
-class Recorrido {
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-    private int $id;
-    private string $nombre;
-    private string $tipo;
-    private float $precio;
-    private int $duracion;
-    private int $capacidad;
-    private array $areas = [];
+class Recorrido extends Model
+{
+    protected $table      = 'recorridos';
+    protected $primaryKey = 'id_recorrido';
 
-    public function __construct(
-        int $id,
-        string $nombre,
-        string $tipo,
-        float $precio,
-        int $duracion,
-        int $capacidad
-    ) {
-        $this->id = $id;
-        $this->nombre = $nombre;
-        $this->tipo = $tipo;
-        $this->precio = $precio;
-        $this->duracion = $duracion;
-        $this->capacidad = $capacidad;
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'nombre', 'tipo', 'precio', 'duracion', 'capacidad', 'estado',
+    ];
+
+    protected $casts = [
+        'precio' => 'float',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function areas(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Area::class,
+            'recorrido_area',
+            'id_recorrido',
+            'id_area'
+        )->withPivot('estado')->wherePivot('estado', 1);
     }
 
-    // Getters
-
-    public function getId(): int {
-        return $this->id;
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'id_recorrido', 'id_recorrido');
     }
 
-    public function getNombre(): string {
-        return $this->nombre;
+    public function reservas(): HasMany
+    {
+        return $this->hasMany(Reserva::class, 'id_recorrido', 'id_recorrido');
     }
 
-    public function getTipo(): string {
-        return $this->tipo;
+    public function guias(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Guia::class,
+            'guia_recorrido',
+            'id_recorrido',
+            'id_guia'
+        )->withPivot('fecha_asignacion', 'hora_inicio', 'estado');
     }
 
-    public function getPrecio(): float {
-        return $this->precio;
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaActivo(): bool
+    {
+        return (int)$this->estado === 1;
     }
 
-    public function getDuracion(): int {
-        return $this->duracion;
-    }
-
-    public function getCapacidad(): int {
-        return $this->capacidad;
-    }
-
-    public function getAreas(): array {
-        return $this->areas;
-    }
-
-    // Métodos
-
-    public function agregarArea(Area $area): void {
-        $this->areas[] = $area;
-    }
-
-    public function getInfo(): string {
-        return "{$this->nombre} - {$this->tipo} (Bs. {$this->precio})";
+    public function esGuiado(): bool
+    {
+        return $this->tipo === 'Guiado';
     }
 }

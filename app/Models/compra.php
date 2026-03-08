@@ -1,95 +1,61 @@
 <?php
+// app/Models/Compra.php
 declare(strict_types=1);
 
 namespace App\Models;
 
-class Compra {
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-    private int $id;
-    private string $fecha;
-    private string $hora;
-    private float $monto;
-    private Cliente $cliente;
-    private array $tickets = [];
+class Compra extends Model
+{
+    protected $table      = 'compras';
+    protected $primaryKey = 'id_compra';
 
-    public function __construct(
-        int $id,
-        string $fecha,
-        string $hora,
-        float $monto,
-        Cliente $cliente
-    ) {
-        $this->id = $id;
-        $this->fecha = $fecha;
-        $this->hora = $hora;
-        $this->monto = $monto;
-        $this->cliente = $cliente;
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'fecha', 'hora', 'monto', 'estado_pago', 'id_cliente', 'estado',
+    ];
+
+    protected $casts = [
+        'monto'      => 'float',
+        'estado_pago' => 'boolean',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'id_cliente', 'id_cliente');
     }
 
-    // Getters
-
-    public function getId(): int {
-        return $this->id;
+    // detalle_compra SI necesita modelo propio (tiene precio_unitario, cantidad)
+    public function detalles(): HasMany
+    {
+        return $this->hasMany(DetalleCompra::class, 'id_compra', 'id_compra');
     }
 
-    public function getFecha(): string {
-        return $this->fecha;
+    public function tickets(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Ticket::class,
+            'detalle_compra',
+            'id_compra',
+            'id_ticket'
+        )->withPivot('precio_unitario', 'cantidad');
     }
 
-    public function getHora(): string {
-        return $this->hora;
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaPagada(): bool
+    {
+        return (bool)$this->estado_pago;
     }
 
-    public function getMonto(): float {
-        return $this->monto;
-    }
-
-    public function getCliente(): Cliente {
-        return $this->cliente;
-    }
-
-    public function getTickets(): array {
-        return $this->tickets;
-    }
-
-    // Métodos
-
-    public function agregarTicket(Ticket $ticket): void {
-        $this->tickets[] = $ticket;
-    }
-
-    public function crearTicket(
-        int $id,
-        string $hora,
-        string $fecha,
-        string $codigoQR,
-        Recorrido $recorrido
-    ): Ticket {
-
-        $ticket = new Ticket(
-            $id,
-            $hora,
-            $fecha,
-            $codigoQR,
-            $recorrido
-        );
-
-        $this->agregarTicket($ticket);
-
-        return $ticket;
-    }
-
-    public function mostrarCompra(): string {
-        return "Compra #{$this->id} - Total: Bs. {$this->monto}";
-    }
-
-    public function getInfo(): array {
-        return [
-            'id' => $this->id,
-            'fecha' => $this->fecha,
-            'hora' => $this->hora,
-            'monto' => $this->monto,
-            'tickets' => count($this->tickets)
-        ];
+    public function mostrarResumen(): string
+    {
+        return "Compra #{$this->id_compra} - Total: Bs. {$this->monto}";
     }
 }

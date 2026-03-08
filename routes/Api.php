@@ -1,32 +1,32 @@
 <?php
 // routes/api.php
-declare(strict_types=1);
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AnimalController;
+use App\Http\Controllers\Api\UsuarioController;
 
-use Core\Router;
-use App\Controllers\Api\AuthController;
-use App\Controllers\Api\AnimalController;
-use App\Controllers\Api\UsuarioController;
+// ── AUTH ─────────────────────────────────────────────────────────
+Route::post('/auth/login',  [AuthController::class, 'login']);
+Route::middleware('auth.zoo')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/auth/me',      [AuthController::class, 'me']);
+});
 
-$router = new Router();
+// ── USUARIOS (solo admin) ─────────────────────────────────────────
+Route::middleware(['auth.zoo', 'auth.admin'])->group(function () {
+    Route::get('/usuarios',              [UsuarioController::class, 'index']);
+    Route::post('/usuarios',             [UsuarioController::class, 'store']);
+    Route::get('/usuarios/{id}',         [UsuarioController::class, 'show']);
+    Route::put('/usuarios/{id}',         [UsuarioController::class, 'update']);
+    Route::patch('/usuarios/{id}/estado',[UsuarioController::class, 'toggleEstado']);
+    Route::delete('/usuarios/{id}',      [UsuarioController::class, 'destroy']);
+});
 
-// ── AUTH  —  /api/auth ───────────────────────────────────────────
-$router->post('/api/auth/login',  [AuthController::class, 'login']);
-$router->post('/api/auth/logout', [AuthController::class, 'logout']);
-$router->get( '/api/auth/me',     [AuthController::class, 'me']);
-
-// ── USUARIOS  —  /api/usuarios  (solo admin) ─────────────────────
-$router->get(   '/api/usuarios',             [UsuarioController::class, 'index']);
-$router->post(  '/api/usuarios',             [UsuarioController::class, 'store']);
-$router->get(   '/api/usuarios/{id}',        [UsuarioController::class, 'show']);
-$router->put(   '/api/usuarios/{id}',        [UsuarioController::class, 'update']);
-$router->patch( '/api/usuarios/{id}/estado', [UsuarioController::class, 'toggleEstado']);
-$router->delete('/api/usuarios/{id}', [UsuarioController::class, 'destroy']);
-
-// ── ANIMALES  —  /api/animales ───────────────────────────────────
-$router->get(   '/api/animales',      [AnimalController::class, 'index']);
-$router->get(   '/api/animales/{id}', [AnimalController::class, 'show']);
-$router->post(  '/api/animales',      [AnimalController::class, 'store']);
-$router->put(   '/api/animales/{id}', [AnimalController::class, 'update']);
-$router->delete('/api/animales/{id}', [AnimalController::class, 'destroy']);
-
-return $router;
+// ── ANIMALES ──────────────────────────────────────────────────────
+Route::get('/animales',      [AnimalController::class, 'index']);
+Route::get('/animales/{id}', [AnimalController::class, 'show']);
+Route::middleware(['auth.zoo', 'auth.admin'])->group(function () {
+    Route::post('/animales',        [AnimalController::class, 'store']);
+    Route::put('/animales/{id}',    [AnimalController::class, 'update']);
+    Route::delete('/animales/{id}', [AnimalController::class, 'destroy']);
+});

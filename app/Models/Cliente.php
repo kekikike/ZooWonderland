@@ -1,41 +1,44 @@
 <?php
+// app/Models/Cliente.php
+declare(strict_types=1);
+
 namespace App\Models;
-class Cliente extends Usuario
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Cliente extends Model
 {
-    private int $nit;
-    private string $tipoCuenta;
+    protected $table      = 'clientes';
+    protected $primaryKey = 'id_cliente';
 
-    public function __construct(
-        int $id,
-        string $nombre1,
-        string $nombre2,
-        string $apellido1,
-        string $apellido2,
-        string $correo,
-        string $telefono,
-        string $usuario,
-        string $password,
-        int $nit,
-        string $tipoCuenta
-    ) {
-        parent::__construct(
-            $id,
-            $nombre1,
-            $nombre2,
-            $apellido1,
-            $apellido2,
-            $correo,
-            $telefono,
-            $usuario,
-            $password
-        );
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
 
-        $this->nit = $nit;
-        $this->tipoCuenta = $tipoCuenta;
+    protected $fillable = [
+        'nit', 'tipo_cuenta', 'id_usuario', 'estado',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
     }
 
-    public function comprarEntrada(): string
+    public function compras(): HasMany
     {
-        return "Entrada comprada";
+        return $this->hasMany(Compra::class, 'id_cliente', 'id_cliente');
+    }
+
+    public function reservas(): HasMany
+    {
+        return $this->hasMany(Reserva::class, 'id_cliente', 'id_cliente');
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaActivo(): bool
+    {
+        return (int)$this->estado === 1;
     }
 }

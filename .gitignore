@@ -1,31 +1,24 @@
-# --- Configuración y Secretos ---
-.env
-.env.local
-# Ignora el archivo específico y la carpeta
-/config/Database.php
-/config/
-
-# --- IDEs y Editores ---
-.vscode/
-.idea/
-*.sublime-*
-*.swp
-
-# --- Sistema Operativo ---
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# --- Logs y Temporales ---
 *.log
-/logs/
-*.tmp
-*.cache
-
-# --- Base de Datos ---
-*.sqlite
-
-# --- Uploads ---
-# Ignora el contenido pero mantiene la carpeta gracias al .gitkeep
-/public/uploads/*
-!/public/uploads/.gitkeep
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db

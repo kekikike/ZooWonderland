@@ -1,73 +1,53 @@
 <?php
+// app/Models/Reserva.php
 declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Reserva {
+class Reserva extends Model
+{
+    protected $table      = 'reservas';
+    protected $primaryKey = 'id_reserva';
 
-    private int $id;
-    private string $hora;
-    private string $fecha;
-    private int $cupos;
-    private string $institucion;
-    private Recorrido $recorrido;
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
 
-    public function __construct(
-        int $id,
-        string $hora,
-        string $fecha,
-        int $cupos,
-        string $institucion,
-        Recorrido $recorrido
-    ) {
-        $this->id = $id;
-        $this->hora = $hora;
-        $this->fecha = $fecha;
-        $this->cupos = $cupos;
-        $this->institucion = $institucion;
-        $this->recorrido = $recorrido;
+    protected $fillable = [
+        'fecha', 'hora', 'cupos', 'institucion', 'comentario',
+        'estado_pago', 'estado', 'id_cliente', 'id_recorrido',
+    ];
+
+    protected $casts = [
+        'estado_pago' => 'boolean',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'id_cliente', 'id_cliente');
     }
 
-    // Getters
-
-    public function getId(): int {
-        return $this->id;
+    public function recorrido(): BelongsTo
+    {
+        return $this->belongsTo(Recorrido::class, 'id_recorrido', 'id_recorrido');
     }
 
-    public function getHora(): string {
-        return $this->hora;
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaPagada(): bool
+    {
+        return (bool)$this->estado_pago;
     }
 
-    public function getFecha(): string {
-        return $this->fecha;
+    public function estaActiva(): bool
+    {
+        return (int)$this->estado === 1;
     }
 
-    public function getCupos(): int {
-        return $this->cupos;
-    }
-
-    public function getInstitucion(): string {
-        return $this->institucion;
-    }
-
-    public function getRecorrido(): Recorrido {
-        return $this->recorrido;
-    }
-
-    // Métodos
-
-    public function editarReserva(
-        string $hora,
-        string $fecha,
-        int $cupos
-    ): void {
-        $this->hora = $hora;
-        $this->fecha = $fecha;
-        $this->cupos = $cupos;
-    }
-
-    public function mostrarReserva(): string {
-        return "Reserva {$this->id} - {$this->institucion} ({$this->fecha})";
+    public function mostrarResumen(): string
+    {
+        return "Reserva #{$this->id_reserva} - {$this->institucion} ({$this->fecha})";
     }
 }

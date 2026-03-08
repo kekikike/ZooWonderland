@@ -1,43 +1,53 @@
 <?php
+// app/Models/Area.php
+declare(strict_types=1);
+
 namespace App\Models;
-class Area
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class Area extends Model
 {
-    private int $id;
-    private string $nombre;
-    private bool $restringida;
-    private array $animales = [];
+    protected $table      = 'areas';
+    protected $primaryKey = 'id_area';
 
-    public function __construct(
-        int $id,
-        string $nombre,
-        bool $restringida
-    ) {
-        $this->id = $id;
-        $this->nombre = $nombre;
-        $this->restringida = $restringida;
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = [
+        'nombre', 'restringida', 'descripcion', 'estado',
+    ];
+
+    protected $casts = [
+        'restringida' => 'boolean',
+    ];
+
+    // ── Relaciones ───────────────────────────────────────────────
+    public function animales(): HasMany
+    {
+        return $this->hasMany(Animal::class, 'id_area', 'id_area');
     }
 
-    public function getId(): int
+    public function recorridos(): BelongsToMany
     {
-        return $this->id;
+        return $this->belongsToMany(
+            Recorrido::class,
+            'recorrido_area',
+            'id_area',
+            'id_recorrido'
+        )->withPivot('estado')->wherePivot('estado', 1);
     }
 
-    public function agregarAnimal(Animal $animal): void
+    // ── Helpers ──────────────────────────────────────────────────
+    public function estaActiva(): bool
     {
-        $this->animales[] = $animal;
+        return (int)$this->estado === 1;
     }
 
-    public function getAnimales(): array
+    public function esRestringida(): bool
     {
-        return $this->animales;
-    }
-
-    public function getInfo(): array
-    {
-        return [
-            'id' => $this->id,
-            'nombre' => $this->nombre,
-            'restringida' => $this->restringida
-        ];
+        return (bool)$this->restringida;
     }
 }

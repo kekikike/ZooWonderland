@@ -1,26 +1,24 @@
 <?php
-// app/Models/Cliente.php
+// app/Models/Administrador.php
 declare(strict_types=1);
 
 namespace App\Models;
 
-class Cliente extends Usuario
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Administrador extends Model
 {
-    public ?int    $id_cliente;
-    public ?string $nit;
-    public ?string $tipo_cuenta;
+    protected $table      = 'administradores';
+    protected $primaryKey = 'id_admin';
 
-    public function __construct(array $data)
+    const CREATED_AT = 'fecha_registro';
+    const UPDATED_AT = null;
+
+    protected $fillable = ['id_usuario', 'estado'];
+
+    public function usuario(): BelongsTo
     {
-        parent::__construct($data);
-
-        $this->id_cliente  = isset($data['id_cliente'])  ? (int)$data['id_cliente'] : null;
-        $this->nit         = $data['nit']                ?? $data['cliente_nit']    ?? null;
-        $this->tipo_cuenta = $data['tipo_cuenta']        ?? $data['cliente_tipo']   ?? null;
-    }
-
-    public function comprarEntrada(): string
-    {
-        return "Entrada comprada";
+        return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
     }
 }
