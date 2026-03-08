@@ -86,7 +86,7 @@ if ($error) unset($_SESSION['error']);
 <div class="container">
     <div class="header">
         <h1>Registrar Reporte</h1>
-        <a href="index.php?r=guias/reportes-crear" style="color: #666; text-decoration: none; display: inline-block;">
+        <a href="/guias/reporte-crear" style="color: #666; text-decoration: none; display: inline-block;">
             <i class="fa-solid fa-arrow-left"></i> Seleccionar otro recorrido
         </a>
     </div>
@@ -125,7 +125,7 @@ if ($error) unset($_SESSION['error']);
         Revisa cuidadosamente antes de guardar.
     </div>
 
-    <form method="POST" action="index.php?r=guias/reportes-guardar" id="formReporte">
+    <form method="POST" action="/reportes-guardar" id="formReporte">
         <input type="hidden" name="id_guia_recorrido" value="<?= (int)$detalleRecorrido['id_guia_recorrido'] ?>">
         
         <div class="form-group">
@@ -149,7 +149,7 @@ if ($error) unset($_SESSION['error']);
             <button type="submit" class="btn" id="submitBtn">
                 <i class="fa-solid fa-cloud-arrow-up"></i> Guardar Reporte (Final e Inmutable)
             </button>
-            <a href="index.php?r=guias/dashboard" class="btn btn-cancel">
+            <a href="/dashboard" class="btn btn-cancel">
                 Cancelar
             </a>
         </div>

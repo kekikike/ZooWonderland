@@ -94,7 +94,7 @@ if ($mensajeExito) unset($_SESSION['mensaje_exito']);
 <div class="container">
     <div class="header">
         <h1>Historial de Reportes</h1>
-        <a href="index.php?r=guias/reportes-crear" class="btn-new">
+        <a href="/guias/reportes-crear" class="btn-new">
             <i class="fa-solid fa-plus"></i> Nuevo Reporte
         </a>
     </div>
@@ -103,7 +103,7 @@ if ($mensajeExito) unset($_SESSION['mensaje_exito']);
         <div style="font-weight: 800; color: var(--verde-selva);">
             <i class="fa-solid fa-user"></i> Guia: <?= htmlspecialchars($user->getNombreParaMostrar()) ?>
         </div>
-        <a href="index.php?r=guias/dashboard" style="color: #666; text-decoration: none; font-weight: 700;">
+        <a href="/guias/dashboard" style="color: #666; text-decoration: none; font-weight: 700;">
             <i class="fa-solid fa-house"></i> Panel
         </a>
     </div>
@@ -122,7 +122,7 @@ if ($mensajeExito) unset($_SESSION['mensaje_exito']);
             </div>
             <h2>No hay reportes aun</h2>
             <p>Cuando registres reportes de tus recorridos, apareceran aqui</p>
-            <a href="index.php?r=guias/reportes-crear" style="color: var(--verde-selva); text-decoration: none; font-weight: 700; margin-top: 1rem;">
+            <a href="/guias/reportes-crear" style="color: var(--verde-selva); text-decoration: none; font-weight: 700; margin-top: 1rem;">
                 <i class="fa-solid fa-plus"></i> Registrar tu primer reporte
             </a>
         </div>
@@ -152,7 +152,7 @@ if ($mensajeExito) unset($_SESSION['mensaje_exito']);
 
                     <div style="font-size: 0.85rem; color: #999; border-top: 1px solid #eee; padding-top: 0.8rem;">
                         <i class="fa-solid fa-info-circle"></i>
-                        Guardado el <?= (new DateTime($reporte['fecha_reporte']))->format('d \\de M \\de Y \\a \\la\\s H:i') ?>
+                        Guardado el <?= (new DateTime($reporte['fecha_reporte']))->format('d') ?> de <?= (new DateTime($reporte['fecha_reporte']))->format('Y') ?> a las <?= (new DateTime($reporte['fecha_reporte']))->format('H:i') ?>
                     </div>
                 </div>
             <?php endforeach; ?>

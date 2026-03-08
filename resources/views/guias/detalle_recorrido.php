@@ -1,5 +1,5 @@
 <?php
-// app/Views/guias/detalle_recorrido.php
+// resources/views/guias/detalle_recorrido.php
 declare(strict_types=1);
 $currentTab = 'recorridos';
 ?>
@@ -37,7 +37,6 @@ $currentTab = 'recorridos';
 
         h1, h2, h3, .logo, .hero-nombre { font-family: 'Montserrat', sans-serif; }
 
-        /* ── HEADER (Igual al Dashboard) ── */
         header {
             background: var(--blanco);
             position: sticky;
@@ -76,7 +75,6 @@ $currentTab = 'recorridos';
             font-size: 0.9rem;
         }
 
-        /* ── NAVEGACIÓN ── */
         .nav-container {
             background: var(--oscuro);
             padding: 0 3%;
@@ -105,7 +103,6 @@ $currentTab = 'recorridos';
             background: rgba(255,255,255,0.05);
         }
 
-        /* ── CONTENIDO ── */
         main {
             max-width: 1200px; 
             margin: 2.5rem auto;
@@ -120,7 +117,6 @@ $currentTab = 'recorridos';
         .breadcrumb a { color: var(--verde-selva); text-decoration: none; }
         .breadcrumb span { color: #999; margin: 0 8px; }
 
-        /* ── HERO CARD (ESTILO MEJORADO) ── */
         .hero-card {
             background: var(--blanco);
             border-radius: 25px;
@@ -153,7 +149,6 @@ $currentTab = 'recorridos';
         .badge-guiado { background: #e8f5e9; color: #2e7d32; }
         .badge-noguiado { background: #fff3e0; color: #e65100; }
 
-        /* ── META GRID (5 EN LÍNEA IGUAL QUE DASHBOARD) ── */
         .meta-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
@@ -192,7 +187,6 @@ $currentTab = 'recorridos';
             color: var(--oscuro);
         }
 
-        /* ── ÁREAS ── */
         .areas-section h3 {
             font-size: 1.6rem;
             color: var(--oscuro);
@@ -251,7 +245,6 @@ $currentTab = 'recorridos';
         .status-restringido { background: #ffebee; color: #c62828; }
         .status-libre { background: #e8f5e9; color: #2e7d32; }
 
-        /* Barra Ocupación */
         .ocupacion-wrap { margin-top: 1.5rem; }
         .bar-track { background: #eee; height: 12px; border-radius: 10px; overflow: hidden; }
         .bar-fill { height: 100%; border-radius: 10px; }
@@ -290,50 +283,56 @@ $currentTab = 'recorridos';
 
 <header>
     <div class="header-main">
-        <a href="index.php" class="logo">
+        <a href="/" class="logo">
             <i class="fa-solid fa-leaf"></i>
             <span>ZooWonderland</span>
         </a>
-        <div class="user-badge">
-            <i class="fa-solid fa-circle-user"></i> 
-            <?= htmlspecialchars($user->getNombreParaMostrar()) ?>
+        <div class="header-right" style="display: flex; gap: 15px; align-items: center;">
+            <div class="user-badge">
+                <i class="fa-solid fa-circle-user"></i> 
+                <?= htmlspecialchars($user->getNombreParaMostrar()) ?>
+            </div>
+            <a href="/logout" style="color: #c62828; font-size: 1.3rem;" title="Cerrar Sesión">
+                <i class="fa-solid fa-door-open"></i>
+            </a>
         </div>
     </div>
     <nav class="nav-container">
-        <div class="nav-tabs">
-            <a href="index.php?r=guias/dashboard" class="active">Mis Recorridos</a>
-            <a href="index.php?r=guias/horarios">Mis Horarios</a>
-        </div>
+        <?php include resource_path('views/guias/partials/tabs.php'); ?>
     </nav>
 </header>
 
 <main>
     <div class="breadcrumb">
-        <a href="index.php?r=guias/dashboard">Panel</a> 
+        <a href="/guias/dashboard">Panel</a> 
         <span><i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></span> 
         Detalle del Recorrido
     </div>
 
     <?php
-        $personas  = (int)$recorrido['personas_asignadas'];
-        $capacidad = (int)$recorrido['capacidad'];
+        $personas  = (int)($recorrido->personas_asignadas ?? 0);
+        $capacidad = (int)($recorrido->recorrido->capacidad ?? 0);
         $pct       = $capacidad > 0 ? round($personas / $capacidad * 100) : 0;
         $barClass  = $pct < 50 ? 'bar-low' : ($pct < 80 ? 'bar-medium' : 'bar-high');
-        $esGuiado  = strtolower($recorrido['tipo']) === 'guiado';
-        $fechaFmt  = date('d/m/Y', strtotime($recorrido['fecha_asignacion']));
-        $durMin    = (int)$recorrido['duracion'];
+        $esGuiado  = strtolower((string)($recorrido->recorrido->tipo ?? '')) === 'guiado';
+        $fechaFmt  = date('d/m/Y', strtotime($recorrido->fecha_asignacion));
+        $durMin    = (int)($recorrido->recorrido->duracion ?? 0);
         $horaInicio = '09:00';
         $horaFin    = date('H:i', strtotime("1970-01-01 {$horaInicio}:00") + $durMin * 60);
+        $tipo       = (string)($recorrido->recorrido->tipo ?? 'N/A');
+        $nombre     = (string)($recorrido->recorrido->nombre ?? 'Sin nombre');
+        $precio     = (float)($recorrido->recorrido->precio ?? 0);
+        $nombresCompradores = $recorrido->recorrido->nombres_compradores ?? null;
     ?>
 
-   <div class="hero-card">
-    <div class="hero-top">
-        <h2 class="hero-nombre"><?= htmlspecialchars($recorrido['nombre']) ?></h2>
-        <span class="badge-tipo <?= $esGuiado ? 'badge-guiado' : 'badge-noguiado' ?>">
-            <i class="fa-solid <?= $esGuiado ? 'fa-person-chalkboard' : 'fa-shoe-prints' ?>"></i>
-            <?= htmlspecialchars($recorrido['tipo']) ?>
-        </span>
-    </div>
+    <div class="hero-card">
+        <div class="hero-top">
+            <h2 class="hero-nombre"><?= htmlspecialchars($nombre) ?></h2>
+            <span class="badge-tipo <?= $esGuiado ? 'badge-guiado' : 'badge-noguiado' ?>">
+                <i class="fa-solid <?= $esGuiado ? 'fa-person-chalkboard' : 'fa-shoe-prints' ?>"></i>
+                <?= htmlspecialchars($tipo) ?>
+            </span>
+        </div>
 
         <div class="meta-grid">
             <div class="meta-item">
@@ -359,15 +358,13 @@ $currentTab = 'recorridos';
             <div class="meta-item">
                 <div class="meta-label">Precio</div>
                 <i class="fa-solid fa-tags"></i>
-                <div class="meta-value">Bs <?= number_format((float)$recorrido['precio'], 2) ?></div>
+                <div class="meta-value">Bs <?= number_format($precio, 2) ?></div>
             </div>
             <div class="meta-item">
-            <div class="meta-label">Compradores</div>
-            <i class="fa-solid fa-users"></i>
-            <div class="meta-value">
-                <?= $recorrido['personas_asignadas'] ?? 0 ?> / <?= $recorrido['capacidad'] ?? '?' ?>
+                <div class="meta-label">Compradores</div>
+                <i class="fa-solid fa-users"></i>
+                <div class="meta-value"><?= $personas ?> / <?= $capacidad ?></div>
             </div>
-        </div>
         </div>
 
         <div class="ocupacion-wrap">
@@ -394,13 +391,13 @@ $currentTab = 'recorridos';
                 <div class="area-card">
                     <div class="area-nombre">
                         <i class="fa-solid fa-location-dot"></i>
-                        <?= htmlspecialchars($area['nombre']) ?>
+                        <?= htmlspecialchars((string)($area->nombre ?? '')) ?>
                     </div>
-                    <?php if (!empty($area['descripcion'])): ?>
-                        <div class="area-desc"><?= htmlspecialchars($area['descripcion']) ?></div>
+                    <?php if (!empty($area->descripcion)): ?>
+                        <div class="area-desc"><?= htmlspecialchars((string)$area->descripcion) ?></div>
                     <?php endif; ?>
                     
-                    <?php if ((int)$area['restringida'] === 1): ?>
+                    <?php if ((int)($area->restringida ?? 0) === 1): ?>
                         <span class="badge-status status-restringido">
                             <i class="fa-solid fa-lock"></i> Acceso restringido
                         </span>
@@ -413,31 +410,29 @@ $currentTab = 'recorridos';
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
-        <?php if (!empty($recorrido['nombres_compradores'])): ?>
-        <div style="margin-top: 2rem; background: #f9fff9; padding: 1.5rem; border-radius: 12px; border: 1px solid #e0f2e9;">
-            <h3 style="color: #2e7d32; margin-bottom: 1rem;">
-                <i class="fa-solid fa-user-check"></i> Clientes que compraron este recorrido
-            </h3>
-            <ul style="list-style: none; padding: 0; font-size: 1.05rem; line-height: 1.7;">
-                <?php
-                $nombres = explode(', ', $recorrido['nombres_compradores']);
-                foreach ($nombres as $nombre):
-                ?>
-                    <li style="padding: 6px 0; border-bottom: 1px dashed #ccc;">
-                        <i class="fa-solid fa-user" style="color:#2e7d32; margin-right:8px;"></i>
-                        <?= htmlspecialchars($nombre) ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php else: ?>
-        <div style="margin-top: 2rem; text-align:center; color:#777; font-style:italic;">
-            Aún no hay compradores/tickets para este recorrido.
-        </div>
-    <?php endif; ?>
+
+        <?php if (!empty($nombresCompradores)): ?>
+            <div style="margin-top: 2rem; background: #f9fff9; padding: 1.5rem; border-radius: 12px; border: 1px solid #e0f2e9;">
+                <h3 style="color: #2e7d32; margin-bottom: 1rem;">
+                    <i class="fa-solid fa-user-check"></i> Clientes que compraron este recorrido
+                </h3>
+                <ul style="list-style: none; padding: 0; font-size: 1.05rem; line-height: 1.7;">
+                    <?php foreach (explode(', ', $nombresCompradores) as $nombre): ?>
+                        <li style="padding: 6px 0; border-bottom: 1px dashed #ccc;">
+                            <i class="fa-solid fa-user" style="color:#2e7d32; margin-right:8px;"></i>
+                            <?= htmlspecialchars($nombre) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php else: ?>
+            <div style="margin-top: 2rem; text-align:center; color:#777; font-style:italic;">
+                Aún no hay compradores/tickets para este recorrido.
+            </div>
+        <?php endif; ?>
     </div>
 
-    <a href="index.php?r=guias/dashboard" class="btn-back">
+    <a href="/guias/dashboard" class="btn-back">
         <i class="fa-solid fa-arrow-left"></i> Volver a mis recorridos
     </a>
 </main>
@@ -445,7 +440,7 @@ $currentTab = 'recorridos';
 <footer>
     <p><strong>ZooWonderland</strong> &copy; <?= date('Y') ?> | Panel de Gestión de Guías</p>
     <div style="margin-top:15px">
-        <a href="index.php">Inicio Publico</a> • <a href="index.php?r=logout">Cerrar Sesión</a>
+        <a href="/">Inicio Público</a> • <a href="/logout">Cerrar Sesión</a>
     </div>
 </footer>
 

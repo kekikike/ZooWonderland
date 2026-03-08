@@ -110,4 +110,10 @@ class GuiaRepository
         if (!$asignacion) return false;
         return (bool) $asignacion->delete();
     }
+    public function getDetalleAsignacion(int $idGuiaRecorrido): ?GuiaRecorrido
+{
+    return GuiaRecorrido::with(['recorrido', 'reporte'])
+        ->where('id_guia_recorrido', $idGuiaRecorrido)
+        ->first();
+}
 }

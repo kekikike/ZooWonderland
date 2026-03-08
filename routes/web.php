@@ -38,9 +38,9 @@ Route::middleware(['auth.zoo', 'auth.guia'])->group(function () {
     Route::get('/guias/dashboard',          [GuiaController::class, 'dashboard']);
     Route::get('/guias/horarios',           [GuiaController::class, 'horarios']);
     Route::get('/guias/detalle-recorrido',  [GuiaController::class, 'detalleRecorrido']);
-    Route::get('/guias/reportes-crear',     [GuiaController::class, 'showReportForm']);
-    Route::post('/guias/reportes-guardar',  [GuiaController::class, 'processReport']);
-    Route::get('/guias/reportes-historial', [GuiaController::class, 'showReportHistory']);
+    Route::get('/guias/reporte-crear',     [GuiaController::class, 'showReportForm']);
+    Route::post('/guias/reporte-guardar',  [GuiaController::class, 'processReport']);
+    Route::get('/guias/reporte-historial', [GuiaController::class, 'showReportHistory']);
 });
 
 // ── ADMIN ─────────────────────────────────────────────────────────

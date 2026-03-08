@@ -1,5 +1,5 @@
 <?php
-// app/Views/guias/dashboard.php
+// resources/views/guias/dashboard.php
 declare(strict_types=1);
 $currentTab = 'recorridos';
 ?>
@@ -37,7 +37,6 @@ $currentTab = 'recorridos';
 
         h1, h2, h3, .logo { font-family: 'Montserrat', sans-serif; }
 
-        /* ── HEADER  ── */
         header {
             background: var(--blanco);
             position: sticky;
@@ -76,7 +75,6 @@ $currentTab = 'recorridos';
             font-size: 0.9rem;
         }
 
-        /* ── NAVEGACIÓN (TABS) INTEGRADA ── */
         .nav-container {
             background: var(--oscuro);
             padding: 0 3%;
@@ -111,7 +109,6 @@ $currentTab = 'recorridos';
             background: rgba(255,255,255,0.05);
         }
 
-        /* ── CONTENIDO ── */
         main {
             max-width: 1200px; 
             margin: 3rem auto;
@@ -135,7 +132,6 @@ $currentTab = 'recorridos';
             border-radius: 10px;
         }
 
-        /* ── CARDS RECORRIDO ── */
         .recorrido-card {
             background: var(--blanco);
             border-radius: 25px;
@@ -183,7 +179,6 @@ $currentTab = 'recorridos';
             margin-bottom: 2rem;
         }
 
-        /* ── META ITEMS  ── */
         .card-meta {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
@@ -228,7 +223,6 @@ $currentTab = 'recorridos';
             color: var(--oscuro);
         }
 
-        /* ── OCUPACIÓN ── */
         .ocupacion-bar { margin-bottom: 2.5rem; }
         .ocupacion-label {
             display: flex;
@@ -276,7 +270,6 @@ $currentTab = 'recorridos';
         }
         footer a { color: var(--amarillo-sol); text-decoration: none; }
 
-        /* Responsive */
         @media (max-width: 992px) {
             .card-meta { grid-template-columns: repeat(3, 1fr); }
         }
@@ -290,7 +283,7 @@ $currentTab = 'recorridos';
 
 <header>
     <div class="header-main">
-        <a href="index.php" class="logo">
+        <a href="/" class="logo">
             <i class="fa-solid fa-leaf"></i>
             <span>ZooWonderland</span>
         </a>
@@ -300,14 +293,14 @@ $currentTab = 'recorridos';
                 <i class="fa-solid fa-circle-user"></i> 
                 <?= htmlspecialchars($user->getNombreParaMostrar()) ?>
             </div>
-            <a href="index.php?r=logout" style="color: #c62828; font-size: 1.3rem;" title="Cerrar Sesión">
+            <a href="/logout" style="color: #c62828; font-size: 1.3rem;" title="Cerrar Sesión">
                 <i class="fa-solid fa-door-open"></i>
             </a>
         </div>
     </div>
 
     <nav class="nav-container">
-        <?php require_once APP_PATH . '/Views/guias/partials/tabs.php'; ?>
+        <?php include resource_path('views/guias/partials/tabs.php'); ?>
     </nav>
 </header>
 
@@ -321,18 +314,16 @@ $currentTab = 'recorridos';
         </div>
     <?php else: ?>
         <?php foreach ($recorridosAsignados as $rec): 
-            $personas = (int)$rec['personas_asignadas'];
-            $capacidad = (int)$rec['capacidad'];
-            $pct = $capacidad > 0 ? round($personas / $capacidad * 100) : 0;
-            $barClass = $pct < 50 ? 'bar-low' : ($pct < 80 ? 'bar-medium' : 'bar-high');
-            $esGuiado = strtolower($rec['tipo']) === 'guiado';
-            $fechaFmt = date('d/m/Y', strtotime($rec['fecha_asignacion']));
-            
-            // Lógica de horas
-            $horaInicio = '09:00'; 
-            $durMin = (int)$rec['duracion'];
-            $horaFinTs = strtotime("1970-01-01 {$horaInicio}:00") + $durMin * 60;
-            $horaFin = date('H:i', $horaFinTs);
+            $personas  = (int)($rec->personas_asignadas ?? 0);
+            $capacidad = (int)($rec->recorrido->capacidad ?? 0);
+            $pct       = $capacidad > 0 ? round($personas / $capacidad * 100) : 0;
+            $barClass  = $pct < 50 ? 'bar-low' : ($pct < 80 ? 'bar-medium' : 'bar-high');
+            $esGuiado  = strtolower((string)($rec->recorrido->tipo ?? '')) === 'guiado';
+            $fechaFmt  = date('d/m/Y', strtotime($rec->fecha_asignacion));
+            $durMin    = (int)($rec->recorrido->duracion ?? 0);
+            $horaInicio = '09:00';
+            $horaFinTs  = strtotime("1970-01-01 {$horaInicio}:00") + $durMin * 60;
+            $horaFin    = date('H:i', $horaFinTs);
         ?>
         <div class="recorrido-card">
             <div class="card-top">
@@ -340,11 +331,11 @@ $currentTab = 'recorridos';
                     <i class="fa-solid fa-calendar-check"></i> <?= $fechaFmt ?>
                 </div>
                 <span class="badge-tipo <?= $esGuiado ? 'badge-guiado' : 'badge-noguiado' ?>">
-                    <?= htmlspecialchars($rec['tipo']) ?>
+                    <?= htmlspecialchars((string)($rec->recorrido->tipo ?? 'N/A')) ?>
                 </span>
             </div>
 
-            <div class="card-nombre"><?= htmlspecialchars($rec['nombre']) ?></div>
+            <div class="card-nombre"><?= htmlspecialchars((string)($rec->recorrido->nombre ?? 'Sin nombre')) ?></div>
 
             <div class="card-meta">
                 <div class="meta-item">
@@ -365,7 +356,7 @@ $currentTab = 'recorridos';
                 <div class="meta-item">
                     <div class="meta-label">Precio</div>
                     <i class="fa-solid fa-tags"></i>
-                    <div class="meta-value">Bs <?= number_format((float)$rec['precio'], 2) ?></div>
+                    <div class="meta-value">Bs <?= number_format((float)($rec->recorrido->precio ?? 0), 2) ?></div>
                 </div>
                 <div class="meta-item">
                     <div class="meta-label">Cupos Máx.</div>
@@ -385,16 +376,16 @@ $currentTab = 'recorridos';
             </div>
 
             <div class="actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <a href="index.php?r=guias/detalle-recorrido&id=<?= $rec['id_recorrido'] ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem;">
+                <a href="/guias/detalle-recorrido?id=<?= $rec->id_recorrido ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem;">
                     Áreas y detalles <i class="fa-solid fa-arrow-right"></i>
                 </a>
 
-                <?php if ($rec['tiene_reporte']): ?>
-                    <a href="index.php?r=guias/reportes-historial" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--amarillo-sol); color: #000;">
+                <?php if ($rec->reporte !== null): ?>
+                    <a href="/guias/reporte-historial" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--amarillo-sol); color: #000;">
                         <i class="fa-solid fa-check-circle"></i> Ver Reporte
                     </a>
                 <?php else: ?>
-                    <a href="index.php?r=guias/reportes-crear&id_gr=<?= $rec['id_guia_recorrido'] ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--naranja-tigre);">
+                    <a href="/guias/reporte-crear?id_gr=<?= $rec->id_guia_recorrido ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--naranja-tigre);">
                         <i class="fa-solid fa-pen-to-square"></i> Reportar Final
                     </a>
                 <?php endif; ?>
@@ -407,7 +398,7 @@ $currentTab = 'recorridos';
 <footer>
     <p><strong>ZooWonderland</strong> &copy; <?= date('Y') ?> | Panel de Gestión de Guías</p>
     <div style="margin-top:15px">
-        <a href="index.php">Inicio Público</a> • <a href="index.php?r=logout">Cerrar Sesión</a>
+        <a href="/">Inicio Público</a> • <a href="/logout">Cerrar Sesión</a>
     </div>
 </footer>
 
