@@ -41,10 +41,28 @@ class AdminController extends Controller
 
     // ── DASHBOARD ────────────────────────────────────────────────
     public function dashboard(Request $request)
-    {
-        $user = $request->attributes->get('auth_user');
-        return view('admin.dashboard', compact('user'));
-    }
+{
+    $authUser        = $request->attributes->get('auth_user');
+    $recorridos      = collect($this->recorridoRepo->findAll());
+    $totalRecorridos = $recorridos->count();
+    $totalAreas      = count($this->areaRepo->findAll());
+    $totalAnimales   = count($this->animalRepo->findAll());
+    $totalGuias      = count($this->guiaRepo->findAll());
+    $totalReservas   = 0; // conecta tu repo cuando lo tengas
+    $totalIngresos   = 0;
+
+    return view('admin.dashboard', compact(
+        'authUser',
+        'recorridos',
+        'totalRecorridos',
+        'totalAreas',
+        'totalAnimales',
+        'totalGuias',
+        'totalReservas',
+        'totalIngresos'
+    ));
+}
+    
 
     // ── USUARIOS ─────────────────────────────────────────────────
     public function usuarios(Request $request)
@@ -377,4 +395,5 @@ class AdminController extends Controller
             'Content-Disposition' => 'attachment; filename="reporte_guias.pdf"',
         ]);
     }
+    
 }
