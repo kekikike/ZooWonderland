@@ -5,7 +5,7 @@ return [
     'port'     => 3306,
     'database' => 'zoowonderland2',  
     'username' => 'root',
-    'password' => 'mipmopmap26PanQ',
+    'password' => '0306',
     'charset'  => 'utf8mb4',
 ];
 

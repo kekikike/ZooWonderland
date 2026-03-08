@@ -816,4 +816,161 @@ public function detalleEvento(): void
         header('Location: index.php?r=admin/asignaciones');
         exit;
     }
+    
+// reportes para el admin
+public function reportes(): void
+{
+    
+    $this->checkAuth();
+
+    $db   = \Core\Database::getInstance();
+    $conn = $db->getConnection();
+   if (isset($_GET['inicio']) && $_GET['inicio'] !== '') {
+        $inicio = $_GET['inicio'];
+    } else {
+        $minReservas = $conn->query("SELECT MIN(fecha) FROM reservas")->fetchColumn();
+        $minCompras  = $conn->query("SELECT MIN(fecha) FROM compras")->fetchColumn();
+        $inicio = min(array_filter([$minReservas, $minCompras])) ?: date('Y-01-01');
+    }
+
+    if (isset($_GET['fin']) && $_GET['fin'] !== '') {
+        $fin = $_GET['fin'];
+    } else {
+        $fin = date('Y-m-d');
+    }
+
+    $reservas     = [];
+    $compras      = [];
+    $reportesGuias = [];
+    $errores      = [];
+
+    // ── RESERVAS ─────────────────────────────────────────────────
+    try {
+        $stmt = $conn->prepare("
+            SELECT
+                fecha,
+                COUNT(*)                                          AS total_reservas,
+                COALESCE(SUM(cupos), 0)                          AS total_cupos,
+                SUM(CASE WHEN estado_pago = 1 THEN 1 ELSE 0 END) AS pagadas,
+                SUM(CASE WHEN estado_pago = 0 THEN 1 ELSE 0 END) AS pendientes
+            FROM reservas
+            WHERE estado = 1
+              AND fecha BETWEEN :inicio AND :fin
+            GROUP BY fecha
+            ORDER BY fecha
+        ");
+        $stmt->execute(['inicio' => $inicio, 'fin' => $fin]);
+        $reservas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        $errores[] = 'Error al cargar reservas: ' . $e->getMessage();
+    }
+
+    // ── COMPRAS ──────────────────────────────────────────────────
+    try {
+        $stmt = $conn->prepare("
+            SELECT
+                fecha,
+                COUNT(*)                                                   AS total_compras,
+                COALESCE(SUM(monto), 0)                                    AS total_ingresos,
+                COALESCE(SUM(CASE WHEN estado_pago = 1 THEN monto ELSE 0 END), 0) AS pagadas,
+                COALESCE(SUM(CASE WHEN estado_pago = 0 THEN monto ELSE 0 END), 0) AS pendientes
+            FROM compras
+            WHERE estado = 1
+              AND fecha BETWEEN :inicio AND :fin
+            GROUP BY fecha
+            ORDER BY fecha
+        ");
+        $stmt->execute(['inicio' => $inicio, 'fin' => $fin]);
+        $compras = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        $errores[] = 'Error al cargar compras: ' . $e->getMessage();
+    }
+
+    // ── REPORTES DE GUÍAS ────────────────────────────────────────
+    try {
+        $stmt = $conn->prepare("
+            SELECT
+                DATE(r.fecha_reporte)        AS fecha_reporte,
+                gr.id_guia_recorrido,
+                r.observaciones,
+                r.estado
+            FROM reportes r
+            INNER JOIN guia_recorrido gr
+                ON r.id_guia_recorrido = gr.id_guia_recorrido
+            WHERE DATE(r.fecha_reporte) BETWEEN :inicio AND :fin
+            ORDER BY r.fecha_reporte
+        ");
+        $stmt->execute(['inicio' => $inicio, 'fin' => $fin]);
+        $reportesGuias = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        $errores[] = 'Error al cargar reportes de guías: ' . $e->getMessage();
+    }
+
+    require APP_PATH . '/Views/admin/reportes.php';
+    
+}
+
+public function reportePDF(): void
+{
+    $this->checkAuth();
+
+    $tipo = $_GET['tipo'] ?? '';
+
+    $db   = \Core\Database::getInstance();
+    $conn = $db->getConnection();
+
+    $minReservas = $conn->query("SELECT MIN(fecha) FROM reservas")->fetchColumn();
+    $minCompras  = $conn->query("SELECT MIN(fecha) FROM compras")->fetchColumn();
+    $minFecha    = min(array_filter([$minReservas, $minCompras]));
+
+    $inicio = $_GET['inicio'] ?? $minFecha;
+    $fin    = $_GET['fin']    ?? date('Y-m-d');
+
+    $titulo = '';
+    $datos  = [];
+
+    if ($tipo === 'reservas') {
+        $titulo = 'Reporte de Reservas';
+        $stmt = $conn->prepare("
+            SELECT fecha, COUNT(*) AS total_reservas, COALESCE(SUM(cupos), 0) AS total_cupos
+            FROM reservas
+            WHERE estado = 1 AND fecha BETWEEN :inicio AND :fin
+            GROUP BY fecha ORDER BY fecha
+        ");
+        $stmt->execute(['inicio' => $inicio, 'fin' => $fin]);
+        $datos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+    } elseif ($tipo === 'compras') {
+        $titulo = 'Reporte de Compras';
+        $stmt = $conn->prepare("
+            SELECT fecha, COUNT(*) AS total_compras, COALESCE(SUM(monto), 0) AS total_ingresos
+            FROM compras
+            WHERE estado = 1 AND fecha BETWEEN :inicio AND :fin
+            GROUP BY fecha ORDER BY fecha
+        ");
+        $stmt->execute(['inicio' => $inicio, 'fin' => $fin]);
+        $datos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+    } elseif ($tipo === 'guias') {
+        $titulo = 'Reporte de Guías';
+        $stmt = $conn->prepare("
+            SELECT DATE(r.fecha_reporte) AS fecha_reporte, r.observaciones
+            FROM reportes r
+            WHERE DATE(r.fecha_reporte) BETWEEN :inicio AND :fin
+            ORDER BY r.fecha_reporte
+        ");
+        $stmt->execute(['inicio' => $inicio, 'fin' => $fin]);
+        $datos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    ob_start();
+    require APP_PATH . '/Views/admin/reportespdf.php';
+    $html = ob_get_clean();
+
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    $dompdf->stream("reporte_{$tipo}.pdf", ["Attachment" => true]);
+}
 }

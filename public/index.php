@@ -127,7 +127,7 @@ switch ($r) {
         break;
 
   case 'historial':
-        $userCtrl = new \App\Controllers\UsuarioController();
+        $userCtrl = new \App\Controllers\CompraController();
         $userCtrl->historial();
         break;
 
@@ -362,6 +362,16 @@ case 'admin/eventos/detalle':
         $user      = \Core\Authorization::requireAdmin();
     $adminCtrl = new \App\Controllers\AdminController();
     $adminCtrl->detalleEvento();
+    break;
+    case 'admin/reportes':
+    $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->reportes();
+    break;
+    case 'admin/reportePDF':
+    $user      = \Core\Authorization::requireAdmin();
+    $adminCtrl = new \App\Controllers\AdminController();
+    $adminCtrl->reportePDF();
     break;
 
     // ── 404 ─────────────────────────────────────────────────────
