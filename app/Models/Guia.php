@@ -40,7 +40,7 @@ class Guia extends Model
             'guia_recorrido',
             'id_guia',
             'id_recorrido'
-        )->withPivot('fecha_asignacion', 'hora_inicio', 'estado');
+        )->withPivot('fecha_asignacion', 'estado');
     }
 
     // ── Helpers ──────────────────────────────────────────────────

@@ -77,23 +77,19 @@ class GuiaRepository
 
     public function existsAsignacion(int $idGuia, string $fecha, string $horaInicio, int $duracionMinutos): bool
     {
-        return GuiaRecorrido::join('recorridos', 'recorridos.id_recorrido', '=', 'guia_recorrido.id_recorrido')
-            ->where('guia_recorrido.id_guia', $idGuia)
-            ->where('guia_recorrido.fecha_asignacion', $fecha)
-            ->where(function ($b) use ($horaInicio, $duracionMinutos) {
-                $b->whereRaw('hora_inicio <= ? AND ADDTIME(hora_inicio, SEC_TO_TIME(recorridos.duracion * 60)) > ?', [$horaInicio, $horaInicio])
-                  ->orWhereRaw('? <= hora_inicio AND ADDTIME(?, SEC_TO_TIME(? * 60)) > hora_inicio', [$horaInicio, $horaInicio, $duracionMinutos]);
-            })
+        // La tabla no tiene hora_inicio — solo verificamos que el guía no tenga
+        // otro recorrido asignado el mismo día
+        return GuiaRecorrido::where('id_guia', $idGuia)
+            ->where('fecha_asignacion', $fecha)
             ->exists();
     }
 
-    public function asignarGuia(int $idGuia, int $idRecorrido, string $fecha, string $hora): GuiaRecorrido
+    public function asignarGuia(int $idGuia, int $idRecorrido, string $fecha): GuiaRecorrido
     {
         return GuiaRecorrido::create([
             'id_guia'          => $idGuia,
             'id_recorrido'     => $idRecorrido,
             'fecha_asignacion' => $fecha,
-            'hora_inicio'      => $hora,
         ]);
     }
 
@@ -110,10 +106,4 @@ class GuiaRepository
         if (!$asignacion) return false;
         return (bool) $asignacion->delete();
     }
-    public function getDetalleAsignacion(int $idGuiaRecorrido): ?GuiaRecorrido
-{
-    return GuiaRecorrido::with(['recorrido', 'reporte'])
-        ->where('id_guia_recorrido', $idGuiaRecorrido)
-        ->first();
-}
 }

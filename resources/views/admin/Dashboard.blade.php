@@ -489,7 +489,7 @@
                 </a>
             </div>
             <div class="user-area">
-                <span class="user-name">👋 {{ $authUser->getNombreParaMostrar() }}</span>
+                <span class="user-name">👋 {{ $user->getNombreParaMostrar() }}</span>
                 <a href="/logout" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Salir
                 </a>

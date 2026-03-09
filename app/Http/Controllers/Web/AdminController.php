@@ -41,36 +41,36 @@ class AdminController extends Controller
 
     // ── DASHBOARD ────────────────────────────────────────────────
     public function dashboard(Request $request)
-{
-    $authUser        = $request->attributes->get('auth_user');
-    $recorridos      = collect($this->recorridoRepo->findAll());
-    $totalRecorridos = $recorridos->count();
-    $totalAreas      = count($this->areaRepo->findAll());
-    $totalAnimales   = count($this->animalRepo->findAll());
-    $totalGuias      = count($this->guiaRepo->findAll());
-    $totalReservas   = 0; // conecta tu repo cuando lo tengas
-    $totalIngresos   = 0;
+    {
+        $user = $request->attributes->get('auth_user');
 
-    return view('admin.dashboard', compact(
-        'authUser',
-        'recorridos',
-        'totalRecorridos',
-        'totalAreas',
-        'totalAnimales',
-        'totalGuias',
-        'totalReservas',
-        'totalIngresos'
-    ));
-}
-    
+        $recorridos      = $this->recorridoRepo->findAll();
+        $totalRecorridos = $recorridos->count();
+        $totalAreas      = $this->areaRepo->findAll()->count();
+        $totalAnimales   = $this->animalRepo->findAll()->count();
+        $totalGuias      = \App\Models\Guia::count();
+        $totalReservas   = \App\Models\Reserva::count();
+        $totalIngresos   = \App\Models\Compra::sum('monto') ?? 0;
+
+        return view('admin.dashboard', compact(
+            'user',
+            'recorridos',
+            'totalRecorridos',
+            'totalAreas',
+            'totalAnimales',
+            'totalGuias',
+            'totalReservas',
+            'totalIngresos'
+        ));
+    }
 
     // ── USUARIOS ─────────────────────────────────────────────────
     public function usuarios(Request $request)
     {
         $user     = $request->attributes->get('auth_user');
-        $filtros  = $request->only(['buscar', 'rol', 'estado', 'recorrido']);
+        $filtros  = $request->only(['busqueda', 'rol', 'estado', 'recorrido']);
         $usuarios = $this->usuarioRepo->getUsuariosFiltrados(
-            trim($filtros['buscar']    ?? ''),
+            trim($filtros['busqueda']  ?? ''),
             trim($filtros['rol']       ?? ''),
             (int)($filtros['recorrido'] ?? 0),
             trim($filtros['estado']    ?? ''),
@@ -88,7 +88,7 @@ class AdminController extends Controller
         $usuario = $this->usuarioRepo->getUsuarioPorId($id);
         if (!$usuario) abort(404);
 
-        return view('admin.usuarios.editar', compact('user', 'usuario'));
+        return view('admin.usuarios.form', compact('user', 'usuario'));
     }
 
     public function editarUsuarioPost(Request $request)
@@ -130,7 +130,9 @@ class AdminController extends Controller
     {
         $user  = $request->attributes->get('auth_user');
         $areas = $this->areaRepo->findAll();
-        return view('admin.recorridos.crear', compact('user', 'areas'));
+        $recorrido      = null;
+        $selectedAreas  = [];
+        return view('admin.recorridos.form', compact('user', 'areas', 'recorrido', 'selectedAreas'));
     }
 
     public function guardarRecorrido(Request $request)
@@ -159,7 +161,7 @@ class AdminController extends Controller
         $areas          = $this->areaRepo->findAll();
         $areasAsignadas = $this->recorridoRepo->getAreas($id)->pluck('id_area')->toArray();
 
-        return view('admin.recorridos.editar', compact('user', 'recorrido', 'areas', 'areasAsignadas'));
+        return view('admin.recorridos.form', compact('user', 'recorrido', 'areas', 'areasAsignadas'));
     }
 
     public function actualizarRecorrido(Request $request)
@@ -195,14 +197,17 @@ class AdminController extends Controller
             ? $this->animalRepo->search($buscar)
             : $this->animalRepo->findAll();
 
-        return view('admin.animales.index', compact('user', 'animales', 'buscar'));
+        $areas = $this->areaRepo->findAll();
+
+        return view('admin.animales.index', compact('user', 'animales', 'buscar', 'areas'));
     }
 
     public function crearAnimal(Request $request)
     {
         $user  = $request->attributes->get('auth_user');
         $areas = $this->areaRepo->findAll();
-        return view('admin.animales.crear', compact('user', 'areas'));
+        $animal = null;
+        return view('admin.animales.form', compact('user', 'areas', 'animal'));
     }
 
     public function guardarAnimal(Request $request)
@@ -227,7 +232,7 @@ class AdminController extends Controller
         if (!$animal) abort(404);
 
         $areas = $this->areaRepo->findAll();
-        return view('admin.animales.editar', compact('user', 'animal', 'areas'));
+        return view('admin.animales.form', compact('user', 'animal', 'areas'));
     }
 
     public function actualizarAnimal(Request $request)
@@ -272,18 +277,16 @@ class AdminController extends Controller
         $idGuia      = (int)$request->input('id_guia', 0);
         $idRecorrido = (int)$request->input('id_recorrido', 0);
         $fecha       = $request->input('fecha', '');
-        $hora        = $request->input('hora', '');
 
-        if (!$idGuia || !$idRecorrido || !$fecha || !$hora) {
+        if (!$idGuia || !$idRecorrido || !$fecha) {
             return redirect('/admin/asignaciones/crear')->with('error', 'Todos los campos son obligatorios.');
         }
 
-        // existsAsignacion(idGuia, fecha, hora, duracion) — duracion 0 para solo chequear traslapes exactos
-        if ($this->guiaRepo->existsAsignacion($idGuia, $fecha, $hora, 0)) {
-            return redirect('/admin/asignaciones/crear')->with('error', 'El guía ya tiene una asignación en ese horario.');
+        if ($this->guiaRepo->existsAsignacion($idGuia, $fecha, '', 0)) {
+            return redirect('/admin/asignaciones/crear')->with('error', 'El guía ya tiene una asignación ese día.');
         }
 
-        $this->guiaRepo->asignarGuia($idGuia, $idRecorrido, $fecha, $hora);
+        $this->guiaRepo->asignarGuia($idGuia, $idRecorrido, $fecha);
         return redirect('/admin/asignaciones')->with('success', 'Asignación creada.');
     }
 
@@ -395,5 +398,4 @@ class AdminController extends Controller
             'Content-Disposition' => 'attachment; filename="reporte_guias.pdf"',
         ]);
     }
-    
 }
