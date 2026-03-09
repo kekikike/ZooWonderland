@@ -1,3 +1,4 @@
+{{-- resources/views/reservas/historial.blade.php --}}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,110 +18,30 @@
         --sombra:        0 10px 30px rgba(0,0,0,0.05);
         --transicion:    all 0.3s ease;
     }
-
-    body {
-        font-family: 'Open Sans', sans-serif;
-        background-color: var(--gris-claro);
-        margin: 0;
-        padding: 0;
-        color: #333;
-    }
-
+    body { font-family: 'Open Sans', sans-serif; background-color: var(--gris-claro); margin: 0; padding: 0; color: #333; }
     h1, h2, h3, .logo { font-family: 'Montserrat', sans-serif; }
-
-    header {
-        background: var(--blanco);
-        padding: 1rem 5%;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-
+    header { background: var(--blanco); padding: 1rem 5%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
     .logo { font-size: 1.5rem; font-weight: 800; color: var(--verde-selva); text-decoration: none; }
-
     .container { max-width: 1100px; margin: 3rem auto; padding: 0 2rem; }
-
     .header-page { margin-bottom: 3rem; text-align: center; }
     .header-page h1 { font-size: 2.2rem; color: var(--oscuro); margin-bottom: 0.5rem; }
     .header-page p { color: #666; font-size: 1.1rem; }
-
     .reservas-list { display: flex; flex-direction: column; gap: 1.5rem; }
-
-    .reserva-card {
-        background: var(--blanco);
-        border-radius: 20px;
-        padding: 1.8rem;
-        box-shadow: var(--sombra);
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        gap: 2rem;
-        transition: var(--transicion);
-        border-left: 6px solid var(--verde-selva);
-    }
+    .reserva-card { background: var(--blanco); border-radius: 20px; padding: 1.8rem; box-shadow: var(--sombra); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 2rem; transition: var(--transicion); border-left: 6px solid var(--verde-selva); }
     .reserva-card:hover { transform: scale(1.02); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
-
-    .reserva-id {
-        background: #f0f4f0;
-        color: var(--verde-selva);
-        width: 60px;
-        height: 60px;
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 1.2rem;
-        font-family: 'Montserrat', sans-serif;
-    }
-
+    .reserva-id { background: #f0f4f0; color: var(--verde-selva); width: 60px; height: 60px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; font-family: 'Montserrat', sans-serif; }
     .reserva-info h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--oscuro); }
     .reserva-meta { display: flex; gap: 2rem; flex-wrap: wrap; font-size: 0.9rem; color: #666; }
     .reserva-meta span { display: flex; align-items: center; gap: 8px; }
     .reserva-meta i { color: var(--verde-selva); }
-
     .reserva-price { text-align: right; }
     .reserva-price .amount { display: block; font-size: 1.4rem; font-weight: 800; color: var(--verde-oscuro); font-family: 'Montserrat', sans-serif; }
-    .reserva-price .status {
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        padding: 4px 10px;
-        background: var(--amarillo-sol);
-        border-radius: 50px;
-        color: #000;
-        display: inline-block;
-        margin-top: 5px;
-    }
-
-    .btn-action {
-        background: var(--verde-selva);
-        color: white;
-        width: 45px;
-        height: 45px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: var(--transicion);
-    }
+    .reserva-price .status { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 4px 10px; background: var(--amarillo-sol); border-radius: 50px; color: #000; display: inline-block; margin-top: 5px; }
+    .btn-action { background: var(--verde-selva); color: white; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: var(--transicion); }
     .btn-action:hover { background: var(--verde-oscuro); transform: rotate(10deg); }
-
-    .empty-state {
-        text-align: center;
-        padding: 5rem 2rem;
-        background: white;
-        border-radius: 30px;
-        box-shadow: var(--sombra);
-    }
-    .empty-state i { font-size: 5rem; color: #eee; margin-bottom: 1.5rem; }
+    .empty-state { text-align: center; padding: 5rem 2rem; background: white; border-radius: 30px; box-shadow: var(--sombra); }
+    .empty-state i { font-size: 5rem; color: #eee; margin-bottom: 1.5rem; display: block; }
     .empty-state h2 { color: #bbb; }
-
     @media (max-width: 768px) {
         .reserva-card { grid-template-columns: 1fr auto; }
         .reserva-id { display: none; }
@@ -131,8 +52,8 @@
 <body>
 
 <header>
-    <a href="{{ route('home') }}" class="logo">🍃 ZooWonderland</a>
-    <div style="font-size: 0.9rem; font-weight: 600; color: #666;">
+    <a href="/" class="logo">🍃 ZooWonderland</a>
+    <div style="font-size:0.9rem; font-weight:600; color:#666;">
         <i class="fa-solid fa-user-circle"></i> {{ $usuario->getNombreParaMostrar() }}
     </div>
 </header>
@@ -147,7 +68,7 @@
         <div class="empty-state">
             <i class="fa-solid fa-calendar-xmark"></i>
             <h2>Aún no tienes reservas registradas</h2>
-            <a href="{{ route('reservas.crear') }}" style="color: var(--verde-selva); text-decoration: none; font-weight: 700; margin-top: 2rem; display: inline-block;">
+            <a href="/reservar" style="color:var(--verde-selva); text-decoration:none; font-weight:700; margin-top:2rem; display:inline-block;">
                 ¡Haz tu primera reserva ahora!
             </a>
         </div>
@@ -158,25 +79,24 @@
                     $r = $item['reserva'];
                     $e = $item['extras'];
                 @endphp
-
                 <div class="reserva-card">
-                    <div class="reserva-id">{{ $r->getId() }}</div>
+                    <div class="reserva-id">{{ $r->id_reserva }}</div>
 
                     <div class="reserva-info">
-                        <h3>{{ $r->getInstitucion() }}</h3>
+                        <h3>{{ $r->institucion }}</h3>
                         <div class="reserva-meta">
-                            <span><i class="fa-solid fa-calendar"></i> {{ \Carbon\Carbon::parse($r->getFecha())->format('d/m/Y') }}</span>
-                            <span><i class="fa-solid fa-clock"></i> {{ $r->getHora() }}</span>
-                            <span><i class="fa-solid fa-users"></i> {{ $r->getCupos() }} personas</span>
-                            <span><i class="fa-solid fa-route"></i> {{ $r->getRecorrido()->getNombre() }}</span>
+                            <span><i class="fa-solid fa-calendar"></i> {{ \Carbon\Carbon::parse($r->fecha)->format('d/m/Y') }}</span>
+                            <span><i class="fa-solid fa-clock"></i> {{ $r->hora }}</span>
+                            <span><i class="fa-solid fa-users"></i> {{ $r->cupos }} personas</span>
+                            <span><i class="fa-solid fa-route"></i> {{ $r->recorrido->nombre ?? '-' }}</span>
                         </div>
                     </div>
 
                     <div class="reserva-price">
                         <span class="amount">Bs. {{ number_format($e['monto_total'], 2) }}</span>
-                        <span class="status">Pendiente</span>
-                        <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: flex-end;">
-                            <a href="{{ route('reservas.pdf', $r->getId()) }}" class="btn-action" title="Descargar PDF">
+                        <span class="status">{{ $r->estaPagada() ? 'Pagado ✓' : 'Pendiente' }}</span>
+                        <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;">
+                            <a href="/reservas/pdf" class="btn-action" title="Descargar PDF">
                                 <i class="fa-solid fa-file-pdf"></i>
                             </a>
                         </div>
@@ -186,8 +106,8 @@
         </div>
     @endif
 
-    <div style="margin-top: 4rem; text-align: center;">
-        <a href="{{ route('home') }}" style="color: #666; text-decoration: none; font-weight: 600;">
+    <div style="margin-top:4rem; text-align:center;">
+        <a href="/" style="color:#666; text-decoration:none; font-weight:600;">
             <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
         </a>
     </div>

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\CompraRepository;
+use App\Repositories\RecorridoRepository;
 use App\Services\AuthService;
 use App\Services\CompraService;
 use Illuminate\Http\Request;
@@ -14,51 +15,80 @@ class CompraController extends Controller
 {
     private CompraService $compraService;
     private CompraRepository $compraRepo;
+    private RecorridoRepository $recorridoRepo;
     private AuthService $auth;
 
     public function __construct()
     {
-        $this->compraService = new CompraService();
-        $this->compraRepo    = new CompraRepository();
-        $this->auth          = new AuthService();
+        $this->compraService  = new CompraService();
+        $this->compraRepo     = new CompraRepository();
+        $this->recorridoRepo  = new RecorridoRepository();
+        $this->auth           = new AuthService();
     }
 
     public function crear(Request $request)
     {
-        $user = $request->attributes->get('auth_user');
-        return view('compras.crear', compact('user'));
+        $usuario    = $request->attributes->get('auth_user');
+        $recorridos = $this->recorridoRepo->findAll();
+
+        return view('compras.crear', [
+            'usuario'     => $usuario,
+            'recorridos'  => $recorridos,
+            'form'        => ['recorrido_id' => '', 'cantidad' => 1, 'fecha' => '', 'hora' => ''],
+            'errores'     => [],
+            'mensaje'     => null,
+            'disponibles' => null,
+        ]);
     }
 
     public function procesar(Request $request)
     {
-        $user        = $request->attributes->get('auth_user');
-        $recorridoId = (int)$request->input('recorrido_id', 0);
-        $cantidad    = (int)$request->input('cantidad', 1);
+        $usuario     = $request->attributes->get('auth_user');
+        $recorridos  = $this->recorridoRepo->findAll();
+        $recorridoId = (int) $request->input('recorrido_id', 0);
+        $cantidad    = (int) $request->input('cantidad', 1);
         $fecha       = $request->input('fecha', '');
         $hora        = $request->input('hora', '');
 
-        // Validar primero
+        $form = [
+            'recorrido_id' => $recorridoId,
+            'cantidad'     => $cantidad,
+            'fecha'        => $fecha,
+            'hora'         => $hora,
+        ];
+
         $validacion = $this->compraService->validarCompra($recorridoId, $cantidad, $fecha, $hora);
         if (!$validacion['valido']) {
             return view('compras.crear', [
-                'user'    => $user,
-                'errores' => $validacion['errores'],
+                'usuario'     => $usuario,
+                'recorridos'  => $recorridos,
+                'form'        => $form,
+                'errores'     => $validacion['errores'],
+                'mensaje'     => null,
+                'disponibles' => null,
             ]);
         }
 
-        // Obtener id_cliente desde el usuario
-        $cliente = $user->cliente;
-        if (!$cliente) abort(403, 'No tienes perfil de cliente.');
+        $cliente = $usuario->cliente;
+        if (!$cliente) {
+            abort(403, 'No tienes perfil de cliente.');
+        }
 
         $resultado = $this->compraService->procesarCompra(
             $cliente->id_cliente, $recorridoId, $cantidad, $fecha, $hora
         );
 
         if (!$resultado) {
-            return view('compras.crear', ['user' => $user, 'error' => 'Error al procesar la compra.']);
+            return view('compras.crear', [
+                'usuario'     => $usuario,
+                'recorridos'  => $recorridos,
+                'form'        => $form,
+                'errores'     => [],
+                'mensaje'     => 'Error al procesar la compra. Intenta nuevamente.',
+                'disponibles' => null,
+            ]);
         }
 
-        // Guardar en sesión para la vista de pago QR
         session(['ultima_compra' => $resultado]);
 
         return redirect('/compras/pagoqr');
@@ -66,30 +96,42 @@ class CompraController extends Controller
 
     public function showPagoQR(Request $request)
     {
-        $user   = $request->attributes->get('auth_user');
-        $compra = session('ultima_compra');
+        $usuario = $request->attributes->get('auth_user');
+        $compra  = session('ultima_compra');
 
-        if (!$compra) return redirect('/compras/crear');
+        if (!$compra) {
+            return redirect('/compras/crear');
+        }
 
-        return view('compras.pagoqr', compact('user', 'compra'));
+        $datos = [
+            'monto_total' => $compra['monto_total'] ?? $compra['monto'] ?? 0,
+            'recorrido'   => $compra['recorrido']   ?? '',
+            'fecha'       => $compra['fecha']        ?? '',
+            'hora'        => $compra['hora']         ?? '',
+        ];
+
+        return view('compras.pago', compact('usuario', 'datos'));
     }
 
     public function historial(Request $request)
     {
-        $user    = $request->attributes->get('auth_user');
-        $cliente = $user->cliente;
+        $usuario = $request->attributes->get('auth_user');
+        $cliente = $usuario->cliente;
 
         $compras = $cliente
             ? $this->compraRepo->findByCliente($cliente->id_cliente)
             : collect();
 
-        return view('compras.historial', compact('user', 'compras'));
+        return view('compras.historial', compact('usuario', 'compras'));
     }
 
     public function downloadPdf(Request $request)
     {
         $compra = session('ultima_compra');
-        if (!$compra) return redirect('/compras/historial');
+
+        if (!$compra) {
+            return redirect('/compras/historial');
+        }
 
         $pdf = $this->compraService->generarComprobante($compra);
 

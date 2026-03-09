@@ -1,6 +1,4 @@
-<?php
-// Formulario de compra de tickets
-?>
+{{-- resources/views/compras/crear.blade.php --}}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -21,7 +19,6 @@
         --transicion:    all 0.3s cubic-bezier(0.4,0,0.2,1);
         --error:         #d32f2f;
     }
-
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Open Sans',sans-serif; background:var(--gris-claro); color:#333; }
     h1,h2,h3,.logo { font-family:'Montserrat',sans-serif; }
@@ -31,30 +28,21 @@
     .menu { display:flex; gap:2rem; }
     .menu a { color:var(--oscuro); text-decoration:none; font-weight:600; }
     .user-welcome { display:flex; align-items:center; gap:1rem; background:#f0f4f0; padding:0.5rem 1rem; border-radius:50px; font-size:0.9rem; }
-
     .page-hero {
         background: linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.7)),
                     url('https://images.unsplash.com/photo-1567818871419-e808cde8ad94?q=80&w=2070&auto=format&fit=crop') center/cover;
-        height:200px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        color:white;
-        text-align:center;
-        margin-bottom:2rem;
+        height:200px; display:flex; align-items:center; justify-content:center;
+        color:white; text-align:center; margin-bottom:2rem;
     }
     .page-hero h1 { font-size:2.4rem; }
-
     main { max-width:1200px; margin:0 auto; padding:0 2rem; display:grid; grid-template-columns:350px 1fr; gap:2.5rem; }
     @media(max-width:900px){ main{grid-template-columns:1fr;} }
-
     .sidebar{display:flex;flex-direction:column;gap:1.5rem;}
     .card-info{background:var(--blanco);border-radius:20px;padding:1.5rem;box-shadow:var(--sombra);border-left:5px solid var(--amarillo-sol);}
     .card-info h3{color:var(--verde-selva);margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
     .card-info ul{list-style:none;}
     .card-info li{margin-bottom:0.8rem;font-size:0.95rem;display:flex;align-items:center;gap:10px;}
     .card-info li i{color:var(--verde-selva);width:20px;}
-
     .form-container{background:var(--blanco);border-radius:25px;padding:2.5rem;box-shadow:var(--sombra);}
     .form-container h2{margin-bottom:2rem;color:var(--oscuro);text-align:left;}
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
@@ -70,25 +58,25 @@
     .alert-error{background:#fee2e2;color:var(--error);border:1px solid #fecaca;}
     .field-error{color:var(--error);font-size:0.8rem;margin-top:0.4rem;font-weight:600;}
     .input-error{border-color:var(--error)!important;}
-    .recorridos-grid { display: none; }
-    .form-section { background: #f9f9f9; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; }
-    .form-section h3 { color: var(--oscuro); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
-    .availability-box { background: #e8f5e9; border-left: 4px solid var(--verde-selva); padding: 1rem; border-radius: 8px; margin-top: 1rem; color: var(--verde-oscuro); font-weight: 600; }
+    .form-section{background:#f9f9f9;padding:2rem;border-radius:15px;margin-bottom:2rem;}
+    .form-section h3{color:var(--oscuro);margin-bottom:1.5rem;display:flex;align-items:center;gap:10px;font-size:1.2rem;}
+    .availability-box{background:#e8f5e9;border-left:4px solid var(--verde-selva);padding:1rem;border-radius:8px;margin-top:1rem;color:var(--verde-oscuro);font-weight:600;}
     footer{background:var(--oscuro);color:white;text-align:center;padding:3rem;margin-top:5rem;font-size:0.9rem;opacity:0.9;}
 </style>
 </head>
 <body>
+
 <header>
     <nav>
-        <a href="index.php" class="logo">🍃 ZooWonderland</a>
+        <a href="/" class="logo">🍃 ZooWonderland</a>
         <div class="menu">
-            <a href="index.php">Inicio</a>
-            <a href="index.php?r=compras/crear">Comprar Tickets</a>
-            <a href="index.php?r=reservas/historial">Mis Reservas</a>
+            <a href="/">Inicio</a>
+            <a href="/compras/crear">Comprar Tickets</a>
+            <a href="/compras/historial">Mis Compras</a>
         </div>
         <div class="user-welcome">
-            <i class="fa-solid fa-user-circle"></i> 
-            <strong><?= htmlspecialchars($usuario->getNombreParaMostrar()) ?></strong>
+            <i class="fa-solid fa-user-circle"></i>
+            <strong>{{ $usuario->getNombreParaMostrar() }}</strong>
         </div>
     </nav>
 </header>
@@ -111,98 +99,102 @@
 
         <div class="card-info" style="border-left-color: var(--verde-oscuro);">
             <h3><i class="fa-solid fa-map-location-dot"></i> Recorridos</h3>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <?php foreach ($recorridos as $rec): 
-                    $recId = $rec['id_recorrido'] ?? $rec['id'];
-                ?>
-                <div style="padding-bottom: 0.8rem; border-bottom: 1px dashed #eee;">
-                    <div style="font-weight: 700; color: var(--verde-oscuro); margin-bottom: 0.3rem;">
-                        <?php echo htmlspecialchars($rec['nombre']); ?>
+            <div style="display:flex;flex-direction:column;gap:1rem;">
+                @foreach ($recorridos as $rec)
+                    <div style="padding-bottom:0.8rem;border-bottom:1px dashed #eee;">
+                        <div style="font-weight:700;color:var(--verde-oscuro);margin-bottom:0.3rem;">
+                            {{ $rec['nombre'] }}
+                        </div>
+                        <div style="font-size:0.9rem;color:var(--verde-selva);font-weight:600;">
+                            Bs. {{ number_format($rec['precio'], 2) }}/persona
+                        </div>
                     </div>
-                    <div style="font-size: 0.9rem; color: var(--verde-selva); font-weight: 600;">
-                        Bs. <?php echo number_format($rec['precio'], 2); ?>/persona
-                    </div>
-                </div>
-                <?php endforeach; ?>
+                @endforeach
             </div>
         </div>
     </aside>
 
     <div class="form-container">
-        <?php if (!empty($mensaje)): ?>
+
+        @if (!empty($mensaje))
             <div class="alert alert-error">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                <?php echo htmlspecialchars($mensaje); ?>
+                {{ $mensaje }}
             </div>
-        <?php endif; ?>
-        
+        @endif
+
         <h2><i class="fa-solid fa-ticket"></i> Comprar Entradas</h2>
-        
-        <form method="post" action="index.php?r=compras/crear">
+
+        <form method="POST" action="/compras/crear">
+            @csrf
+
             <div class="form-section">
                 <h3><i class="fa-solid fa-map-location-dot"></i> Elige tu Recorrido</h3>
                 <div class="form-group full-width">
                     <label for="recorrido_id">Selecciona un recorrido</label>
-                    <select name="recorrido_id" id="recorrido_id" class="<?php echo !empty($errores['recorrido_id']) ? 'input-error' : ''; ?>">
+                    <select name="recorrido_id" id="recorrido_id"
+                            class="{{ !empty($errores['recorrido_id']) ? 'input-error' : '' }}">
                         <option value="">-- Seleccione un recorrido --</option>
-                        <?php foreach ($recorridos as $rec): ?>
-                            <option value="<?php echo $rec['id_recorrido'] ?? $rec['id']; ?>" <?php echo $form['recorrido_id'] == ($rec['id_recorrido'] ?? $rec['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($rec['nombre']); ?> - Bs. <?php echo number_format($rec['precio'], 2); ?>/persona
+                        @foreach ($recorridos as $rec)
+                            @php $recId = $rec['id_recorrido'] ?? $rec['id']; @endphp
+                            <option value="{{ $recId }}"
+                                {{ old('recorrido_id', $form['recorrido_id'] ?? '') == $recId ? 'selected' : '' }}>
+                                {{ $rec['nombre'] }} - Bs. {{ number_format($rec['precio'], 2) }}/persona
                             </option>
-                        <?php endforeach; ?>
+                        @endforeach
                     </select>
-                    <?php if (!empty($errores['recorrido_id'])): ?>
-                        <div class="field-error"><?php echo $errores['recorrido_id']; ?></div>
-                    <?php endif; ?>
+                    @if (!empty($errores['recorrido_id']))
+                        <div class="field-error">{{ $errores['recorrido_id'] }}</div>
+                    @endif
                 </div>
             </div>
-            
+
             <div class="form-section">
                 <h3><i class="fa-solid fa-ticket"></i> Detalles de tu Compra</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="cantidad">Número de Entradas</label>
-                        <input type="number" name="cantidad" id="cantidad" min="1" max="10" 
-                               value="<?php echo $form['cantidad']; ?>"
-                               class="<?php echo !empty($errores['cantidad']) ? 'input-error' : ''; ?>">
-                        <?php if (!empty($errores['cantidad'])): ?>
-                            <div class="field-error"><?php echo $errores['cantidad']; ?></div>
-                        <?php endif; ?>
+                        <input type="number" name="cantidad" id="cantidad" min="1" max="10"
+                               value="{{ old('cantidad', $form['cantidad'] ?? 1) }}"
+                               class="{{ !empty($errores['cantidad']) ? 'input-error' : '' }}">
+                        @if (!empty($errores['cantidad']))
+                            <div class="field-error">{{ $errores['cantidad'] }}</div>
+                        @endif
                     </div>
 
                     <div class="form-group">
                         <label for="fecha">Fecha de Visita</label>
-                        <input type="date" name="fecha" id="fecha" 
-                               value="<?php echo htmlspecialchars($form['fecha']); ?>"
-                               class="<?php echo !empty($errores['fecha']) ? 'input-error' : ''; ?>">
-                        <?php if (!empty($errores['fecha'])): ?>
-                            <div class="field-error"><?php echo $errores['fecha']; ?></div>
-                        <?php endif; ?>
+                        <input type="date" name="fecha" id="fecha"
+                               value="{{ old('fecha', $form['fecha'] ?? '') }}"
+                               class="{{ !empty($errores['fecha']) ? 'input-error' : '' }}">
+                        @if (!empty($errores['fecha']))
+                            <div class="field-error">{{ $errores['fecha'] }}</div>
+                        @endif
                     </div>
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="hora">Hora de Ingreso</label>
-                        <input type="time" name="hora" id="hora" 
-                               value="<?php echo htmlspecialchars($form['hora']); ?>"
+                        <input type="time" name="hora" id="hora"
+                               value="{{ old('hora', $form['hora'] ?? '') }}"
                                min="09:00" max="16:00"
-                               class="<?php echo !empty($errores['hora']) ? 'input-error' : ''; ?>">
-                        <?php if (!empty($errores['hora'])): ?>
-                            <div class="field-error"><?php echo $errores['hora']; ?></div>
-                        <?php endif; ?>
+                               class="{{ !empty($errores['hora']) ? 'input-error' : '' }}">
+                        @if (!empty($errores['hora']))
+                            <div class="field-error">{{ $errores['hora'] }}</div>
+                        @endif
                     </div>
                 </div>
 
-                <?php if ($disponibles !== null && $disponibles > 0): ?>
+                @if (isset($disponibles) && $disponibles > 0)
                     <div class="availability-box">
-                        <i class="fa-solid fa-circle-check"></i> Disponibles: <?php echo $disponibles; ?> cupos
+                        <i class="fa-solid fa-circle-check"></i> Disponibles: {{ $disponibles }} cupos
                     </div>
-                <?php elseif ($disponibles === 0): ?>
-                    <div class="alert alert-error" style="margin-top: 1rem;">
+                @elseif (isset($disponibles) && $disponibles === 0)
+                    <div class="alert alert-error" style="margin-top:1rem;">
                         <i class="fa-solid fa-triangle-exclamation"></i> No hay disponibilidad para este horario
                     </div>
-                <?php endif; ?>
+                @endif
             </div>
 
             <div class="form-group full-width">
@@ -211,11 +203,14 @@
                 </button>
             </div>
         </form>
-    <p><a href="index.php">Volver al inicio</a></p>
-    </div> <!-- .form-container -->
+
+        <p style="margin-top:1rem;"><a href="/">Volver al inicio</a></p>
+    </div>
 </main>
+
 <footer>
-    <p>&copy; <?= date('Y') ?> ZooWonderland - Educación y Conservación</p>
+    <p>&copy; {{ date('Y') }} ZooWonderland - Educación y Conservación</p>
 </footer>
+
 </body>
 </html>

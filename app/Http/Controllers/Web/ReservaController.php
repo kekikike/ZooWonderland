@@ -20,41 +20,63 @@ class ReservaController extends Controller
         $this->reservaRepo    = new ReservaRepository();
     }
 
+    private function mapearRecorridos(): array
+    {
+        return $this->reservaService->obtenerRecorridosGuiados()
+            ->map(fn($r) => [
+                'id'     => $r->id_recorrido,
+                'nombre' => $r->nombre,
+                'precio' => $r->precio,
+            ])->values()->toArray();
+    }
+
     public function showForm(Request $request)
     {
-        $user       = $request->attributes->get('auth_user');
-        $recorridos = $this->reservaService->obtenerRecorridosGuiados();
+        $usuario           = $request->attributes->get('auth_user');
+        $recorridosGuiados = $this->mapearRecorridos();
+        $fechaMin          = now()->addDays(3)->format('Y-m-d');
 
-        return view('reservas.form', compact('user', 'recorridos'));
+        return view('reservas.crear', [
+            'usuario'           => $usuario,
+            'recorridosGuiados' => $recorridosGuiados,
+            'fechaMin'          => $fechaMin,
+            'form'              => [],
+        ]);
     }
 
     public function processForm(Request $request)
     {
-        $user    = $request->attributes->get('auth_user');
-        $cliente = $user->cliente;
+        $usuario = $request->attributes->get('auth_user');
+        $cliente = $usuario->cliente;
         if (!$cliente) abort(403, 'No tienes perfil de cliente.');
 
+        $form = $request->only([
+            'recorrido_id', 'institucion', 'tipo_institucion',
+            'contacto_nombre', 'contacto_telefono', 'contacto_email',
+            'numero_personas', 'fecha', 'hora', 'observaciones',
+        ]);
+
         $resultado = $this->reservaService->procesarReserva(
-            (int)$request->input('recorrido_id', 0),
-            trim($request->input('institucion', '')),
-            trim($request->input('tipo_institucion', '')),
-            trim($request->input('contacto_nombre', '')),
-            trim($request->input('contacto_telefono', '')),
-            trim($request->input('contacto_email', '')),
-            (int)$request->input('numero_personas', 0),
-            $request->input('fecha', ''),
-            $request->input('hora', ''),
-            trim($request->input('observaciones', '')),
+            (int) $request->input('recorrido_id', 0),
+            trim((string) $request->input('institucion', '')),
+            trim((string) $request->input('tipo_institucion', '')),
+            trim((string) $request->input('contacto_nombre', '')),
+            trim((string) $request->input('contacto_telefono', '')),
+            trim((string) $request->input('contacto_email', '')),
+            (int) $request->input('numero_personas', 0),
+            (string) $request->input('fecha', ''),
+            (string) $request->input('hora', ''),
+            trim((string) $request->input('observaciones', '')),
             $cliente->id_cliente
         );
 
         if (!$resultado) {
-            $recorridos = $this->reservaService->obtenerRecorridosGuiados();
-            return view('reservas.form', [
-                'user'       => $user,
-                'recorridos' => $recorridos,
-                'error'      => 'Error al procesar la reserva. Revisa los datos.',
-            ]);
+            return view('reservas.crear', [
+                'usuario'           => $usuario,
+                'recorridosGuiados' => $this->mapearRecorridos(),
+                'fechaMin'          => now()->addDays(3)->format('Y-m-d'),
+                'form'              => $form,
+            ])->with('error', 'Error al procesar la reserva. Revisa los datos.');
         }
 
         session(['ultima_reserva' => $resultado]);
@@ -64,36 +86,50 @@ class ReservaController extends Controller
 
     public function showPagoQR(Request $request)
     {
-        $user    = $request->attributes->get('auth_user');
-        $reserva = session('ultima_reserva');
+        $usuario = $request->attributes->get('auth_user');
+        $result  = session('ultima_reserva');
 
+        if (!$result) return redirect('/reservar');
+
+        // Cargar el modelo Reserva desde BD
+        $reserva = \App\Models\Reserva::with('recorrido')->find($result['reserva_id'] ?? null);
         if (!$reserva) return redirect('/reservar');
 
-        return view('reservas.pagoqr', compact('user', 'reserva'));
+        $datos = $result; // contiene codigo, monto_total, etc.
+
+        return view('reservas.pago', compact('usuario', 'reserva', 'datos'));
     }
 
     public function showHistorial(Request $request)
     {
-        $user    = $request->attributes->get('auth_user');
-        $cliente = $user->cliente;
+        $usuario = $request->attributes->get('auth_user');
+        $cliente = $usuario->cliente;
 
         $reservas = $cliente
             ? $this->reservaRepo->findByCliente($cliente->id_cliente)
             : collect();
 
-        return view('reservas.historial', compact('user', 'reservas'));
+        $todasLasReservas = $reservas->map(function ($r) {
+            return [
+                'reserva' => $r,
+                'extras'  => [
+                    'monto_total' => $r->cupos * ($r->recorrido->precio ?? 0),
+                ],
+            ];
+        });
+
+        return view('reservas.historial', compact('usuario', 'todasLasReservas'));
     }
 
     public function downloadPdf(Request $request)
     {
-        $reserva = session('ultima_reserva');
-        if (!$reserva) return redirect('/reservas/historial');
+        $result = session('ultima_reserva');
+        if (!$result) return redirect('/reservas/historial');
 
-        // Cargar el modelo Reserva desde BD para el PDF
-        $reservaModel = \App\Models\Reserva::with('recorrido')->find($reserva['reserva_id']);
+        $reservaModel = \App\Models\Reserva::with('recorrido')->find($result['reserva_id'] ?? null);
         if (!$reservaModel) return redirect('/reservas/historial');
 
-        $pdf = $this->reservaService->generarComprobanteReserva($reservaModel, $reserva);
+        $pdf = $this->reservaService->generarComprobanteReserva($reservaModel, $result);
 
         return response($pdf, 200, [
             'Content-Type'        => 'application/pdf',

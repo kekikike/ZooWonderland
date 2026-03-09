@@ -15,6 +15,8 @@ class RecorridoRepository
         return Recorrido::orderBy('id_recorrido')->get();
     }
 
+
+
     public function findById(int $id): ?Recorrido
     {
         return Recorrido::with('areas')->find($id);
