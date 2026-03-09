@@ -4,127 +4,281 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $recorrido ? 'Editar' : 'Nuevo' }} Recorrido - ZooWonderland</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Formulario Recorrido - ZooWonderland</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
     <style>
+        :root {
+            --selva-dark: #2E7D32;
+            --selva-med: #43A047;
+            --selva-light: #66BB6A;
+            --jungle-gold: #FFC107;
+            --sky-blue: #0288D1;
+            --blanco: #ffffff;
+            --gris-bg: #f5f5f5;
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --trans: all 0.3s ease;
+        }
+
         body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #fafafa; margin: 0; color: #333; }
-        header { background: #2E7D32; color: white; }
+        header { background: var(--selva-dark); color: white; }
         header nav { max-width: 1400px; margin: 0 auto; padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; }
         header .logo { font-size: 1.6rem; font-weight: bold; text-decoration: none; color: white; }
         header .menu a { color: white; text-decoration: none; margin-left: 1.5rem; font-weight: 600; }
         header .menu a:hover { text-decoration: underline; }
         main { max-width: 800px; margin: 0 auto; padding: 3rem 5%; }
-        .form-section { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .form-section h2 { color: #2E7D32; margin-bottom: 1.5rem; }
+        .form-section { background: var(--blanco); padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-md); }
+        .form-section h2 { color: var(--selva-dark); margin-bottom: 1.5rem; }
         .form-group { margin-bottom: 1.2rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .btn { background: linear-gradient(135deg, #66BB6A, #FFC107); color: white; padding: 0.9rem 2rem; border: none; border-radius: 25px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; }
-        .btn:hover { transform: translateY(-2px); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; transition: var(--trans); }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--selva-light); box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1); }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .checkbox-item { display: flex; align-items: center; gap: 0.5rem; }
+        .btn { background: linear-gradient(135deg, var(--selva-light), var(--jungle-gold)); color: white; padding: 0.9rem 2rem; border: none; border-radius: 25px; font-weight: 700; cursor: pointer; transition: var(--trans); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(255, 179, 0, 0.4); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .back-link { display: inline-block; margin-top: 1rem; color: #555; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
         .error-list { background: #ffe6e6; border: 1px solid #cc0000; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
         .error-list li { color: #c0392b; }
+        .success-message { background: #e6f7ff; border: 1px solid #0275d8; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; color: #0275d8; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--selva-dark); border-radius: 50%; animation: spin 1s linear infinite; }
+        /* custom area button styles */
+        .area-btn { 
+            margin: 0.25rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+        .area-btn.selected {
+            background: var(--selva-light);
+            color: white;
+            border-color: var(--selva-dark);
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="/admin/dashboard" class="logo"><i class="fas fa-leaf"></i> ZooWonderland</a>
-            <div class="menu">
-                <a href="/admin/dashboard" title="Dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
-                <a href="/admin/recorridos" title="Gestionar Recorridos"><i class="fas fa-compass"></i> Recorridos</a>
-                <a href="/admin/animales" title="Gestionar Animales"><i class="fas fa-paw"></i> Animales</a>
-                <a href="/admin/areas" title="Gestionar Áreas"><i class="fas fa-shapes"></i> Áreas</a>
-                <a href="/admin/reservas" title="Reservas"><i class="fas fa-calendar-check"></i> Reservas</a>
-                <a href="/admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
-                <a href="/logout" title="Salir"><i class="fas fa-sign-out-alt"></i> Salir</a>
-            </div>
-        </nav>
-    </header>
+    <div id="app">
+        <header>
+            <nav>
+                <a href="/admin/dashboard" class="logo"><i class="fas fa-leaf"></i> ZooWonderland</a>
+                <div class="menu">
+                    <a href="/admin/dashboard" title="Dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+                    <a href="/admin/recorridos" title="Gestionar Recorridos"><i class="fas fa-compass"></i> Recorridos</a>
+                    <a href="/admin/animales" title="Gestionar Animales"><i class="fas fa-paw"></i> Animales</a>
+                    <a href="/admin/areas" title="Gestionar Áreas"><i class="fas fa-shapes"></i> Áreas</a>
+                    <a href="/admin/reservas" title="Reservas"><i class="fas fa-calendar-check"></i> Reservas</a>
+                    <a href="/admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
+                    <a href="/logout" title="Salir"><i class="fas fa-sign-out-alt"></i> Salir</a>
+                </div>
+            </nav>
+        </header>
 
-    <main>
-        <div class="form-section">
-            <h2>{{ $recorrido ? 'Editar' : 'Nuevo' }} Recorrido</h2>
+        <main>
+            <div class="form-section">
+                <h2><i class="fas fa-route"></i> <span v-if="isEditing">Editar</span><span v-else>Crear</span> Recorrido</h2>
 
-            @if(!empty($errores))
-                <div class="error-list">
+                <!-- Mensajes de éxito/error -->
+                <div v-if="mensajeExito" class="success-message">
+                    @{{ mensajeExito }}
+                </div>
+
+                <div v-if="errores.length > 0" class="error-list">
                     <ul>
-                        @foreach($errores as $e)
-                            <li>{{ $e }}</li>
-                        @endforeach
+                        <li v-for="error in errores" :key="error">@{{ error }}</li>
                     </ul>
                 </div>
-            @endif
 
-            {{--
-                En el original PHP, $vals se construye mezclando $recorrido y $datos (flash).
-                En Laravel usamos old() con fallback a $recorrido->campo.
-            --}}
-            <form action="/admin/recorridos/{{ $recorrido ? 'actualizar' : 'guardar' }}" method="POST">
-                @csrf
-                @if($recorrido)
-                    <input type="hidden" name="id" value="{{ $recorrido->id_recorrido }}">
-                @endif
+                <!-- Formulario -->
+                <form @submit.prevent="guardarRecorrido">
+                    <div class="form-group">
+                        <label for="nombre">Nombre *</label>
+                        <input type="text" id="nombre" v-model="form.nombre" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="nombre">Nombre *</label>
-                    <input type="text" id="nombre" name="nombre"
-                           value="{{ old('nombre', $recorrido?->nombre ?? '') }}" required>
-                </div>
+                    <div class="form-group">
+                        <label for="tipo">Tipo</label>
+                        <select id="tipo" v-model="form.tipo">
+                            <option value="Guiado">Guiado</option>
+                            <option value="No Guiado">No Guiado</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="tipo">Tipo</label>
-                    <select id="tipo" name="tipo">
-                        @foreach(['Guiado', 'No Guiado'] as $opt)
-                            <option value="{{ $opt }}"
-                                {{ old('tipo', $recorrido?->tipo ?? 'No Guiado') === $opt ? 'selected' : '' }}>
-                                {{ $opt }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="precio">Precio (Bs.) *</label>
+                        <input type="number" step="0.01" min="0" id="precio" v-model.number="form.precio" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="precio">Precio (Bs.) *</label>
-                    <input type="number" step="0.01" min="0" id="precio" name="precio"
-                           value="{{ old('precio', $recorrido?->precio ?? '') }}" required>
-                </div>
+                    <div class="form-group">
+                        <label for="duracion">Duración (minutos)</label>
+                        <input type="number" min="0" id="duracion" v-model.number="form.duracion">
+                    </div>
 
-                <div class="form-group">
-                    <label for="duracion">Duración (minutos)</label>
-                    <input type="number" min="0" id="duracion" name="duracion"
-                           value="{{ old('duracion', $recorrido?->duracion ?? '') }}">
-                </div>
+                    <div class="form-group">
+                        <label for="capacidad">Capacidad máxima</label>
+                        <input type="number" min="0" id="capacidad" v-model.number="form.capacidad">
+                    </div>
 
-                <div class="form-group">
-                    <label for="capacidad">Capacidad máxima</label>
-                    <input type="number" min="0" id="capacidad" name="capacidad"
-                           value="{{ old('capacidad', $recorrido?->capacidad ?? '') }}">
-                </div>
-
-                <div class="form-group">
-                    <label>Áreas *</label>
-                    @foreach($areas as $area)
-                        <div>
-                            <label style="font-weight:normal;">
-                                <input type="checkbox" name="areas[]" value="{{ $area->id_area }}"
-                                    {{ in_array($area->id_area, old('areas', $selectedAreas ?? [])) ? 'checked' : '' }}>
-                                {{ $area->nombre }}
-                            </label>
+                    <div class="form-group">
+                        <label>Áreas *</label>
+                        <div v-if="cargandoAreas" class="loading"></div>
+                        <div v-else-if="areas.length > 0" class="checkbox-group">
+                            <button
+                                v-for="area in areas"
+                                :key="area.id_area"
+                                type="button"
+                                @click="toggleArea(area.id_area)"
+                                :class="['area-btn', form.areas.includes(area.id_area) ? 'selected' : '']"
+                            >
+                                @{{ area.nombre }}
+                            </button>
                         </div>
-                    @endforeach
-                </div>
+                        <div v-else>
+                            <p>No hay áreas disponibles</p>
+                        </div>
+                    </div>
 
-                <button type="submit" class="btn">{{ $recorrido ? 'Actualizar' : 'Guardar' }}</button>
-            </form>
+                    <button type="submit" class="btn" :disabled="guardando">
+                        <span v-if="guardando" class="loading"></span>
+                        <span v-if="isEditing">Actualizar</span><span v-else>Guardar</span>
+                    </button>
+                </form>
 
-            <a href="/admin/recorridos" class="back-link"><i class="fas fa-arrow-left"></i> Volver a la lista</a>
-        </div>
-    </main>
+                <a href="/admin/recorridos" class="back-link"><i class="fas fa-arrow-left"></i> Volver a la lista</a>
+            </div>
+        </main>
 
-    <footer style="text-align:center; padding:2rem; background:#2E7D32; color:white; font-size:0.9rem;">
-        &copy; {{ date('Y') }} ZooWonderland - Panel de Administración.
-    </footer>
+        <footer style="text-align:center; padding:2rem; background:var(--selva-dark); color:white; font-size:0.9rem;">
+            &copy; 2026 ZooWonderland - Panel de Administración.
+        </footer>
+    </div>
+
+    <!-- Vue 3 from CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        // Detectar si estamos en modo edición desde URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const recorridoId = urlParams.get('id');
+
+        // Configurar axios
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+        createApp({
+            data() {
+                return {
+                    isEditing: !!recorridoId,
+                    recorridoId: recorridoId ? parseInt(recorridoId) : null,
+                    form: {
+                        nombre: '',
+                        tipo: 'No Guiado',
+                        precio: 0,
+                        duracion: 0,
+                        capacidad: 0,
+                        areas: []
+                    },
+                    areas: [],
+                    cargandoAreas: true,
+                    guardando: false,
+                    errores: [],
+                    mensajeExito: ''
+                };
+            },
+            mounted() {
+                this.cargarAreas();
+                if (this.isEditing) {
+                    this.cargarRecorrido();
+                }
+            },
+            methods: {
+                cargarAreas() {
+                    axios.get('/api/areas')
+                        .then(response => {
+                            this.areas = response.data.data || response.data;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            this.errores.push('Error al cargar las áreas');
+                        })
+                        .finally(() => {
+                            this.cargandoAreas = false;
+                        });
+                },
+                cargarRecorrido() {
+                    axios.get(`/api/recorridos/${this.recorridoId}`)
+                        .then(response => {
+                            const data = response.data.data || response.data;
+                            this.form.nombre = data.nombre || '';
+                            this.form.tipo = data.tipo || 'No Guiado';
+                            this.form.precio = parseFloat(data.precio) || 0;
+                            this.form.duracion = data.duracion || 0;
+                            this.form.capacidad = data.capacidad || 0;
+                            this.form.areas = data.areas ? data.areas.map(a => a.id_area) : [];
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            this.errores.push('Error al cargar el recorrido');
+                        });
+                },
+                toggleArea(areaId) {
+                    const idx = this.form.areas.indexOf(areaId);
+                    if (idx === -1) {
+                        this.form.areas.push(areaId);
+                    } else {
+                        this.form.areas.splice(idx, 1);
+                    }
+                },
+                guardarRecorrido() {
+                    this.guardando = true;
+                    this.errores = [];
+
+                    const datos = {
+                        nombre: this.form.nombre,
+                        tipo: this.form.tipo,
+                        precio: parseFloat(this.form.precio),
+                        duracion: parseInt(this.form.duracion) || 0,
+                        capacidad: parseInt(this.form.capacidad) || 0,
+                        areas: this.form.areas
+                    };
+
+                    if (this.isEditing) {
+                        datos.id = this.recorridoId;
+                    }
+
+                    const url = this.isEditing ? '/admin/recorridos/actualizar' : '/admin/recorridos/guardar';
+
+                    axios.post(url, datos)
+                        .then(response => {
+                            this.mensajeExito = `Recorrido ${this.isEditing ? 'actualizado' : 'creado'} exitosamente`;
+                            setTimeout(() => {
+                                window.location.href = '/admin/recorridos';
+                            }, 2000);
+                        })
+                        .catch(error => {
+                            if (error.response?.data?.errors) {
+                                this.errores = Object.values(error.response.data.errors).flat();
+                            } else if (error.response?.data?.message) {
+                                this.errores = [error.response.data.message];
+                            } else {
+                                this.errores = ['Error al guardar el recorrido'];
+                            }
+                        })
+                        .finally(() => {
+                            this.guardando = false;
+                        });
+                }
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>

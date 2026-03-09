@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\AnimalController;
 
 // ── PÚBLICAS ─────────────────────────────────────────────────────
 Route::get('/',         [HomeController::class, 'index']);
+Route::get('/recorridos', fn() => view('recorridos'));
 Route::get('/login',    [AuthController::class, 'showLogin']);
 Route::post('/login',   [AuthController::class, 'login']);
 Route::get('/registro', [AuthController::class, 'showRegister']);

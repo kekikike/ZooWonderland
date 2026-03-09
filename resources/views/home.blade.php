@@ -80,7 +80,7 @@
         <div class="menu">
             <a href="/">Inicio</a>
             <a href="#nosotros">Nosotros</a>
-            <a href="#visitanos">Recorridos</a>
+            <a href="/recorridos">Recorridos</a>
             @if ($esCliente)
                 <a href="/reservar">Tours Grupales</a>
             @endif
