@@ -164,9 +164,12 @@
 
                     <div class="form-group">
                         <label for="fecha">Fecha de Visita</label>
-                        <input type="date" name="fecha" id="fecha"
+                        <input type="date" name="fecha" id="fecha-compra"
                                value="{{ old('fecha', $form['fecha'] ?? '') }}"
                                class="{{ !empty($errores['fecha']) ? 'input-error' : '' }}">
+                        <div id="weather-alert-compra" style="margin-top: 10px; display: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; border: 1px solid transparent;">
+                            <!-- Weather info will go here -->
+                        </div>
                         @if (!empty($errores['fecha']))
                             <div class="field-error">{{ $errores['fecha'] }}</div>
                         @endif
@@ -211,6 +214,58 @@
 <footer>
     <p>&copy; {{ date('Y') }} ZooWonderland - Educación y Conservación</p>
 </footer>
+
+<script>
+document.getElementById('fecha-compra').addEventListener('change', async function() {
+    const fecha = this.value;
+    const alertBox = document.getElementById('weather-alert-compra');
+    
+    if (!fecha) {
+        alertBox.style.display = 'none';
+        return;
+    }
+
+    alertBox.style.display = 'block';
+    alertBox.style.background = '#f8fafc';
+    alertBox.style.borderColor = '#e2e8f0';
+    alertBox.innerHTML = '<i class="fa-solid fa-cloud-sun fa-spin"></i> Consultando pronóstico...';
+
+    try {
+        const response = await fetch(`/api/clima/pronostico?fecha=${fecha}`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            const data = result.data;
+            let bgColor = data.lluvia_probable ? '#fff7ed' : '#f0fdf4';
+            let borderColor = data.lluvia_probable ? '#fdba74' : '#bbf7d0';
+            let textColor = data.lluvia_probable ? '#9a3412' : '#166534';
+
+            alertBox.style.background = bgColor;
+            alertBox.style.borderColor = borderColor;
+            alertBox.style.color = textColor;
+            alertBox.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${data.icono_clima}" width="40" alt="Icon">
+                    <div>
+                        <strong>Pronóstico: ${data.temperatura} - ${data.descripcion_clima}</strong><br>
+                        ${data.lluvia_probable ? '⚠️ Recomendamos traer paraguas.' : '✅ Excelente día para visitar el Zoo.'}
+                    </div>
+                </div>
+            `;
+        } else if (result.status === 'info') {
+            alertBox.style.background = '#fefce8';
+            alertBox.style.borderColor = '#fef08a';
+            alertBox.style.color = '#854d0e';
+            alertBox.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${result.message}`;
+        } else {
+            alertBox.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching forecast:', error);
+        alertBox.style.display = 'none';
+    }
+});
+</script>
 
 </body>
 </html>

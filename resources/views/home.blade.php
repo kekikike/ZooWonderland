@@ -68,6 +68,54 @@
     .footer-link { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; transition: var(--transicion); display: flex; align-items: center; gap: 8px; }
     .footer-link:hover { color: var(--amarillo-sol); }
     .footer-sep { color: rgba(255,255,255,0.2); }
+    
+    /* Weather Widget Styles */
+    #weather-widget {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: var(--sombra);
+        max-width: 300px;
+        margin: -2rem auto 3rem auto;
+        position: relative;
+        z-index: 10;
+        border-top: 5px solid var(--verde-selva);
+        text-align: center;
+    }
+    #weather-widget h3 {
+        font-size: 0.9rem;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+    .weather-data {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+    #weather-temp {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--oscuro);
+    }
+    #weather-icon {
+        width: 60px;
+        height: 60px;
+    }
+    #weather-desc {
+        font-weight: 600;
+        color: var(--verde-selva);
+        margin: 5px 0;
+    }
+    .weather-extra {
+        font-size: 0.8rem;
+        color: #888;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
     @media (max-width: 768px) { nav { flex-direction: column; gap: 1.5rem; } .banner h1 { font-size: 2.2rem; } }
     </style>
 </head>
@@ -120,6 +168,21 @@
     <div class="banner-content">
         <h1>Conecta con lo salvaje</h1>
         <p>Una aventura educativa para toda la familia en el corazón de la ciudad.</p>
+    </div>
+</div>
+
+<div id="weather-widget">
+    <h3><i class="fa-solid fa-cloud-sun"></i> Clima en La Paz</h3>
+    <div id="weather-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando clima...</div>
+    <div id="weather-content" style="display: none;">
+        <div class="weather-data">
+            <img id="weather-icon" src="" alt="Clima icon">
+            <span id="weather-temp">--°C</span>
+        </div>
+        <p id="weather-desc">--</p>
+        <div class="weather-extra">
+            <span><i class="fa-solid fa-droplet"></i> <span id="weather-hum">--%</span></span>
+        </div>
     </div>
 </div>
 
@@ -198,6 +261,34 @@
         </a>
     </div>
 </footer>
+
+<script>
+const fetchClima = async () => {
+    try {
+        const response = await fetch('/api/clima');
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            const info = result.data;
+            
+            document.getElementById('weather-temp').textContent = info.temperatura;
+            document.getElementById('weather-desc').textContent = info.descripcion_clima;
+            document.getElementById('weather-hum').textContent = info.humedad;
+            document.getElementById('weather-icon').src = info.icono_clima;
+
+            document.getElementById('weather-loading').style.display = 'none';
+            document.getElementById('weather-content').style.display = 'block';
+        } else {
+            document.getElementById('weather-loading').textContent = 'Información no disponible';
+        }
+    } catch (error) {
+        console.error('Error al obtener el clima:', error);
+        document.getElementById('weather-loading').textContent = 'Error al cargar';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', fetchClima);
+</script>
 
 </body>
 </html>

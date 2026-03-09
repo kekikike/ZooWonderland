@@ -7,9 +7,15 @@ use App\Http\Controllers\Api\UsuarioController;
 use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\RecorridoController;
 use App\Http\Controllers\Api\EventoController;
+use App\Http\Controllers\Api\ClimaController;
 
 // ── AUTH ─────────────────────────────────────────────────────────
 Route::post('/auth/login', [AuthController::class, 'login']);
+
+// ── CLIMA (Público) ───────────────────────────────────────────────
+Route::get('/clima',            [ClimaController::class, 'getClima']);
+Route::get('/clima/pronostico', [ClimaController::class, 'getPronostico']);
+
 Route::middleware('auth.zoo')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me',      [AuthController::class, 'me']);
