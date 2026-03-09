@@ -50,7 +50,7 @@ class AdminController extends Controller
         $totalAnimales   = $this->animalRepo->findAll()->count();
         $totalGuias      = \App\Models\Guia::count();
         $totalReservas   = \App\Models\Reserva::count();
-        $totalIngresos   = \App\Models\Compra::sum('monto') ?? 0;
+        $totalIngresos   = \App\Models\Compra::sum('monto_total') ?? 0;
 
         return view('admin.dashboard', compact(
             'user',
@@ -286,7 +286,12 @@ class AdminController extends Controller
             return redirect('/admin/asignaciones/crear')->with('error', 'El guía ya tiene una asignación ese día.');
         }
 
-        $this->guiaRepo->asignarGuia($idGuia, $idRecorrido, $fecha);
+        try {
+            $this->guiaRepo->asignarGuia($idGuia, $idRecorrido, $fecha);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            return redirect('/admin/asignaciones/crear')->with('error', 'Este guía ya tiene asignado ese recorrido.');
+        }
+
         return redirect('/admin/asignaciones')->with('success', 'Asignación creada.');
     }
 
@@ -301,9 +306,10 @@ class AdminController extends Controller
     public function eventos(Request $request)
     {
         $user    = $request->attributes->get('auth_user');
-        $filtros = $request->only(['estado', 'fecha_inicio', 'fecha_fin']);
+        $filtros = $request->only(['estado', 'fecha_inicio', 'fecha_fin', 'encargado_id', 'nombre']);
         $eventos = $this->eventoService->getAll($filtros);
-        return view('admin.eventos.index', compact('user', 'eventos'));
+        $guias   = $this->guiaRepo->findAll();
+        return view('admin.eventos.index', compact('user', 'eventos', 'guias', 'filtros'));
     }
 
     public function eventoForm(Request $request)
@@ -312,8 +318,9 @@ class AdminController extends Controller
         $id     = (int)$request->input('id', 0);
         $evento = $id ? $this->eventoService->getById($id) : null;
         $guias  = $this->eventoService->getGuiasDisponibles();
+        $areas  = $this->areaRepo->findAll();
 
-        return view('admin.eventos.form', compact('user', 'evento', 'guias'));
+        return view('admin.eventos.form', compact('user', 'evento', 'guias', 'areas'));
     }
 
     public function saveEvento(Request $request)
@@ -330,7 +337,20 @@ class AdminController extends Controller
             'lugar'                => trim($request->input('lugar', '')),
             'limite_participantes' => (int)$request->input('limite_participantes', 0),
             'estado'               => (int)$request->input('estado', 1),
-            'actividades'          => $request->input('actividades', []),
+            'actividades'          => (function() use ($request) {
+                $nombres = $request->input('actividad_nombre', []);
+                $descs   = $request->input('actividad_desc',   []);
+                $result  = [];
+                foreach ($nombres as $i => $nombre) {
+                    if (!empty(trim($nombre))) {
+                        $result[] = [
+                            'nombre'      => trim($nombre),
+                            'descripcion' => trim($descs[$i] ?? ''),
+                        ];
+                    }
+                }
+                return $result;
+            })(),
             'id'                   => $id,
         ];
 
