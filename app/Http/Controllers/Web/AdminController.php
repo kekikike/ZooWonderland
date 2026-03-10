@@ -116,12 +116,13 @@ public function editarUsuarioPost(Request $request)
 }
 
     public function toggleEstado(Request $request)
-    {
-        $id     = (int)$request->input('id', 0);
-        $estado = (int)$request->input('estado', 0);
-        $this->usuarioRepo->cambiarEstado($id, $estado);
-        return redirect('/admin/usuarios')->with('success', 'Estado actualizado.');
-    }
+{
+    $id     = (int)$request->input('id_usuario', 0);
+    $estado = (int)$request->input('estado', 0);
+    $nuevo  = $estado === 1 ? 0 : 1;
+    $this->usuarioRepo->cambiarEstado($id, $nuevo);
+    return redirect('/admin/usuarios')->with('success', 'Estado actualizado.');
+}
 
     public function editarUsuarioForm(Request $request)
 {
