@@ -593,7 +593,7 @@ class AdminController extends Controller
                 'id_reporte'        => $g->id_reporte,
                 'id_guia_recorrido' => $g->id_guia_recorrido,
                 'observaciones'     => $g->observaciones,
-                'fecha_reporte'     => optional($g->fecha_reporte)->format('Y-m-d') ?? '—',
+                'fecha_registro'    => optional($g->fecha_registro)->format('Y-m-d') ?? '—',
                 'estado'            => $g->estado,
             ])
             ->toArray();
@@ -635,7 +635,7 @@ class AdminController extends Controller
         } else {
             $datos = $this->reporteRepo->getAll()
                 ->map(fn($g) => [
-                    'fecha_reporte' => optional($g->fecha_reporte)->format('Y-m-d') ?? '—',
+                    'fecha_registro' => optional($g->fecha_registro)->format('Y-m-d') ?? '—',
                     'observaciones' => $g->observaciones,
                 ])->toArray();
         }

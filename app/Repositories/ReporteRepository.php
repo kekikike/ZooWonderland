@@ -27,7 +27,7 @@ class ReporteRepository
     {
         return Reporte::with(['guiaRecorrido.recorrido', 'guiaRecorrido.guia'])
             ->whereHas('guiaRecorrido.guia', fn($b) => $b->where('id_usuario', $idUsuario))
-            ->orderByDesc('fecha_reporte')
+            ->orderByDesc('fecha_registro')
             ->get();
     }
 
@@ -54,7 +54,7 @@ class ReporteRepository
     public function getAll(): Collection
     {
         return Reporte::with(['guiaRecorrido.guia.usuario', 'guiaRecorrido.recorrido'])
-            ->orderByDesc('fecha_reporte')
+            ->orderByDesc('fecha_registro')
             ->get();
     }
 }

@@ -291,7 +291,7 @@ foreach ($compras as $c) {
                 <tbody>
                     @foreach($reportesGuias as $g)
                     <tr>
-                        <td>{{ $g['fecha_reporte'] }}</td>
+                        <td>{{ $g['fecha_registro'] }}</td>
                         <td>#{{ $g['id_guia_recorrido'] }}</td>
                         <td style="color: #666; font-size: 0.85rem; max-width: 300px;">{{ $g['observaciones'] ?: 'Sin novedades.' }}</td>
                         <td>

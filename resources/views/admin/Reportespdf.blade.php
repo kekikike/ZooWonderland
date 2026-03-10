@@ -76,7 +76,7 @@
             </tr>
             @foreach($datos as $row)
                 <tr>
-                    <td>{{ $row['fecha_reporte'] }}</td>
+                    <td>{{ $row['fecha_registro'] }}</td>
                     <td>{{ $row['observaciones'] ?? '-' }}</td>
                 </tr>
             @endforeach
