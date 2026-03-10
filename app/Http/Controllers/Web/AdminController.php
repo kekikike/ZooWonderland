@@ -15,6 +15,7 @@ use App\Repositories\UsuarioRepository;
 use App\Services\EventoService;
 use Dompdf\Dompdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -475,20 +476,108 @@ class AdminController extends Controller
         return view('admin.eventos.detalle', compact('user', 'evento'));
     }
 
-    // ── REPORTES ─────────────────────────────────────────────────
+        // ── REPORTES 
     public function reportes(Request $request)
     {
-        $user     = $request->attributes->get('auth_user');
-        // getDetalle sin argumento = listar todos (pasamos 0 para indicar "todos")
-        $reportes = $this->reporteRepo->getAll();
-        return view('admin.reportes.index', compact('user', 'reportes'));
+        $user   = $request->attributes->get('auth_user');
+        $inicio = $request->input('inicio', '');
+        $fin    = $request->input('fin',    '');
+
+        // Compras
+        $queryCompras = DB::table('compras')
+            ->select([
+                'fecha',
+                DB::raw('COUNT(*) as total_compras'),
+                DB::raw('SUM(monto) as total_ingresos'),
+                DB::raw('SUM(CASE WHEN estado_pago = 1 THEN monto ELSE 0 END) as pagadas'),
+                DB::raw('SUM(CASE WHEN estado_pago = 0 THEN monto ELSE 0 END) as pendientes'),
+            ])
+            ->where('estado', 1);
+
+        if ($inicio) $queryCompras->whereDate('fecha', '>=', $inicio);
+        if ($fin)    $queryCompras->whereDate('fecha', '<=', $fin);
+
+        $compras = $queryCompras
+            ->groupBy('fecha')
+            ->orderBy('fecha', 'desc')
+            ->get()
+            ->map(fn($c) => (array) $c)
+            ->toArray();
+
+        // Reservas
+        $queryReservas = DB::table('reservas')
+            ->select([
+                DB::raw('DATE(fecha) as fecha'),
+                DB::raw('COUNT(*) as total_reservas'),
+                DB::raw('SUM(cupos) as total_cupos'),
+                DB::raw('SUM(CASE WHEN estado_pago = 1 THEN 1 ELSE 0 END) as pagadas'),
+                DB::raw('SUM(CASE WHEN estado_pago = 0 THEN 1 ELSE 0 END) as pendientes'),
+            ]);
+
+        if ($inicio) $queryReservas->whereDate('fecha', '>=', $inicio);
+        if ($fin)    $queryReservas->whereDate('fecha', '<=', $fin);
+
+        $reservas = $queryReservas
+            ->groupBy(DB::raw('DATE(fecha)'))
+            ->orderBy('fecha', 'desc')
+            ->get()
+            ->map(fn($r) => (array) $r)
+            ->toArray();
+
+        // Guías
+        $reportesGuias = $this->reporteRepo->getAll()
+            ->map(fn($g) => [
+                'id_reporte'        => $g->id_reporte,
+                'id_guia_recorrido' => $g->id_guia_recorrido,
+                'observaciones'     => $g->observaciones,
+                'fecha_reporte'     => optional($g->fecha_reporte)->format('Y-m-d') ?? '—',
+                'estado'            => $g->estado,
+            ])
+            ->toArray();
+
+        return view('admin.reportes', compact(
+            'user', 'compras', 'reservas', 'reportesGuias'
+        ));
     }
 
     public function reportePDF(Request $request)
     {
-        $reportes = $this->reporteRepo->getAll();
+        $tipo   = $request->input('tipo', 'guias');
+        $inicio = $request->input('inicio', '');
+        $fin    = $request->input('fin', '');
 
-        $html = view('admin.reportes.pdf', compact('reportes'))->render();
+        $titulos = [
+            'reservas' => 'Reporte de Reservas',
+            'compras'  => 'Reporte de Compras',
+            'guias'    => 'Reporte de Guías',
+        ];
+        $titulo = $titulos[$tipo] ?? 'Reporte';
+
+        // Obtener datos según el tipo
+        if ($tipo === 'compras') {
+            $query = DB::table('compras')
+                ->select(['fecha', DB::raw('COUNT(*) as total_compras'), DB::raw('SUM(monto) as total_ingresos')])
+                ->where('estado', 1);
+            if ($inicio) $query->whereDate('fecha', '>=', $inicio);
+            if ($fin)    $query->whereDate('fecha', '<=', $fin);
+            $datos = $query->groupBy('fecha')->orderBy('fecha','desc')->get()->map(fn($c) => (array)$c)->toArray();
+
+        } elseif ($tipo === 'reservas') {
+            $query = DB::table('reservas')
+                ->select([DB::raw('DATE(fecha) as fecha'), DB::raw('COUNT(*) as total_reservas'), DB::raw('SUM(cupos) as total_cupos')]);
+            if ($inicio) $query->whereDate('fecha', '>=', $inicio);
+            if ($fin)    $query->whereDate('fecha', '<=', $fin);
+            $datos = $query->groupBy(DB::raw('DATE(fecha)'))->orderBy('fecha','desc')->get()->map(fn($r) => (array)$r)->toArray();
+
+        } else {
+            $datos = $this->reporteRepo->getAll()
+                ->map(fn($g) => [
+                    'fecha_reporte' => optional($g->fecha_reporte)->format('Y-m-d') ?? '—',
+                    'observaciones' => $g->observaciones,
+                ])->toArray();
+        }
+
+        $html = view('admin.reportes.pdf', compact('titulo', 'inicio', 'fin', 'tipo', 'datos'))->render();
 
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
@@ -497,7 +586,7 @@ class AdminController extends Controller
 
         return response($dompdf->output(), 200, [
             'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="reporte_guias.pdf"',
+            'Content-Disposition' => "attachment; filename=\"reporte_{$tipo}.pdf\"",
         ]);
     }
 }
