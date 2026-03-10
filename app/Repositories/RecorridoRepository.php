@@ -57,15 +57,23 @@ class RecorridoRepository
         if (!$recorrido) return false;
 
         return DB::transaction(function () use ($recorrido, $data) {
-            $ok = $recorrido->update([
-                'nombre'    => $data['nombre'],
-                'tipo'      => $data['tipo'],
-                'precio'    => $data['precio'],
-                'duracion'  => $data['duracion'],
-                'capacidad' => $data['capacidad'],
-            ]);
+            $updateData = [];
 
-            $recorrido->areas()->sync($data['areas'] ?? []);
+            // Solo incluir campos que estén presentes en $data
+            if (isset($data['nombre'])) $updateData['nombre'] = $data['nombre'];
+            if (isset($data['tipo'])) $updateData['tipo'] = $data['tipo'];
+            if (isset($data['precio'])) $updateData['precio'] = $data['precio'];
+            if (isset($data['duracion'])) $updateData['duracion'] = $data['duracion'];
+            if (isset($data['capacidad'])) $updateData['capacidad'] = $data['capacidad'];
+            if (isset($data['estado'])) $updateData['estado'] = $data['estado'];
+
+            $ok = $recorrido->update($updateData);
+
+            // Solo sincronizar áreas si están presentes
+            if (isset($data['areas'])) {
+                $recorrido->areas()->sync($data['areas']);
+            }
+
             return $ok;
         });
     }
@@ -75,6 +83,14 @@ class RecorridoRepository
         $recorrido = Recorrido::find($id);
         if (!$recorrido) return false;
         return (bool) $recorrido->delete();
+    }
+
+    // Soft delete — cambia estado a 0 (Inactivo)
+    public function desactivar(int $id): bool
+    {
+        $recorrido = Recorrido::find($id);
+        if (!$recorrido) return false;
+        return $recorrido->update(['estado' => 0]);
     }
 
     public function getAreas(int $recorridoId): Collection

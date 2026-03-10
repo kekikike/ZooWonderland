@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
     plugins: [
@@ -9,10 +10,21 @@ export default defineConfig({
             refresh: true,
         }),
         tailwindcss(),
+        vue(),
     ],
     server: {
+        host: 'localhost',
+        port: 5174,
+        cors: true,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            }
+        }
+    }
 });

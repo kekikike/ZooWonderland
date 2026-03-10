@@ -50,7 +50,7 @@ class AdminController extends Controller
         $totalAnimales   = $this->animalRepo->findAll()->count();
         $totalGuias      = \App\Models\Guia::count();
         $totalReservas   = \App\Models\Reserva::count();
-        $totalIngresos   = \App\Models\Compra::sum('monto_total') ?? 0;
+        $totalIngresos   = \App\Models\Compra::sum('monto') ?? 0;
 
         return view('admin.dashboard', compact(
             'user',
@@ -166,26 +166,100 @@ class AdminController extends Controller
 
     public function actualizarRecorrido(Request $request)
     {
-        $id   = (int)$request->input('id', 0);
+        $id = (int)$request->input('id', 0);
+
+        if ($id <= 0) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'ID de recorrido inválido.'], 400);
+            }
+            return redirect('/admin/recorridos')->with('error', 'ID de recorrido inválido.');
+        }
+
         $data = [
-            'nombre'      => trim($request->input('nombre', '')),
-            'tipo'        => trim($request->input('tipo', '')),
-            'descripcion' => trim($request->input('descripcion', '')),
-            'precio'      => (float)$request->input('precio', 0),
-            'duracion'    => (int)$request->input('duracion', 0),
-            'capacidad'   => (int)$request->input('capacidad', 0),
-            'areas'       => $request->input('areas', []),
+            'nombre'    => trim($request->input('nombre', '')),
+            'tipo'      => trim($request->input('tipo', '')),
+            'precio'    => (float)$request->input('precio', 0),
+            'duracion'  => (int)$request->input('duracion', 0),
+            'capacidad' => (int)$request->input('capacidad', 0),
+            'areas'     => $request->input('areas', []),
         ];
 
-        $this->recorridoRepo->update($id, $data);
-        return redirect('/admin/recorridos')->with('success', 'Recorrido actualizado.');
+        try {
+            $this->recorridoRepo->update($id, $data);
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Recorrido actualizado exitosamente.']);
+            }
+            return redirect('/admin/recorridos')->with('success', 'Recorrido actualizado.');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al actualizar el recorrido: ' . $e->getMessage()], 500);
+            }
+            return redirect('/admin/recorridos')->with('error', 'Error al actualizar el recorrido.');
+        }
     }
 
     public function eliminarRecorrido(Request $request)
     {
-        $id = (int)$request->input('id', 0);
-        $this->recorridoRepo->delete($id);
-        return redirect('/admin/recorridos')->with('success', 'Recorrido eliminado.');
+        $id = (int)$request->input('id_recorrido', 0);
+
+        if ($id <= 0) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'ID de recorrido inválido.'], 400);
+            }
+            return redirect('/admin/recorridos')->with('error', 'ID de recorrido inválido.');
+        }
+
+        try {
+            $this->recorridoRepo->desactivar($id);
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Recorrido desactivado exitosamente.']);
+            }
+            return redirect('/admin/recorridos')->with('success', 'Recorrido desactivado.');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al desactivar el recorrido: ' . $e->getMessage()], 500);
+            }
+            return redirect('/admin/recorridos')->with('error', 'Error al desactivar el recorrido.');
+        }
+    }
+
+    public function toggleEstadoRecorrido(Request $request)
+    {
+        $id = (int)$request->input('id_recorrido', 0);
+
+        if ($id <= 0) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'ID de recorrido inválido.'], 400);
+            }
+            return redirect('/admin/recorridos')->with('error', 'ID de recorrido inválido.');
+        }
+
+        try {
+            $recorrido = $this->recorridoRepo->findById($id);
+            if (!$recorrido) {
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Recorrido no encontrado.'], 404);
+                }
+                return redirect('/admin/recorridos')->with('error', 'Recorrido no encontrado.');
+            }
+
+            $nuevoEstado = $recorrido->estado == 1 ? 0 : 1;
+            $this->recorridoRepo->update($id, ['estado' => $nuevoEstado]);
+
+            $accion = $nuevoEstado == 1 ? 'activado' : 'desactivado';
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => "Recorrido {$accion} exitosamente."]);
+            }
+            return redirect('/admin/recorridos')->with('success', "Recorrido {$accion}.");
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Error al cambiar el estado del recorrido: ' . $e->getMessage()], 500);
+            }
+            return redirect('/admin/recorridos')->with('error', 'Error al cambiar el estado del recorrido.');
+        }
     }
 
     // ── ANIMALES ─────────────────────────────────────────────────

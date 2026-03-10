@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+    <!-- Vue 3 from CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         :root {
             --selva-dark: #2E7D32;
@@ -47,138 +49,151 @@
         .success-message { background: #e6f7ff; border: 1px solid #0275d8; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; color: #0275d8; }
         .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--selva-dark); border-radius: 50%; animation: spin 1s linear infinite; }
         /* custom area button styles */
-        .area-btn { 
-            margin: 0.25rem;
-            padding: 0.5rem 1rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background: #f5f5f5;
+        .area-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .area-btn {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.3s, color 0.3s;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .area-btn:hover {
+            border-color: var(--selva-light);
+            background: #f0f9ff;
+            color: var(--selva-dark);
         }
         .area-btn.selected {
             background: var(--selva-light);
             color: white;
             border-color: var(--selva-dark);
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+        }
+        .area-btn.selected:hover {
+            background: var(--selva-dark);
+            border-color: var(--selva-med);
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div id="app">
-        <header>
-            <nav>
-                <a href="/admin/dashboard" class="logo"><i class="fas fa-leaf"></i> ZooWonderland</a>
-                <div class="menu">
-                    <a href="/admin/dashboard" title="Dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
-                    <a href="/admin/recorridos" title="Gestionar Recorridos"><i class="fas fa-compass"></i> Recorridos</a>
-                    <a href="/admin/animales" title="Gestionar Animales"><i class="fas fa-paw"></i> Animales</a>
-                    <a href="/admin/areas" title="Gestionar Áreas"><i class="fas fa-shapes"></i> Áreas</a>
-                    <a href="/admin/reservas" title="Reservas"><i class="fas fa-calendar-check"></i> Reservas</a>
-                    <a href="/admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
-                    <a href="/logout" title="Salir"><i class="fas fa-sign-out-alt"></i> Salir</a>
-                </div>
-            </nav>
-        </header>
-
-        <main>
-            <div class="form-section">
-                <h2><i class="fas fa-route"></i> <span v-if="isEditing">Editar</span><span v-else>Crear</span> Recorrido</h2>
-
-                <!-- Mensajes de éxito/error -->
-                <div v-if="mensajeExito" class="success-message">
-                    @{{ mensajeExito }}
-                </div>
-
-                <div v-if="errores.length > 0" class="error-list">
-                    <ul>
-                        <li v-for="error in errores" :key="error">@{{ error }}</li>
-                    </ul>
-                </div>
-
-                <!-- Formulario -->
-                <form @submit.prevent="guardarRecorrido">
-                    <div class="form-group">
-                        <label for="nombre">Nombre *</label>
-                        <input type="text" id="nombre" v-model="form.nombre" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tipo">Tipo</label>
-                        <select id="tipo" v-model="form.tipo">
-                            <option value="Guiado">Guiado</option>
-                            <option value="No Guiado">No Guiado</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="precio">Precio (Bs.) *</label>
-                        <input type="number" step="0.01" min="0" id="precio" v-model.number="form.precio" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="duracion">Duración (minutos)</label>
-                        <input type="number" min="0" id="duracion" v-model.number="form.duracion">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="capacidad">Capacidad máxima</label>
-                        <input type="number" min="0" id="capacidad" v-model.number="form.capacidad">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Áreas *</label>
-                        <div v-if="cargandoAreas" class="loading"></div>
-                        <div v-else-if="areas.length > 0" class="checkbox-group">
-                            <button
-                                v-for="area in areas"
-                                :key="area.id_area"
-                                type="button"
-                                @click="toggleArea(area.id_area)"
-                                :class="['area-btn', form.areas.includes(area.id_area) ? 'selected' : '']"
-                            >
-                                @{{ area.nombre }}
-                            </button>
-                        </div>
-                        <div v-else>
-                            <p>No hay áreas disponibles</p>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn" :disabled="guardando">
-                        <span v-if="guardando" class="loading"></span>
-                        <span v-if="isEditing">Actualizar</span><span v-else>Guardar</span>
-                    </button>
-                </form>
-
-                <a href="/admin/recorridos" class="back-link"><i class="fas fa-arrow-left"></i> Volver a la lista</a>
-            </div>
-        </main>
-
-        <footer style="text-align:center; padding:2rem; background:var(--selva-dark); color:white; font-size:0.9rem;">
-            &copy; 2026 ZooWonderland - Panel de Administración.
-        </footer>
+        <recorrido-form :recorrido-id="{{ $recorrido ? $recorrido->id_recorrido : 'null' }}"></recorrido-form>
     </div>
 
-    <!-- Vue 3 from CDN -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
     <script>
-        const { createApp } = Vue;
-
-        // Detectar si estamos en modo edición desde URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const recorridoId = urlParams.get('id');
-
-        // Configurar axios
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        // Configurar Axios con CSRF
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-        createApp({
+        // Componente completo del formulario
+        const RecorridoForm = {
+            template: `
+                <div>
+                    <header>
+                        <nav>
+                            <a href="/admin/dashboard" class="logo"><i class="fas fa-leaf"></i> ZooWonderland</a>
+                            <div class="menu">
+                                <a href="/admin/dashboard" title="Dashboard"><i class="fas fa-chart-line"></i> Dashboard</a>
+                                <a href="/admin/recorridos" title="Gestionar Recorridos"><i class="fas fa-compass"></i> Recorridos</a>
+                                <a href="/admin/animales" title="Gestionar Animales"><i class="fas fa-paw"></i> Animales</a>
+                                <a href="/admin/areas" title="Gestionar Áreas"><i class="fas fa-shapes"></i> Áreas</a>
+                                <a href="/admin/reservas" title="Reservas"><i class="fas fa-calendar-check"></i> Reservas</a>
+                                <a href="/admin/eventos" title="Gestionar Eventos"><i class="fas fa-calendar-days"></i> Eventos</a>
+                                <a href="/logout" title="Salir"><i class="fas fa-sign-out-alt"></i> Salir</a>
+                            </div>
+                        </nav>
+                    </header>
+
+                    <main>
+                        <div class="form-section">
+                            <h2><i class="fas fa-route"></i> @{{ isEditing ? 'Editar' : 'Crear' }} Recorrido</h2>
+
+                            <div v-if="mensajeExito" class="success-message">@{{ mensajeExito }}</div>
+                            <div v-if="errores.length" class="error-list">
+                                <ul>
+                                    <li v-for="error in errores" :key="error">@{{ error }}</li>
+                                </ul>
+                            </div>
+
+                            <form @submit.prevent="guardarRecorrido">
+                                <div class="form-group">
+                                    <label for="nombre">Nombre *</label>
+                                    <input type="text" id="nombre" v-model="form.nombre" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="tipo">Tipo</label>
+                                    <select id="tipo" v-model="form.tipo">
+                                        <option value="Guiado">Guiado</option>
+                                        <option value="No Guiado">No Guiado</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="precio">Precio (Bs.) *</label>
+                                    <input type="number" step="0.01" min="0" id="precio" v-model.number="form.precio" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="duracion">Duración (minutos)</label>
+                                    <input type="number" min="0" id="duracion" v-model.number="form.duracion">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="capacidad">Capacidad máxima</label>
+                                    <input type="number" min="0" id="capacidad" v-model.number="form.capacidad">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Áreas *</label>
+                                    <div v-if="cargandoAreas" class="loading"></div>
+                                    <div v-else class="area-buttons-grid">
+                                        <button
+                                            v-for="area in areas"
+                                            :key="area.id_area"
+                                            type="button"
+                                            @click="toggleArea(area.id_area)"
+                                            :class="['area-btn', form.areas.includes(area.id_area) ? 'selected' : '']"
+                                        >
+                                            @{{ area.nombre }}
+                                        </button>
+                                    </div>
+                                    <div v-if="!areas.length && !cargandoAreas">
+                                        <p>No hay áreas disponibles</p>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn" :disabled="guardando">
+                                    <span v-if="guardando" class="loading"></span>
+                                    @{{ isEditing ? 'Actualizar' : 'Guardar' }}
+                                </button>
+                            </form>
+
+                            <a href="/admin/recorridos" class="back-link"><i class="fas fa-arrow-left"></i> Volver a la lista</a>
+                        </div>
+                    </main>
+
+                    <footer style="text-align:center; padding:2rem; background:var(--selva-dark); color:white; font-size:0.9rem;">
+                        &copy; 2026 ZooWonderland - Panel de Administración.
+                    </footer>
+                </div>
+            `,
+            props: {
+                recorridoId: { type: [Number, String], default: null }
+            },
             data() {
                 return {
-                    isEditing: !!recorridoId,
-                    recorridoId: recorridoId ? parseInt(recorridoId) : null,
+                    isEditing: false,
                     form: {
                         nombre: '',
                         tipo: 'No Guiado',
@@ -194,7 +209,14 @@
                     mensajeExito: ''
                 };
             },
+            computed: {
+                recorridoIdNumerico() {
+                    const id = this.recorridoId;
+                    return id && id !== 'null' ? parseInt(id) : null;
+                }
+            },
             mounted() {
+                this.isEditing = !!this.recorridoIdNumerico;
                 this.cargarAreas();
                 if (this.isEditing) {
                     this.cargarRecorrido();
@@ -202,20 +224,20 @@
             },
             methods: {
                 cargarAreas() {
-                    axios.get('/api/areas')
+                    axios
+                        .get('/api/areas')
                         .then(response => {
                             this.areas = response.data.data || response.data;
                         })
-                        .catch(error => {
-                            console.error('Error:', error);
+                        .catch(err => {
+                            console.error(err);
                             this.errores.push('Error al cargar las áreas');
                         })
-                        .finally(() => {
-                            this.cargandoAreas = false;
-                        });
+                        .finally(() => (this.cargandoAreas = false));
                 },
                 cargarRecorrido() {
-                    axios.get(`/api/recorridos/${this.recorridoId}`)
+                    axios
+                        .get(`/api/recorridos/${this.recorridoIdNumerico}`)
                         .then(response => {
                             const data = response.data.data || response.data;
                             this.form.nombre = data.nombre || '';
@@ -225,23 +247,22 @@
                             this.form.capacidad = data.capacidad || 0;
                             this.form.areas = data.areas ? data.areas.map(a => a.id_area) : [];
                         })
-                        .catch(error => {
-                            console.error('Error:', error);
+                        .catch(err => {
+                            console.error(err);
                             this.errores.push('Error al cargar el recorrido');
                         });
                 },
                 toggleArea(areaId) {
-                    const idx = this.form.areas.indexOf(areaId);
-                    if (idx === -1) {
-                        this.form.areas.push(areaId);
+                    const index = this.form.areas.indexOf(areaId);
+                    if (index > -1) {
+                        this.form.areas.splice(index, 1);
                     } else {
-                        this.form.areas.splice(idx, 1);
+                        this.form.areas.push(areaId);
                     }
                 },
                 guardarRecorrido() {
                     this.guardando = true;
                     this.errores = [];
-
                     const datos = {
                         nombre: this.form.nombre,
                         tipo: this.form.tipo,
@@ -251,34 +272,38 @@
                         areas: this.form.areas
                     };
 
-                    if (this.isEditing) {
-                        datos.id = this.recorridoId;
-                    }
-
                     const url = this.isEditing ? '/admin/recorridos/actualizar' : '/admin/recorridos/guardar';
-
-                    axios.post(url, datos)
+                    if (this.isEditing) datos.id = this.recorridoIdNumerico;
+                    axios
+                        .post(url, datos)
                         .then(response => {
                             this.mensajeExito = `Recorrido ${this.isEditing ? 'actualizado' : 'creado'} exitosamente`;
-                            setTimeout(() => {
-                                window.location.href = '/admin/recorridos';
-                            }, 2000);
+                            setTimeout(() => (window.location.href = '/admin/recorridos'), 2000);
                         })
-                        .catch(error => {
-                            if (error.response?.data?.errors) {
-                                this.errores = Object.values(error.response.data.errors).flat();
-                            } else if (error.response?.data?.message) {
-                                this.errores = [error.response.data.message];
+                        .catch(err => {
+                            if (err.response?.data?.errors) {
+                                this.errores = Object.values(err.response.data.errors).flat();
+                            } else if (err.response?.data?.message) {
+                                this.errores = [err.response.data.message];
                             } else {
                                 this.errores = ['Error al guardar el recorrido'];
                             }
                         })
-                        .finally(() => {
-                            this.guardando = false;
-                        });
+                        .finally(() => (this.guardando = false));
                 }
             }
-        }).mount('#app');
+        };
+
+        // Crear la app Vue
+        const { createApp } = Vue;
+        const app = createApp({
+            components: {
+                'recorrido-form': RecorridoForm
+            }
+        });
+
+        app.mount('#app');
     </script>
+
 </body>
 </html>

@@ -56,6 +56,7 @@ Route::middleware(['auth.zoo', 'auth.admin'])->prefix('admin')->group(function (
     Route::get('/recorridos/editar',    [AdminController::class, 'editarRecorrido']);
     Route::post('/recorridos/actualizar',[AdminController::class, 'actualizarRecorrido']);
     Route::post('/recorridos/eliminar', [AdminController::class, 'eliminarRecorrido']);
+    Route::post('/recorridos/toggle-estado', [AdminController::class, 'toggleEstadoRecorrido']);
 
     // Animales
     Route::get('/animales',             [AdminController::class, 'animales']);

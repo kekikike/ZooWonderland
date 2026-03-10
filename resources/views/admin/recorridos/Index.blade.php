@@ -137,8 +137,8 @@
                                         <button @click="editarRecorrido(recorrido)" class="edit">
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
-                                        <button @click="eliminarRecorrido(recorrido)" class="delete">
-                                            <i class="fas fa-trash"></i> Eliminar
+                                        <button @click="toggleEstadoRecorrido(recorrido)" class="delete">
+                                            <i class="fas fa-power-off"></i> @{{ recorrido.estado == 1 ? 'Desactivar' : 'Activar' }}
                                         </button>
                                     </td>
                                 </tr>
@@ -202,17 +202,20 @@
                 editarRecorrido(recorrido) {
                     window.location.href = `/admin/recorridos/editar?id=${recorrido.id_recorrido}`;
                 },
-                eliminarRecorrido(recorrido) {
-                    if (confirm(`¿Estás seguro de eliminar el recorrido "${recorrido.nombre}"?`)) {
-                        axios.post('/admin/recorridos/eliminar', {
+                toggleEstadoRecorrido(recorrido) {
+                    const accion = recorrido.estado == 1 ? 'desactivar' : 'activar';
+                    const accionCapitalizada = recorrido.estado == 1 ? 'Desactivar' : 'Activar';
+
+                    if (confirm(`¿Estás seguro de ${accion} el recorrido "${recorrido.nombre}"?`)) {
+                        axios.post('/admin/recorridos/toggle-estado', {
                             id_recorrido: recorrido.id_recorrido
                         })
                         .then(response => {
-                            alert('Recorrido eliminado exitosamente');
+                            alert(`Recorrido ${accion}do exitosamente`);
                             this.cargarRecorridos(); // Recargar la lista
                         })
                         .catch(error => {
-                            alert('Error al eliminar el recorrido: ' + (error.response?.data?.message || 'Error desconocido'));
+                            alert(`Error al ${accion} el recorrido: ` + (error.response?.data?.message || 'Error desconocido'));
                             console.error('Error:', error);
                         });
                     }

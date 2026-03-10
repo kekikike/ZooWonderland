@@ -13,13 +13,13 @@ class RecorridoController extends Controller
 {
     public function index(): JsonResponse
     {
-        $recorridos = Recorrido::where('estado', 1)->get();
+        $recorridos = Recorrido::with('areas')->orderBy('id_recorrido')->get();
         return response()->json($recorridos);
     }
 
     public function show(int $id): JsonResponse
     {
-        $recorrido = Recorrido::where('id_recorrido', $id)->where('estado', 1)->first();
+        $recorrido = Recorrido::with('areas')->find($id);
         if (!$recorrido) {
             return response()->json(['message' => 'Recorrido no encontrado.'], 404);
         }
