@@ -85,8 +85,7 @@ Route::middleware(['auth.zoo', 'auth.admin'])->prefix('admin')->group(function (
     Route::post('/eventos/guardar',          [AdminController::class, 'saveEvento']);
     Route::post('/eventos/eliminar',         [AdminController::class, 'deleteEvento']);
     Route::get('/eventos/detalle',           [AdminController::class, 'detalleEvento']);
-
     // Reportes
+    Route::get('/reportes/pdf', [AdminController::class, 'reportePDF']);
     Route::get('/reportes',                  [AdminController::class, 'reportes']);
-    Route::get('/reportePDF',                [AdminController::class, 'reportePDF']);
 });
