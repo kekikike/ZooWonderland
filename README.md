@@ -25,7 +25,17 @@ Sistema desarrollado como proyecto del curso Tecnología Web II
 4. Importar base de datos
 5. Acceder a `http://localhost/zoowonderland/public`
 
+## Descripcion breve
+Zoowonderland es un proyecto de un zoologico natural
+donde se encuentran varios animales de distintas razas
 
+## Problema que resuelve
+El zoológico realiza la parte de administración utilizando métodos manuales como registros en papel y limita el acceso de los usuarios a información actualizada generando procesos poco eficientes como la dificultad de controlar la disponibilidad de guías, falta de organización en la planificación de tours y ausencia de reportes. Por su parte, los clientes deben aproximarse en persona a las instalaciones como única forma de comprar entradas, agendar tours guiados y/o pedir información sobre tours para organizaciones/escuelas generando largas filas y tiempos de espera. Por todo ello, se considera necesario el desarrollo de este sistema web el cual permita a los usuarios adquirir entradas en línea, ya sea para recorridos generales o guiados, individuales o grupales.
+
+## Usuarios Objetivo
+Cliente que visita un zoologico en busca de recorridos y reservas.
+Guia que quiere gestionar sus recorridos y horarios.
+Administrador que busca gestionar los recorridos y horarios.
 
 ## Módulos
 
