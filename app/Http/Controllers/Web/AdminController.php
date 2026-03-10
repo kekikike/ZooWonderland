@@ -391,6 +391,10 @@ class AdminController extends Controller
         $user   = $request->attributes->get('auth_user');
         $id     = (int)$request->input('id', 0);
         $evento = $id ? $this->eventoService->getById($id) : null;
+        if ($evento && $evento->esPasado()) {
+        return redirect('/admin/eventos')
+            ->with('error', 'No se puede editar un evento que ya finalizó.');
+    }
         $guias  = $this->eventoService->getGuiasDisponibles();
         $areas  = $this->areaRepo->findAll();
 
@@ -431,18 +435,22 @@ class AdminController extends Controller
         $result = $id
             ? $this->eventoService->update($id, $data)
             : $this->eventoService->create($data);
+ 
+       if (!$result['success']) {
+    $guias  = $this->eventoService->getGuiasDisponibles();
+    $areas  = $this->areaRepo->findAll();                    // ← agregar
+    $evento = $id ? $this->eventoService->getById($id) : null;
 
-        if (!$result['success']) {
-            $guias = $this->eventoService->getGuiasDisponibles();
-            $evento = $id ? $this->eventoService->getById($id) : null;
-            return view('admin.eventos.form', [
-                'user'   => $request->attributes->get('auth_user'),
-                'evento' => $evento,
-                'guias'  => $guias,
-                'error'  => $result['message'],
-            ]);
+    return view('admin.eventos.form', [
+        'user'   => $request->attributes->get('auth_user'),
+        'evento' => $evento,
+        'guias'  => $guias,
+        'areas'  => $areas,                                  // ← agregar
+        'error'  => $result['message'],
+    ]);
+ 
         }
-
+       
         return redirect('/admin/eventos')->with('success', $result['message']);
     }
 
