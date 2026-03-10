@@ -266,7 +266,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="limite_participantes">Límite de participantes *</label>
+                    <label for="limite_participantes">Límite de participantes (opcional)</label>
                     <input type="number" id="limite_participantes" name="limite_participantes"
                            min="0" max="50" placeholder="Maximo 50"
                            value="{{ old('limite_participantes', $evento?->limite_participantes ?? '') }}">

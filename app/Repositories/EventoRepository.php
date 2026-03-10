@@ -14,16 +14,17 @@ class EventoRepository
     {
         return Evento::with('guia.usuario')
             ->where('estado', 1)
-            ->when(!empty($filtros['vigencia']), function ($b) use ($filtros) {
-                match ($filtros['vigencia']) {
-                    'vigente'  => $b->where('fecha_inicio', '<=', now())->where('fecha_fin', '>=', now()),
-                    'pasado'   => $b->where('fecha_fin', '<', now()),
-                    'pendiente'=> $b->where('fecha_inicio', '>', now()),
-                    default    => null,
+            ->when(!empty($filtros['estado']), function ($b) use ($filtros) {
+                match ($filtros['estado']) {
+                    'vigente'   => $b->where('fecha_inicio', '<=', now())->where('fecha_fin', '>=', now()),
+                    'pasado'    => $b->where('fecha_fin', '<', now()),
+                    'pendiente' => $b->where('fecha_inicio', '>', now()),
+                    default     => null,
                 };
             })
-            ->when(!empty($filtros['fecha']),        fn($b) => $b->whereDate('fecha_inicio', $filtros['fecha']))
-            ->when(!empty($filtros['nombre']),       fn($b) => $b->where('nombre_evento', 'like', '%'.$filtros['nombre'].'%'))
+            ->when(!empty($filtros['fecha_inicio']), fn($b) => $b->whereDate('fecha_inicio', '>=', $filtros['fecha_inicio']))
+            ->when(!empty($filtros['fecha_fin']),    fn($b) => $b->whereDate('fecha_fin',    '<=', $filtros['fecha_fin']))
+            ->when(!empty($filtros['nombre']),       fn($b) => $b->where('nombre_evento', 'like', '%' . $filtros['nombre'] . '%'))
             ->when(!empty($filtros['encargado_id']), fn($b) => $b->where('encargado_id', $filtros['encargado_id']))
             ->orderByDesc('fecha_inicio')
             ->get();
