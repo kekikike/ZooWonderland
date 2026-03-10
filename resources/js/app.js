@@ -2,31 +2,18 @@ import './bootstrap';
 
 // entrada principal de Vue
 import { createApp } from 'vue';
-import RecorridoForm from './views/RecorridoForm.vue';
+import AppWrapper from './components/AppWrapper.vue';
 
-try {
-    const app = createApp({
-        template: `
-            <div>
-                <recorrido-form :recorrido-id="recorridoId"></recorrido-form>
-            </div>
-        `,
-        data() {
-            return {
-                recorridoId: null // Se puede pasar desde Blade
-            }
-        }
-    });
+const app = createApp(AppWrapper);
 
-    // Registrar componente global
-    app.component('recorrido-form', RecorridoForm);
+console.log('Vue app created with AppWrapper');
 
-    console.log('Vue app created');
-
+// Mount en el div con id="app" que Blade proporciona
+const element = document.getElementById('app');
+if (element) {
     app.mount('#app');
-    
-    console.log('Vue app mounted successfully');
-} catch (error) {
-    console.error('Error initializing Vue app:', error);
+    console.log('Vue app mounted to #app');
+} else {
+    console.warn('Element #app not found in the DOM');
 }
 
