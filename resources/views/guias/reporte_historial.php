@@ -1,8 +1,7 @@
 <?php
 /** @var array $reportes */
 /** @var \App\Models\Usuario $user */
-$mensajeExito = $_SESSION['mensaje_exito'] ?? null;
-if ($mensajeExito) unset($_SESSION['mensaje_exito']);
+$mensajeExito = session('success');
 ?>
 <!DOCTYPE html>
 <html lang="es">

@@ -307,6 +307,12 @@ $currentTab = 'recorridos';
 <main>
     <h2 class="section-title">Panel de Recorridos</h2>
 
+    <?php if (session('success')): ?>
+        <div style="padding: 1rem; border-radius: 10px; margin-bottom: 2rem; background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; font-weight: 700;">
+            <i class="fa-solid fa-check-circle"></i> <?= htmlspecialchars(session('success')) ?>
+        </div>
+    <?php endif; ?>
+
     <?php if (empty($recorridosAsignados)): ?>
         <div class="empty-state" style="text-align: center; padding: 5rem; background: white; border-radius: 25px;">
             <i class="fa-solid fa-calendar-xmark fa-4x" style="color:#ddd; margin-bottom:1.5rem;"></i>
@@ -381,11 +387,11 @@ $currentTab = 'recorridos';
                 </a>
 
                 <?php if ($rec->reporte !== null): ?>
-                    <a href="/guias/reporte-historial" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--amarillo-sol); color: #000;">
+                    <a href="/guias/reportes-historial" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--amarillo-sol); color: #000;">
                         <i class="fa-solid fa-check-circle"></i> Ver Reporte
                     </a>
                 <?php else: ?>
-                    <a href="/guias/reporte-crear?id_gr=<?= $rec->id_guia_recorrido ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--naranja-tigre);">
+                    <a href="/guias/reportes-crear?id_gr=<?= $rec->id_guia_recorrido ?>" class="btn-detalle" style="padding: 0.8rem; font-size: 0.85rem; background: var(--naranja-tigre);">
                         <i class="fa-solid fa-pen-to-square"></i> Reportar Final
                     </a>
                 <?php endif; ?>

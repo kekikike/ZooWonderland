@@ -4,8 +4,7 @@
 /** @var array $detalleRecorrido */
 /** @var string|null $mensaje */
 
-$error = $_SESSION['error'] ?? null;
-if ($error) unset($_SESSION['error']);
+$error = session('error');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -86,7 +85,7 @@ if ($error) unset($_SESSION['error']);
 <div class="container">
     <div class="header">
         <h1>Registrar Reporte</h1>
-        <a href="/guias/reporte-crear" style="color: #666; text-decoration: none; display: inline-block;">
+        <a href="/guias/dashboard" style="color: #666; text-decoration: none; display: inline-block;">
             <?php echo csrf_field(); ?>
             <i class="fa-solid fa-arrow-left"></i> Seleccionar otro recorrido
         </a>
@@ -126,7 +125,7 @@ if ($error) unset($_SESSION['error']);
         Revisa cuidadosamente antes de guardar.
     </div>
 
-    <form method="POST" action="/guias/reporte-guardar" id="formReporte">
+    <form method="POST" action="/guias/reportes-guardar" id="formReporte">
         <?php echo csrf_field(); ?>
         <input type="hidden" name="id_guia_recorrido" value="<?= (int)$detalleRecorrido['id_guia_recorrido'] ?>">
         

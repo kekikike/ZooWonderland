@@ -15,6 +15,7 @@ class ReporteRepository
         return Reporte::create([
             'id_guia_recorrido' => $idGuiaRecorrido,
             'observaciones'     => $observaciones,
+            'fecha_reporte'     => now(),
         ]);
     }
 

@@ -74,6 +74,9 @@ class GuiaController extends Controller
 
     $asignacion = GuiaRecorrido::with('recorrido')
         ->where('id_guia_recorrido', $id_guia_recorrido)
+        ->whereHas('guia', function ($q) use ($user) {
+            $q->where('id_usuario', $user->id_usuario);
+        })
         ->first();
 
     if (!$asignacion) abort(404);
@@ -96,11 +99,11 @@ class GuiaController extends Controller
     $observaciones     = trim((string)$request->input('observaciones', ''));
 
     if (!$id_guia_recorrido || !$observaciones) {
-        return redirect('/guias/reportes-crear')->with('error', 'Completa todos los campos obligatorios.');
+        return redirect('/guias/reportes-crear?id_gr=' . $id_guia_recorrido)->with('error', 'Completa todos los campos obligatorios.');
     }
 
     if ($this->reporteRepo->existeReporte($id_guia_recorrido)) {
-        return redirect('/guias/reportes-crear')->with('error', 'Ya existe un reporte para esta asignación.');
+        return redirect('/guias/reportes-crear?id_gr=' . $id_guia_recorrido)->with('error', 'Ya existe un reporte para esta asignación.');
     }
 
     $this->reporteRepo->save($id_guia_recorrido, $observaciones);
