@@ -92,10 +92,11 @@ class AdminController extends Controller
         return view('admin.usuarios.form', compact('user', 'usuario'));
     }
 
-    public function editarUsuarioPost(Request $request)
-    {
-        $id = (int)$request->input('id', 0);
+public function editarUsuarioPost(Request $request)
+{
+    $id = (int)$request->input('id_usuario', 0);
 
+    try {
         $this->usuarioRepo->actualizarUsuario(
             $id,
             trim($request->input('nombre1',        '')),
@@ -109,7 +110,10 @@ class AdminController extends Controller
             trim($request->input('nombre_usuario', ''))
         );
         return redirect('/admin/usuarios')->with('success', 'Usuario actualizado.');
+    } catch (\Exception $e) {
+        return back()->withInput()->with('error', $e->getMessage());
     }
+}
 
     public function toggleEstado(Request $request)
     {
