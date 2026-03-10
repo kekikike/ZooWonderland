@@ -61,6 +61,30 @@ class UsuarioRepository
         ]);
     }
 
+    public function createAdminOrGuia(array $data): Usuario
+    {
+        $rolNombre = $data['rol'];
+        $idRol     = Rol::where('nombre_rol', $rolNombre)->value('id_rol');
+
+        if (!$idRol) {
+            throw new \Exception("Rol '{$rolNombre}' no encontrado.");
+        }
+
+        return Usuario::create([
+            'nombre1'        => $data['nombre1'],
+            'nombre2'        => $data['nombre2']    ?? null,
+            'apellido1'      => $data['apellido1'],
+            'apellido2'      => $data['apellido2']  ?? null,
+            'ci'             => $data['ci']          ?? null,
+            'correo'         => $data['correo'],
+            'telefono'       => $data['telefono']    ?? null,
+            'nombre_usuario' => $data['nombre_usuario'],
+            'contrasena'     => Hash::make($data['password']),
+            'id_rol'         => $idRol,
+            'estado'         => $data['estado']      ?? 1,
+        ]);
+    }
+
     // ── Listado con filtros ───────────────────────────────────────
     public function getUsuariosFiltrados(
         string $busqueda       = '',

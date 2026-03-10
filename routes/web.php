@@ -11,7 +11,6 @@ use App\Http\Controllers\Web\AnimalController;
 
 // ── PÚBLICAS ─────────────────────────────────────────────────────
 Route::get('/',         [HomeController::class, 'index']);
-Route::get('/recorridos', fn() => view('recorridos'));
 Route::get('/login',    [AuthController::class, 'showLogin']);
 Route::post('/login',   [AuthController::class, 'login']);
 Route::get('/registro', [AuthController::class, 'showRegister']);
@@ -39,10 +38,9 @@ Route::middleware(['auth.zoo', 'auth.guia'])->group(function () {
     Route::get('/guias/dashboard',          [GuiaController::class, 'dashboard']);
     Route::get('/guias/horarios',           [GuiaController::class, 'horarios']);
     Route::get('/guias/detalle-recorrido',  [GuiaController::class, 'detalleRecorrido']);
-    Route::get('/guias/reporte-crear',     [GuiaController::class, 'showReportForm']);
-    Route::post('/guias/reporte-guardar',  [GuiaController::class, 'processReport']);
-    Route::get('/guias/reporte-historial', [GuiaController::class, 'showReportHistory']);
-    
+    Route::get('/guias/reportes-crear',     [GuiaController::class, 'showReportForm']);
+    Route::post('/guias/reportes-guardar',  [GuiaController::class, 'processReport']);
+    Route::get('/guias/reportes-historial', [GuiaController::class, 'showReportHistory']);
 });
 
 // ── ADMIN ─────────────────────────────────────────────────────────
@@ -56,7 +54,6 @@ Route::middleware(['auth.zoo', 'auth.admin'])->prefix('admin')->group(function (
     Route::get('/recorridos/editar',    [AdminController::class, 'editarRecorrido']);
     Route::post('/recorridos/actualizar',[AdminController::class, 'actualizarRecorrido']);
     Route::post('/recorridos/eliminar', [AdminController::class, 'eliminarRecorrido']);
-    Route::post('/recorridos/toggle-estado', [AdminController::class, 'toggleEstadoRecorrido']);
 
     // Animales
     Route::get('/animales',             [AdminController::class, 'animales']);
@@ -71,6 +68,7 @@ Route::middleware(['auth.zoo', 'auth.admin'])->prefix('admin')->group(function (
     Route::get('/usuario-editar',            [AdminController::class, 'editarUsuarioForm']);
     Route::post('/usuario-editar-post',      [AdminController::class, 'editarUsuarioPost']);
     Route::post('/usuario-toggle',           [AdminController::class, 'toggleEstado']);
+    Route::post('/usuario-crear',            [AdminController::class, 'crearUsuario']);
 
     // Asignaciones
     Route::get('/asignaciones',              [AdminController::class, 'asignaciones']);
@@ -85,7 +83,8 @@ Route::middleware(['auth.zoo', 'auth.admin'])->prefix('admin')->group(function (
     Route::post('/eventos/guardar',          [AdminController::class, 'saveEvento']);
     Route::post('/eventos/eliminar',         [AdminController::class, 'deleteEvento']);
     Route::get('/eventos/detalle',           [AdminController::class, 'detalleEvento']);
+
     // Reportes
-    Route::get('/reportes/pdf', [AdminController::class, 'reportePDF']);
     Route::get('/reportes',                  [AdminController::class, 'reportes']);
+    Route::get('/reportePDF',                [AdminController::class, 'reportePDF']);
 });

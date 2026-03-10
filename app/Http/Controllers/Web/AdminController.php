@@ -118,6 +118,69 @@ class AdminController extends Controller
         $this->usuarioRepo->cambiarEstado($id, $estado);
         return redirect('/admin/usuarios')->with('success', 'Estado actualizado.');
     }
+    public function crearUsuario(Request $request)
+    {
+        $nombre1   = trim($request->input('nombre1', ''));
+        $nombre2   = trim($request->input('nombre2', ''));
+        $apellido1 = trim($request->input('apellido1', ''));
+        $apellido2 = trim($request->input('apellido2', ''));
+        $ci        = trim($request->input('ci', ''));
+        $telefono  = trim($request->input('telefono', ''));
+        $correo    = trim($request->input('correo', ''));
+        $usuario   = trim($request->input('nombre_usuario', ''));
+        $rol       = trim($request->input('rol', ''));
+        $password  = $request->input('password', '');
+        $confirm   = $request->input('password_confirm', '');
+
+        $soloLetras = '/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/u';
+
+        if (!$nombre1 || !preg_match($soloLetras, $nombre1))
+            return redirect('/admin/usuarios')->with('modal_error', 'El primer nombre es inválido.');
+        if ($nombre2 && !preg_match($soloLetras, $nombre2))
+            return redirect('/admin/usuarios')->with('modal_error', 'El segundo nombre es inválido.');
+        if (!$apellido1 || !preg_match($soloLetras, $apellido1))
+            return redirect('/admin/usuarios')->with('modal_error', 'El primer apellido es inválido.');
+        if ($apellido2 && !preg_match($soloLetras, $apellido2))
+            return redirect('/admin/usuarios')->with('modal_error', 'El segundo apellido es inválido.');
+        if (!preg_match('/^\d{7,8}$/', $ci))
+            return redirect('/admin/usuarios')->with('modal_error', 'El CI debe tener entre 7 y 8 números.');
+        if (!preg_match('/^\d{7,8}$/', $telefono))
+            return redirect('/admin/usuarios')->with('modal_error', 'El teléfono debe tener entre 7 y 8 números.');
+        if (!filter_var($correo, FILTER_VALIDATE_EMAIL))
+            return redirect('/admin/usuarios')->with('modal_error', 'El correo electrónico es inválido.');
+        if (!$usuario)
+            return redirect('/admin/usuarios')->with('modal_error', 'El nombre de usuario es obligatorio.');
+        if (!in_array($rol, ['administrador', 'guia'], true))
+            return redirect('/admin/usuarios')->with('modal_error', 'El rol debe ser administrador o guía.');
+        if (!preg_match('/[A-Z]/', $password) || !preg_match('/[0-9]/', $password) || strlen($password) < 6)
+            return redirect('/admin/usuarios')->with('modal_error', 'La contraseña debe tener al menos una mayúscula y un número.');
+        if ($password !== $confirm)
+            return redirect('/admin/usuarios')->with('modal_error', 'Las contraseñas no coinciden.');
+
+        try {
+            $this->usuarioRepo->createAdminOrGuia([
+                'nombre1'        => $nombre1,
+                'nombre2'        => $nombre2 ?: null,
+                'apellido1'      => $apellido1,
+                'apellido2'      => $apellido2 ?: null,
+                'ci'             => (int)$ci,
+                'telefono'       => $telefono,
+                'correo'         => $correo,
+                'nombre_usuario' => $usuario,
+                'rol'            => $rol,
+                'password'       => $password,
+                'estado'         => 1,
+            ]);
+        } catch (\Exception $e) {
+            $msg = str_contains($e->getMessage(), 'ci')             ? 'El CI ya está registrado.'       :
+                (str_contains($e->getMessage(), 'correo')         ? 'El correo ya está registrado.'   :
+                (str_contains($e->getMessage(), 'nombre_usuario') ? 'El nombre de usuario ya existe.' :
+                'Error al crear el usuario: ' . $e->getMessage()));
+            return redirect('/admin/usuarios')->with('modal_error', $msg);
+        }
+
+        return redirect('/admin/usuarios')->with('success', 'Usuario creado exitosamente.');
+    }
 
     // ── RECORRIDOS ───────────────────────────────────────────────
     public function recorridos(Request $request)
