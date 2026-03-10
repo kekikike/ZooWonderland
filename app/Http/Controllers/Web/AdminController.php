@@ -82,7 +82,7 @@ class AdminController extends Controller
         return view('admin.usuarios.index', compact('user', 'usuarios', 'filtros', 'recorridos'));
     }
 
-    public function editarUsuarioForm(Request $request)
+    public function usuarioEditar(Request $request)
     {
         $user    = $request->attributes->get('auth_user');
         $id      = (int)$request->input('id', 0);
@@ -118,6 +118,16 @@ class AdminController extends Controller
         $this->usuarioRepo->cambiarEstado($id, $estado);
         return redirect('/admin/usuarios')->with('success', 'Estado actualizado.');
     }
+
+    public function editarUsuarioForm(Request $request)
+{
+    $user          = $request->attributes->get('auth_user');
+    $id            = (int)$request->input('id', 0);
+    $usuarioEditar = $this->usuarioRepo->getUsuarioPorId($id);
+    if (!$usuarioEditar) abort(404);
+
+    return view('admin.usuarios.form', compact('user', 'usuarioEditar'));
+}
     public function crearUsuario(Request $request)
     {
         $nombre1   = trim($request->input('nombre1', ''));
